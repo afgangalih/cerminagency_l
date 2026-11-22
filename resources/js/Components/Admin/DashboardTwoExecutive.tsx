@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from "react";
 import {
@@ -252,8 +252,8 @@ function ProductionVolumeChart({ contents }: { contents: ContentItem[] }) {
       </div>
 
       <div className="pt-3 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
-        <span>Efisiensi editing studio Malang: <strong>92% on-schedule</strong></span>
-        <span className="font-inter text-emerald-700 font-medium">Bebas Bottleneck</span>
+        <span>Ketepatan waktu produksi studio Malang: <strong>92% sesuai jadwal</strong></span>
+        <span className="font-inter text-emerald-700 font-medium">Alur Produksi Lancar</span>
       </div>
     </div>
   );
@@ -548,13 +548,13 @@ export function DashboardTwoExecutive({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 pb-3 border-b border-zinc-200/80">
         <div>
           <span className="text-[10px] font-inter uppercase tracking-wider text-zinc-400 font-semibold block mb-0.5">
-            EXECUTIVE SUITE • CERMIN KREATIF OPS
+            PUSAT OPERASIONAL • CERMIN KREATIF STUDIO
           </span>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950">
-            Mission Control Agensi
+            Pusat Kendali Operasional
           </h1>
           <p className="text-xs text-zinc-500 font-normal mt-1">
-            Pantauan omset retainer bulanan, status produksi studio, dan audit persetujuan klien.
+            Pantauan nilai kontrak bulanan, status produksi studio, dan progres persetujuan konten klien.
           </p>
         </div>
 

@@ -132,7 +132,7 @@ export function DashboardHeader({
           {isRoleAdmin ? (
             <>
               <Shield className="w-3.5 h-3.5 text-zinc-900" />
-              <span>Cermin Studio Ops</span>
+              <span>Operasional Studio Cermin</span>
             </>
           ) : (
             <>

@@ -206,7 +206,7 @@ export function AdminSidebar({
                 >
                   <div className="flex items-center gap-2.5">
                     <LayoutDashboard className="w-4 h-4 shrink-0" />
-                    <span>Mission Control</span>
+                    <span>Pusat Kendali</span>
                   </div>
                   {stalledReviews.length > 0 && (
                     <span className={`text-[10px] font-inter px-1.5 py-0.2 rounded-full ${
@@ -320,7 +320,7 @@ export function AdminSidebar({
                 >
                   <div className="flex items-center gap-2.5">
                     <FileText className="w-4 h-4 shrink-0" />
-                    <span>Vault Brief Brand</span>
+                    <span>Arsip Brief Masuk</span>
                   </div>
                 </button>
               </nav>

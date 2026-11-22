@@ -19,13 +19,13 @@ export function MarketingFooter() {
                   Cermin Kreatif
                 </span>
                 <span className="text-[10px] text-zinc-400 font-inter">
-                  Agency Platform & Studio Hub
+                  Studio Produksi Video & Retainer
                 </span>
               </div>
             </Link>
 
             <p className="text-xs text-zinc-500 font-light leading-relaxed max-w-sm">
-              Run your entire agency and video production from one place. Onboard clients, manage requests, and get paid with your own brand.
+              Rumah produksi video vertikal 9:16 dan agensi retainer media sosial di Malang. Menghadirkan konten sinematik berkualitas tinggi dengan portal kerja transparan untuk brand Anda.
             </p>
 
             <div className="pt-2">

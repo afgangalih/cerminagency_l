@@ -6,14 +6,14 @@ import { ArrowRight, Share2, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export function IntegrationsSection() {
   const tools = [
-    { name: 'Google Drive 4K', category: 'Penyimpanan Master File', tag: 'Native' },
-    { name: 'WhatsApp Business API', category: 'Ping Notifikasi Otomatis', tag: 'Fast' },
-    { name: 'Instagram Graph API', category: 'Simulasi Feed 3x3', tag: 'Official' },
-    { name: 'TikTok Creator Studio', category: 'Format Video 9:16', tag: 'Verified' },
-    { name: 'Adobe Premiere Pro', category: 'Export Metadata Draf', tag: 'Workflow' },
-    { name: 'Frame.io Cloud', category: 'Penyuntingan Kolaboratif', tag: 'Pro' },
-    { name: 'Figma & Design Kits', category: 'Brand Guidelines Kit', tag: 'Creative' },
-    { name: 'Stripe & Midtrans', category: 'Otomatisasi DP 50%', tag: 'Fintech' }
+    { name: 'Google Drive 4K', category: 'Penyimpanan Master File', tag: 'Aman' },
+    { name: 'WhatsApp Notifikasi', category: 'Pengingat Review Draf', tag: 'Cepat' },
+    { name: 'Simulasi Feed IG', category: 'Pratinjau Grid 3x3', tag: 'Resmi' },
+    { name: 'TikTok Video 9:16', category: 'Format Vertikal Sinematik', tag: 'Optimal' },
+    { name: 'Studio Fisik Malang', category: 'Kamera 4K & Lighting', tag: 'Studio' },
+    { name: 'Naskah & Hook Tren', category: 'Riset Topik Konsumen', tag: 'Kreatif' },
+    { name: 'Color Grading & Audio', category: 'Penyuntingan Pasca-Produksi', tag: 'Standar' },
+    { name: 'Faktur & Termin DP', category: 'Sistem Pembayaran Transparan', tag: 'Resmi' }
   ];
 
   return (
@@ -27,15 +27,15 @@ export function IntegrationsSection() {
           <div className="lg:col-span-5 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-xs font-inter text-zinc-300">
               <Share2 className="w-3.5 h-3.5 text-zinc-200" />
-              <span>1,000+ Integrasi Cloud</span>
+              <span>Sistem Produksi Terintegrasi</span>
             </div>
 
             <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-white leading-tight">
-              Supercharge Platform Agensi Anda.
+              Alur Kerja Produksi yang Teratur dan Rapi.
             </h2>
 
             <p className="text-sm sm:text-base text-zinc-400 font-light leading-relaxed">
-              Hubungkan ekosistem kerja produksi Anda mulai dari Google Drive master raw, pengingat WhatsApp otomatis, hingga API platform sosial media untuk efisiensi maksimal.
+              Dari penyimpanan master video 4K hingga notifikasi persetujuan draf, seluruh proses produksi di Cermin Kreatif tersambung rapi agar tidak ada file yang hilang atau jadwal yang meleset.
             </p>
 
             <div className="pt-2 flex items-center gap-3">
@@ -43,7 +43,7 @@ export function IntegrationsSection() {
                 href="/portal"
                 className="px-6 py-3 rounded-xl bg-white text-zinc-950 font-semibold text-xs hover:bg-zinc-200 transition shadow-xs flex items-center gap-2"
               >
-                <span>Coba Sekarang</span>
+                <span>Lihat Alur Portal Klien</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>

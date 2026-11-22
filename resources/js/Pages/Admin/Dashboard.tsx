@@ -148,11 +148,11 @@ function AdminContent() {
         <DashboardHeader
           role="admin"
           activeTabTitle={
-            adminTab === 'mission_control' ? 'Mission Control' :
+            adminTab === 'mission_control' ? 'Pusat Kendali' :
             adminTab === 'content_engine' ? 'SOP Konten' :
             adminTab === 'production_mgmt' ? 'Studio Ops' :
             adminTab === 'finance' ? 'Verifikasi DP & Faktur' :
-            adminTab === 'clients' ? 'Direktori Klien' : 'Brief Vault'
+            adminTab === 'clients' ? 'Direktori Klien' : 'Arsip Brief Masuk'
           }
           selectedClient={selectedClient}
           onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -204,7 +204,7 @@ function AdminContent() {
               <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-2 border-b border-zinc-200">
                 <div>
                   <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900">
-                    Content Engine — {selectedClient.business || 'Pilih Klien'}
+                    Produksi Konten — {selectedClient.business || 'Pilih Klien'}
                   </h1>
                   <p className="text-xs text-zinc-500 font-light mt-1">
                     Gunakan Kanban SOP 5 tahap, Matriks Kalender 1–31, atau Simulator Feed untuk mengontrol produksi.

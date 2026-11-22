@@ -18,7 +18,7 @@ export function MarketingNav() {
               Cermin Kreatif
             </span>
             <span className="text-[10px] text-zinc-500 font-inter block">
-              Agency Platform & Studio
+              Studio Produksi Video & Retainer
             </span>
           </div>
         </Link>
@@ -26,19 +26,19 @@ export function MarketingNav() {
         {/* Desktop Navigation Links */}
         <nav className="hidden md:flex items-center gap-1 text-xs font-medium text-zinc-700">
           <a href="#features" className="px-3.5 py-2 rounded-lg hover:text-zinc-950 hover:bg-zinc-100/70 transition">
-            Platform
+            Layanan
           </a>
           <a href="#use-cases" className="px-3.5 py-2 rounded-lg hover:text-zinc-950 hover:bg-zinc-100/70 transition">
-            Use Cases
+            Industri
           </a>
           <a href="#pricing" className="px-3.5 py-2 rounded-lg hover:text-zinc-950 hover:bg-zinc-100/70 transition">
-            Harga & Paket
+            Paket Konten
           </a>
           <a href="#integrations" className="px-3.5 py-2 rounded-lg hover:text-zinc-950 hover:bg-zinc-100/70 transition">
-            Integrasi
+            Alur Kerja
           </a>
           <a href="#faq" className="px-3.5 py-2 rounded-lg hover:text-zinc-950 hover:bg-zinc-100/70 transition">
-            FAQ
+            Tanya Jawab
           </a>
         </nav>
 
