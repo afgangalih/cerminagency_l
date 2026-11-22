@@ -1,0 +1,61 @@
+*.log
+.DS_Store
+Thumbs.db
+
+# Environment & Secrets (CRITICAL: DO NOT COMMIT)
+.env
+.env.backup
+.env.production
+.env.*
+!.env.example
+
+# Agent Skills & Private Directives (Excluded per security & privacy best practice)
+/.agents
+/.agents/
+.agents/
+/skills
+/skills/
+skills/
+*.skill
+
+# Dependencies
+/node_modules
+/vendor
+
+# Build & Runtime
+/public/build
+/public/hot
+/public/storage
+/public/fonts-manifest.dev.json
+.phpunit.result.cache
+/.phpunit.cache
+/.nova
+/.zed
+
+# Storage & Framework Cache
+/storage/*.key
+/storage/pail
+/storage/logs/*.log
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+!/storage/framework/cache/data/.gitignore
+!/storage/framework/sessions/.gitignore
+!/storage/framework/views/.gitignore
+!/storage/logs/.gitignore
+
+# IDE & Editor Configurations
+/.idea
+/.vscode
+/.cursor/
+/.codex
+/auth.json
+_ide_helper.php
+Homestead.json
+Homestead.yaml
+.phpactor.json
+
+# Database files
+*.sqlite
+*.sqlite-journal
+*.sql
