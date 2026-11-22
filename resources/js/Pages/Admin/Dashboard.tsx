@@ -99,15 +99,16 @@ function AdminContent() {
     return item.platforms.includes(platformFilter);
   });
 
-  // Ping WA reminder helper
+  // One-Click WhatsApp Dispatcher (Zero Paid API)
   const handlePingClient = (client: ClientPipeline, item: ContentItem) => {
     const text = encodeURIComponent(
-      `Halo Kak ${client.name} dari ${client.business}! 👋\n` +
-      `Tim Cermin Kreatif telah mengunggah draf konten baru: "${item.title}".\n` +
-      `Silakan cek dan berikan persetujuan di Portal Klien agar jadwal posting tgl ${item.day} tetap aman. Terima kasih!`
+      `Halo Kak ${client.name} dari ${client.business}! 👋\n\n` +
+      `Tim Cermin Kreatif telah mengunggah draf konten terbaru: "${item.title}".\n` +
+      `Format: ${item.type} | Jadwal Tayang: ${item.day} (${item.weekday})\n\n` +
+      `Mohon luangkan 1 menit untuk meninjau dan memberikan persetujuan melalui Portal Klien agar antrean publikasi tetap tepat waktu. Terima kasih banyak!`
     );
     window.open(`https://wa.me/6281234567890?text=${text}`, '_blank');
-    triggerNotification(`Template WhatsApp review untuk ${client.business} dibuka!`);
+    triggerNotification(`Pesan WhatsApp tindak lanjut untuk ${client.business} siap dikirim!`);
   };
 
   // Executive KPIs
@@ -116,7 +117,7 @@ function AdminContent() {
   const stalledReviews = contentList.filter(c => c.stage === 'review');
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row min-h-0 bg-zinc-50/50">
+    <div className="h-screen w-full flex flex-col md:flex-row overflow-hidden bg-zinc-50 text-zinc-900 font-sans antialiased">
       {/* Efferd AppShell-2 Modern Admin Sidebar */}
       <AdminSidebar
         adminTab={adminTab}
@@ -144,7 +145,7 @@ function AdminContent() {
       {/* ========================================================
           MAIN WORKSPACE CANVAS (Full Precision Layout)
       ======================================================== */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <DashboardHeader
           role="admin"
           activeTabTitle={

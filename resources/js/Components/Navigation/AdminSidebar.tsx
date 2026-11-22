@@ -73,13 +73,12 @@ export function AdminSidebar({
       )}
 
       <aside className={`
-        fixed inset-y-0 left-0 z-50 md:sticky md:top-10 md:h-[calc(100vh-2.5rem)]
-        w-72 md:w-64 lg:w-72 shrink-0
-        bg-white border-r border-zinc-200/80
+        fixed inset-y-0 left-0 z-50 md:static md:h-full
+        w-64 shrink-0
+        bg-white border-r border-zinc-200
         flex flex-col justify-between
-        transition-transform duration-300 ease-in-out
+        transition-transform duration-200 ease-in-out
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-        shadow-sm md:shadow-none
       `}>
         {/* Top: Header, Workspace Switcher, Navigation */}
         <div className="flex flex-col min-h-0 flex-1">

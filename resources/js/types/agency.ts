@@ -43,6 +43,9 @@ export interface ContentItem {
   version: string; // 'V1' | 'V2 (Draf Revisi)' | 'Final Approved'
   caption: string;
   mediaUrl: string;
+  driveRawUrl?: string;
+  hashtags?: string[];
+  scriptHook?: string;
   revisionCount: number; // Max 2 rounds (Anti-Scope Creep SLA)
   feedbackHistory: FeedbackLog[];
 }

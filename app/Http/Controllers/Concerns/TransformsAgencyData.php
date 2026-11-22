@@ -70,6 +70,9 @@ trait TransformsAgencyData
             'version' => $c->version ?? 'V1',
             'caption' => $c->caption ?? '',
             'mediaUrl' => $c->media_url ?? '',
+            'driveRawUrl' => $c->drive_raw_url ?? 'https://drive.google.com',
+            'hashtags' => is_array($c->hashtags) ? $c->hashtags : [],
+            'scriptHook' => $c->script_hook ?? '',
             'revisionCount' => (int) $c->revision_count,
             'feedbackHistory' => $c->feedbacks ? $c->feedbacks->map(function ($f) {
                 return [
