@@ -169,7 +169,7 @@ export function BriefFormSection() {
 
             <button
               type="submit"
-              className="w-full py-3.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-sm flex items-center justify-center gap-2 transition shadow-sm cursor-pointer"
+              className="w-full py-3.5 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white font-bold text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-[#01A0CA]/25 cursor-pointer"
             >
               <Send className="w-4 h-4" />
               <span>Kirim Brief & Terbitkan Akun (Otomatis Masuk Sistem & WhatsApp)</span>

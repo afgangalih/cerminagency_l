@@ -42,7 +42,7 @@ export function AddClientModal({ onClose }: AddClientModalProps) {
   const [phone, setPhone] = useState('');
   const [selectedPkgIndex, setSelectedPkgIndex] = useState(1);
   const [isUnlocked, setIsUnlocked] = useState(false);
-  const [picAssigned, setPicAssigned] = useState('Reza (Creative Lead)');
+  const [picAssigned, setPicAssigned] = useState('Dimas (Creative Lead)');
   const [briefNotes, setBriefNotes] = useState('');
 
   const currentPkg = PACKAGE_OPTIONS[selectedPkgIndex];
@@ -207,11 +207,15 @@ export function AddClientModal({ onClose }: AddClientModalProps) {
                 onChange={(e) => setPicAssigned(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition"
               >
-                <option value="Reza (Creative Lead)">Reza (Creative Lead)</option>
-                <option value="Dimas (Director of Photography)">Dimas (Director of Photography)</option>
+                <option value="Dimas (Creative Lead)">Dimas (Creative Lead)</option>
+                <option value="Farhan (Video Director)">Farhan (Video Director)</option>
+                <option value="Rian (Lead Editor)">Rian (Lead Editor)</option>
                 <option value="Maya (Content Strategist)">Maya (Content Strategist)</option>
-                <option value="Bayu (Senior Video Editor)">Bayu (Senior Video Editor)</option>
+                <option value="Reza (Production Lead)">Reza (Production Lead)</option>
               </select>
+              <p className="text-[10px] text-zinc-400 mt-1">
+                PIC bertanggung jawab memantau jadwal syuting, ketersediaan draf, dan komunikasi review klien.
+              </p>
             </div>
 
             <div>

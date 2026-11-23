@@ -95,6 +95,15 @@ function AdminContent() {
   const [contentToDelete, setContentToDelete] = useState<ContentItem | null>(null);
   const [brandDropdownOpen, setBrandDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [clientPicFilter, setClientPicFilter] = useState<string>('ALL');
+
+  const uniqueClientPics = Array.from(
+    new Set(clientPipeline.map((c) => c.picAssigned).filter(Boolean))
+  ) as string[];
+
+  const filteredClientsForTab = clientPicFilter === 'ALL'
+    ? clientPipeline
+    : clientPipeline.filter((c) => c.picAssigned === clientPicFilter);
 
   const daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
 
@@ -824,17 +833,51 @@ function AdminContent() {
                 </div>
               </div>
 
-              {clientPipeline.length === 0 ? (
+              {/* PIC Fast Filter Pills */}
+              {uniqueClientPics.length > 1 && (
+                <div className="flex items-center gap-1.5 p-1 bg-zinc-100/80 rounded-xl w-fit border border-zinc-200/60">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 px-2">PIC:</span>
+                  <button
+                    onClick={() => setClientPicFilter('ALL')}
+                    className={`px-3 py-1 rounded-lg text-xs font-medium transition cursor-pointer ${
+                      clientPicFilter === 'ALL'
+                        ? 'bg-white text-zinc-950 font-semibold shadow-2xs'
+                        : 'text-zinc-600 hover:text-zinc-950'
+                    }`}
+                  >
+                    Semua ({clientPipeline.length})
+                  </button>
+                  {uniqueClientPics.map((pic) => {
+                    const shortName = pic.split(' ')[0];
+                    const count = clientPipeline.filter((c) => c.picAssigned === pic).length;
+                    return (
+                      <button
+                        key={pic}
+                        onClick={() => setClientPicFilter(pic)}
+                        className={`px-3 py-1 rounded-lg text-xs font-medium transition cursor-pointer ${
+                          clientPicFilter === pic
+                            ? 'bg-white text-zinc-950 font-semibold shadow-2xs'
+                            : 'text-zinc-600 hover:text-zinc-950'
+                        }`}
+                      >
+                        {shortName} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {filteredClientsForTab.length === 0 ? (
                 <EmptyState
                   icon={Users}
-                  title="Belum Ada Klien Aktif"
-                  description="Daftarkan klien pertama untuk mengaktifkan kuota retainer, integrasi nomor WhatsApp, dan assign PIC kreatif."
+                  title="Belum Ada Klien untuk Filter Ini"
+                  description="Tidak ditemukan klien untuk filter PIC terpilih. Ubah filter ke 'Semua' atau daftarkan klien baru."
                   actionLabel="+ Tambah Klien Sekarang"
                   onAction={() => setShowAddClientModal(true)}
                 />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  {clientPipeline.map(cl => (
+                  {filteredClientsForTab.map(cl => (
                     <div key={cl.id} className="p-6 rounded-2xl bg-white border border-zinc-200 shadow-xs space-y-4 relative group">
                       <div className="flex justify-between items-start">
                         <div>
@@ -872,9 +915,11 @@ function AdminContent() {
                           <span className="text-zinc-500">Nilai Kontrak:</span>
                           <span className="text-emerald-700 font-inter font-bold">{cl.totalValue}</span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-zinc-500">PIC Creative:</span>
-                          <span className="text-zinc-800">{cl.picAssigned}</span>
+                        <div className="flex justify-between items-center pt-1 border-t border-zinc-200/60">
+                          <span className="text-zinc-500">PIC Penanggung Jawab:</span>
+                          <span className="text-zinc-900 font-semibold font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-zinc-200/70">
+                            {cl.picAssigned || 'Studio Lead'}
+                          </span>
                         </div>
                       </div>
 

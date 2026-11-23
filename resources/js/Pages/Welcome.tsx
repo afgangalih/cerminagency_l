@@ -3,66 +3,62 @@ import { Head } from '@inertiajs/react';
 import { AgencyProvider } from '@/context/AgencyContext';
 import { MarketingNav } from '@/Components/Marketing/MarketingNav';
 import { HeroSection } from '@/Components/Marketing/HeroSection';
-import { BrandMarquee } from '@/Components/Marketing/BrandMarquee';
-import { AppShowcaseSection } from '@/Components/Marketing/AppShowcaseSection';
-import { PillarsSection } from '@/Components/Marketing/PillarsSection';
-import { FeatureDeepDivesSection } from '@/Components/Marketing/FeatureDeepDivesSection';
-import { ShowreelGrid } from '@/Components/Marketing/ShowreelGrid';
-import { UseCasesSection } from '@/Components/Marketing/UseCasesSection';
-import { IntegrationsSection } from '@/Components/Marketing/IntegrationsSection';
+import { HighlightBlueSection } from '@/Components/Marketing/HighlightBlueSection';
+import { AboutAgencySection } from '@/Components/Marketing/AboutAgencySection';
+import { ClientsMarqueeSection } from '@/Components/Marketing/ClientsMarqueeSection';
+import { OurWorksSection } from '@/Components/Marketing/OurWorksSection';
+import { OurServicesDarkSection } from '@/Components/Marketing/OurServicesDarkSection';
 import { PricingSection } from '@/Components/Marketing/PricingSection';
-import { FaqSection } from '@/Components/Marketing/FaqSection';
-import { FinalCtaSection } from '@/Components/Marketing/FinalCtaSection';
+import { TestimonialsMetricsSection } from '@/Components/Marketing/TestimonialsMetricsSection';
+import { PreFooterCtaSection } from '@/Components/Marketing/PreFooterCtaSection';
 import { BriefFormSection } from '@/Components/Marketing/BriefFormSection';
+import { FaqSection } from '@/Components/Marketing/FaqSection';
 import { MarketingFooter } from '@/Components/Marketing/MarketingFooter';
 
-    export default function Welcome() {
-        return (
-                            <AgencyProvider>
-                                <Head title="Cermin Kreatif — Video Production & Social Media Retainer Platform" />
-                                <main className="flex-1 flex flex-col bg-white min-h-screen">
-                                    {/* 1. Top Navigation */}
-                                    <MarketingNav />
+export default function Welcome() {
+  return (
+    <AgencyProvider>
+      <Head title="Cermin Kreatif — Studio Produksi Video & Retainer Agensi Indonesia" />
+      <main className="flex-1 flex flex-col bg-white min-h-screen selection:bg-[#01A0CA] selection:text-white">
+        {/* 1. Top Alert Announcement & Sticky Navigation */}
+        <MarketingNav />
 
-                                                {/* 2. Hero Section */}
-                                                <HeroSection />
+        {/* 2. Hero Section (Split Layout + 9:16 Reels Floating Mockup) */}
+        <HeroSection />
 
-                                                        {/* 3. Trusted By Logo Marquee */}
-                                                        <BrandMarquee />
+        {/* 3. Blue Highlight Banner (#01A0CA) */}
+        <HighlightBlueSection />
 
-                                                            {/* 4. Interactive Browser Mockup / App Showcase */}
-                                                            <AppShowcaseSection />
+        {/* 4. About Us & Video Studio Showcase (Malang) */}
+        <AboutAgencySection />
 
-                                                    {/* 5. 6 Core Feature Pillars & Scaled Quote */}
-                                                    <PillarsSection />
+        {/* 5. Diverse Experience - Client Brand Marquee (3 Rows Infinite Animation) */}
+        <ClientsMarqueeSection />
 
-                                            {/* 6. Feature Deep Dives & Client Testimonials */}
-                                            <FeatureDeepDivesSection />
+        {/* 6. Our Works (Category Sidebar + 6 Vertical Video Cards 9:16) */}
+        <OurWorksSection />
 
-                                                {/* 7. Actual Video Production Showreels (Studio Malang) */}
-                                                <ShowreelGrid />
+        {/* 7. Our Services (Dark Section #121212) */}
+        <OurServicesDarkSection />
 
-                                                    {/* 8. Use Cases by Agency & Brand Type */}
-                                                    <UseCasesSection />
+        {/* 8. Retainer Packages & Transparent Pricing */}
+        <PricingSection />
 
-                                                {/* 9. 1,000s of Cloud Integrations */}
-                                                <IntegrationsSection />
+        {/* 9. Client Testimonials & Big Metrics Ribbon (94% Retensi & 18.2 Jam SLA) */}
+        <TestimonialsMetricsSection />
 
-                                            {/* 10. Clear Fair Pricing with Monthly/Annual Toggle */}
-                                            <PricingSection />
+        {/* 10. Pre-Footer Dark CTA Banner & As Seen On Media */}
+        <PreFooterCtaSection />
 
-                                                {/* 11. Frequently Asked Questions Accordion */}
-                                                <FaqSection />
+        {/* 11. Interactive Brief Form & Instant Invoice Generator */}
+        <BriefFormSection />
 
-                                                    {/* 12. Switch in Days CTA Banner */}
-                                                    <FinalCtaSection />
+        {/* 12. Frequently Asked Questions (FAQ) */}
+        <FaqSection />
 
-                                                {/* 13. Onboarding Brief & Proforma Invoice Generator */}
-                                                <BriefFormSection />
-
-                {/* 14. Full Platform Footer */}
-                <MarketingFooter />
-            </main >
-        </AgencyProvider >
-    );
-    }
+        {/* 13. Mega Platform Dark Footer */}
+        <MarketingFooter />
+      </main>
+    </AgencyProvider>
+  );
+}

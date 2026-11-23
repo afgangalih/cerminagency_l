@@ -402,7 +402,10 @@ function PortalContent() {
                       Pantau serapan kuota konten bulanan, jadwal tayang terdekat, dan draf video yang siap ditinjau.
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-inter text-zinc-600 bg-white border border-zinc-200 px-3 py-1.5 rounded-lg shadow-2xs">
+                      PIC Studio: <strong className="text-zinc-950 font-semibold">{selectedClient.picAssigned || 'Dimas (Creative Lead)'}</strong>
+                    </span>
                     <span className="text-xs font-inter text-zinc-600 bg-white border border-zinc-200 px-3 py-1.5 rounded-lg shadow-2xs">
                       Faktur: <strong>{selectedClient.invoiceNumber}</strong>
                     </span>

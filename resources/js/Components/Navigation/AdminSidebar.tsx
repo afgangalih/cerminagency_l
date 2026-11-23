@@ -52,7 +52,17 @@ export function AdminSidebar({
   onOpenAddContent,
 }: AdminSidebarProps) {
   const [brandDropdownOpen, setBrandDropdownOpen] = useState(false);
+  const [selectedPicFilter, setSelectedPicFilter] = useState<string>('ALL');
   const brandDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Extract unique PICs from active pipeline
+  const uniquePics = Array.from(
+    new Set(clientPipeline.map((c) => c.picAssigned).filter(Boolean))
+  ) as string[];
+
+  const displayedClients = selectedPicFilter === 'ALL'
+    ? clientPipeline
+    : clientPipeline.filter((c) => c.picAssigned === selectedPicFilter);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -136,7 +146,7 @@ export function AdminSidebar({
                     </span>
                   </div>
                   <span className="text-[10px] text-zinc-400 font-mono block truncate pl-3 mt-0.5">
-                    {selectedClient?.package || 'Retainer Aktif'}
+                    {selectedClient?.package || 'Retainer Aktif'} • PIC: {selectedClient?.picAssigned || 'Studio Lead'}
                   </span>
                 </div>
               </div>
@@ -153,10 +163,44 @@ export function AdminSidebar({
               <div className="absolute top-full left-3.5 right-3.5 mt-1.5 bg-white border border-zinc-200/90 rounded-xl shadow-xl z-50 p-1.5 space-y-1 animate-in fade-in zoom-in-95">
                 <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-zinc-400 border-b border-zinc-100 flex items-center justify-between">
                   <span>Daftar Brand Retainer</span>
-                  <span>{clientPipeline.length}</span>
+                  <span>{displayedClients.length} Brand</span>
                 </div>
+
+                {/* PIC Quick Filter Pills */}
+                {uniquePics.length > 1 && (
+                  <div className="flex items-center gap-1 px-1 py-1 overflow-x-auto border-b border-zinc-100">
+                    <button
+                      onClick={() => setSelectedPicFilter('ALL')}
+                      className={`px-2 py-0.5 rounded text-[10px] font-medium transition cursor-pointer whitespace-nowrap ${
+                        selectedPicFilter === 'ALL'
+                          ? 'bg-zinc-900 text-white shadow-2xs'
+                          : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                      }`}
+                    >
+                      Semua ({clientPipeline.length})
+                    </button>
+                    {uniquePics.map((pic) => {
+                      const shortName = pic.split(' ')[0];
+                      const count = clientPipeline.filter((c) => c.picAssigned === pic).length;
+                      return (
+                        <button
+                          key={pic}
+                          onClick={() => setSelectedPicFilter(pic)}
+                          className={`px-2 py-0.5 rounded text-[10px] font-medium transition cursor-pointer whitespace-nowrap ${
+                            selectedPicFilter === pic
+                              ? 'bg-zinc-900 text-white shadow-2xs'
+                              : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                          }`}
+                        >
+                          {shortName} ({count})
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
                 <div className="max-h-56 overflow-y-auto space-y-0.5 py-1">
-                  {clientPipeline.map((client) => {
+                  {displayedClients.map((client) => {
                     const isSelected = client.id === selectedClientId;
                     return (
                       <button
@@ -181,13 +225,20 @@ export function AdminSidebar({
                           </div>
                           <div className="min-w-0">
                             <span className="truncate block font-medium leading-tight">{client.business}</span>
-                            <span className="text-[10px] text-zinc-400 font-mono block truncate">{client.package}</span>
+                            <span className="text-[10px] text-zinc-400 font-mono block truncate">
+                              {client.package} • PIC: {client.picAssigned || 'Studio Lead'}
+                            </span>
                           </div>
                         </div>
                         {isSelected && <Check className="w-3.5 h-3.5 text-zinc-950 shrink-0 ml-1.5" strokeWidth={1.5} />}
                       </button>
                     );
                   })}
+                  {displayedClients.length === 0 && (
+                    <div className="px-3 py-3 text-center text-xs text-zinc-400">
+                      Tidak ada brand untuk PIC ini.
+                    </div>
+                  )}
                 </div>
                 {onOpenAddClient && (
                   <div className="pt-1 border-t border-zinc-100">

@@ -107,7 +107,7 @@ export function PricingSection() {
                 onClick={() => setBillingCycle('annual')}
                 className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
                   billingCycle === 'annual'
-                    ? 'bg-zinc-900 text-white shadow-2xs'
+                    ? 'bg-[#01A0CA] text-white shadow-2xs'
                     : 'text-zinc-600 hover:text-zinc-950'
                 }`}
               >
@@ -131,14 +131,14 @@ export function PricingSection() {
                 key={plan.id}
                 className={`p-8 rounded-3xl border flex flex-col justify-between transition duration-200 relative ${
                   isPopular
-                    ? 'bg-zinc-950 text-white border-zinc-900 shadow-xl ring-2 ring-zinc-900'
-                    : 'bg-white text-zinc-900 border-zinc-200/90 shadow-2xs hover:shadow-xs'
+                    ? 'bg-gradient-to-b from-[#01A0CA] to-[#008db3] text-white border-[#01A0CA] shadow-xl shadow-[#01A0CA]/20 ring-2 ring-[#01A0CA]'
+                    : 'bg-white text-zinc-900 border-zinc-200 shadow-2xs hover:border-[#01A0CA]/50'
                 }`}
               >
                 {isPopular && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-white text-zinc-950 font-bold font-inter text-[10px] uppercase px-3 py-1 rounded-full shadow-md flex items-center gap-1 border border-zinc-200">
-                    <Sparkles className="w-3 h-3 text-amber-500 fill-amber-500" />
-                    <span>Dipilih 84% Brand Agensi</span>
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-white text-[#01A0CA] font-extrabold font-inter text-[10px] uppercase px-3 py-1 rounded-full shadow-md flex items-center gap-1 border border-blue-100">
+                    <Sparkles className="w-3 h-3 text-[#01A0CA] fill-[#01A0CA]" />
+                    <span>Paling Diminati Brand</span>
                   </div>
                 )}
 
@@ -197,10 +197,10 @@ export function PricingSection() {
                 <div className="pt-8">
                   <a
                     href="#brief-section"
-                    className={`w-full py-3 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition cursor-pointer ${
+                    className={`w-full py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-md ${
                       isPopular
-                        ? 'bg-white text-zinc-950 hover:bg-zinc-200 shadow-sm'
-                        : 'bg-zinc-900 text-white hover:bg-zinc-800 shadow-2xs'
+                        ? 'bg-white text-[#01A0CA] hover:bg-cyan-50 shadow-lg'
+                        : 'bg-[#01A0CA] text-white hover:bg-[#008db3]'
                     }`}
                   >
                     <span>Pilih {plan.name}</span>
