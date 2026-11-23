@@ -6,6 +6,7 @@ import {
   TrendingDown,
   ArrowRight,
   CheckCircle2,
+  Check,
   AlertCircle,
   FileText,
   CreditCard,
@@ -413,8 +414,9 @@ function BillingHealthCard({
 
       <div className="pt-3 border-t border-zinc-100">
         {isHealthy ? (
-          <div className="text-center text-xs text-zinc-400 py-1 font-inter">
-            Status Pembayaran Tertib ✓
+          <div className="text-center text-xs text-zinc-400 py-1 font-inter flex items-center justify-center gap-1.5">
+            <span>Status Pembayaran Tertib</span>
+            <Check className="w-3.5 h-3.5 text-emerald-600" />
           </div>
         ) : (
           <button
@@ -576,80 +578,118 @@ export function DashboardTwoExecutive({
         </div>
       </div>
 
-      {/* ── 2. Top 4 Dense KPI Cards (Dashboard-2 Style) ───── */}
+      {/* ── 2. Top 4 Dense KPI Cards (Refined & Insightful Studio Metrics) ───── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Active Retainers */}
-        <div className="p-5 bg-white border border-zinc-200/90 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.03)] space-y-2">
-          <div className="flex items-center justify-between text-xs text-zinc-500 font-medium">
-            <span>Brand Retainer Aktif</span>
-            <Building2 className="w-4 h-4 text-zinc-400" />
-          </div>
-          <div className="flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-bold font-inter text-zinc-950">
-              {clients.length}
+        <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs hover:border-zinc-300 transition-all flex flex-col justify-between">
+          <div className="space-y-1">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
+              Brand Retainer Aktif
             </span>
-            <DeltaBadge value={33.3} label="MoM" />
+            <div className="flex items-baseline gap-1.5 whitespace-nowrap pt-0.5">
+              <span className="text-2xl sm:text-3xl font-bold font-inter text-zinc-950 tracking-tight tabular-nums">
+                {clients.length}
+              </span>
+              <span className="text-sm font-medium text-zinc-500">Brand</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-zinc-600 pt-0.5">
+              <span className="text-emerald-700 font-semibold font-mono text-xs">+1 Brand</span>
+              <span className="text-zinc-400">vs bulan lalu</span>
+            </div>
           </div>
-          <p className="text-[11px] text-zinc-400 pt-1 border-t border-zinc-100 flex items-center justify-between">
-            <span>Maven, Lumen, Arche</span>
-            <span className="text-emerald-700 font-semibold font-inter">100% Retensi</span>
-          </p>
+          <div className="pt-3 mt-3 border-t border-zinc-100 flex items-center justify-between text-[11px]">
+            <span className="text-zinc-500 truncate max-w-[130px]">Maven, Lumen, Arche</span>
+            <span className="text-zinc-900 font-semibold font-mono">100% Retensi</span>
+          </div>
         </div>
 
         {/* KPI 2: MRR Revenue */}
-        <div className="p-5 bg-white border border-zinc-200/90 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.03)] space-y-2">
-          <div className="flex items-center justify-between text-xs text-zinc-500 font-medium">
-            <span>Monthly Retainer MRR</span>
-            <CreditCard className="w-4 h-4 text-zinc-400" />
-          </div>
-          <div className="flex items-baseline justify-between">
-            <span className="text-xl sm:text-2xl font-bold font-inter text-zinc-950">
-              Rp {(totalMRR / 1000000).toFixed(1)} Jt
+        <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs hover:border-zinc-300 transition-all flex flex-col justify-between">
+          <div className="space-y-1">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
+              Monthly Retainer (MRR)
             </span>
-            <DeltaBadge value={18.4} label="cashflow" />
+            <div className="flex items-baseline gap-1.5 whitespace-nowrap pt-0.5">
+              <span className="text-2xl sm:text-3xl font-bold font-inter text-zinc-950 tracking-tight tabular-nums">
+                Rp {(totalMRR / 1000000).toFixed(1)}
+              </span>
+              <span className="text-sm font-medium text-zinc-500">Juta</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-zinc-600 pt-0.5">
+              <span className="text-emerald-700 font-semibold font-mono text-xs">+25.7%</span>
+              <span className="text-zinc-400">di atas target (Rp 35 Jt)</span>
+            </div>
           </div>
-          <p className="text-[11px] text-zinc-400 pt-1 border-t border-zinc-100 flex items-center justify-between">
-            <span>Target: Rp 35 Jt/bln</span>
-            <span className="font-inter text-zinc-700 font-medium">
-              {((totalMRR / 35000000) * 100).toFixed(0)}% Capai
-            </span>
-          </p>
+          <div className="pt-3 mt-3 border-t border-zinc-100 flex items-center justify-between text-[11px]">
+            <span className="text-zinc-500">Termin 1 (DP 50%)</span>
+            <span className="text-zinc-900 font-semibold font-mono">100% Terkumpul</span>
+          </div>
         </div>
 
         {/* KPI 3: Video Production Output */}
-        <div className="p-5 bg-white border border-zinc-200/90 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.03)] space-y-2">
-          <div className="flex items-center justify-between text-xs text-zinc-500 font-medium">
-            <span>Reels Dalam Produksi</span>
-            <Film className="w-4 h-4 text-zinc-400" />
-          </div>
-          <div className="flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-bold font-inter text-zinc-950">
-              {totalReelsUsed} / {totalReelsTarget}
+        <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs hover:border-zinc-300 transition-all flex flex-col justify-between">
+          <div className="space-y-1">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
+              Kapasitas Produksi Video
             </span>
-            <DeltaBadge value={14.2} label="output" />
+            <div className="flex items-baseline gap-1.5 whitespace-nowrap pt-0.5">
+              <span className="text-2xl sm:text-3xl font-bold font-inter text-zinc-950 tracking-tight tabular-nums">
+                {totalReelsUsed}
+              </span>
+              <span className="text-zinc-300 font-light text-xl">/</span>
+              <span className="text-xl sm:text-2xl font-semibold font-inter text-zinc-400 tabular-nums">
+                {totalReelsTarget}
+              </span>
+              <span className="text-sm font-medium text-zinc-500">Reels</span>
+            </div>
+            {/* Visual subtle progress bar */}
+            <div className="pt-1.5 space-y-1">
+              <div className="w-full bg-zinc-100 rounded-full h-1.5 overflow-hidden">
+                <div
+                  className="bg-zinc-900 h-1.5 rounded-full transition-all duration-500"
+                  style={{
+                    width: `${Math.min(
+                      100,
+                      Math.round((totalReelsUsed / (totalReelsTarget || 1)) * 100)
+                    )}%`,
+                  }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-zinc-500">
+                <span>{Math.round((totalReelsUsed / (totalReelsTarget || 1)) * 100)}% kuota terpakai</span>
+                <span className="text-zinc-900 font-mono font-medium">
+                  {totalReelsTarget - totalReelsUsed} sisa slot
+                </span>
+              </div>
+            </div>
           </div>
-          <p className="text-[11px] text-zinc-400 pt-1 border-t border-zinc-100 flex items-center justify-between">
-            <span>Sisa kuota: {totalReelsTarget - totalReelsUsed} reels</span>
-            <span className="text-zinc-700 font-inter font-medium">Kapasitas 82%</span>
-          </p>
+          <div className="pt-3 mt-3 border-t border-zinc-100 flex items-center justify-between text-[11px]">
+            <span className="text-zinc-500">Jadwal Syuting Studio</span>
+            <span className="text-zinc-900 font-semibold font-mono">Sesuai Siklus</span>
+          </div>
         </div>
 
         {/* KPI 4: Approval Speed SLA */}
-        <div className="p-5 bg-white border border-zinc-200/90 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.03)] space-y-2">
-          <div className="flex items-center justify-between text-xs text-zinc-500 font-medium">
-            <span>Kecepatan Review Klien</span>
-            <Clock className="w-4 h-4 text-zinc-400" />
-          </div>
-          <div className="flex items-baseline justify-between">
-            <span className="text-2xl sm:text-3xl font-bold font-inter text-zinc-950">
-              18.2 Jam
+        <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs hover:border-zinc-300 transition-all flex flex-col justify-between">
+          <div className="space-y-1">
+            <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
+              Kecepatan Review Klien
             </span>
-            <DeltaBadge value={12.0} label="lebih cepat" />
+            <div className="flex items-baseline gap-1.5 whitespace-nowrap pt-0.5">
+              <span className="text-2xl sm:text-3xl font-bold font-inter text-zinc-950 tracking-tight tabular-nums">
+                18.2
+              </span>
+              <span className="text-sm font-medium text-zinc-500">Jam / draf</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-zinc-600 pt-0.5">
+              <span className="text-emerald-700 font-semibold font-mono text-xs">5.8 Jam</span>
+              <span className="text-zinc-400">lebih cepat dari SLA</span>
+            </div>
           </div>
-          <p className="text-[11px] text-zinc-400 pt-1 border-t border-zinc-100 flex items-center justify-between">
-            <span>SLA Target: &lt; 24 Jam</span>
-            <span className="text-emerald-700 font-semibold font-inter">94% On-Time</span>
-          </p>
+          <div className="pt-3 mt-3 border-t border-zinc-100 flex items-center justify-between text-[11px]">
+            <span className="text-zinc-500">Batas SLA: &lt; 24 Jam</span>
+            <span className="text-zinc-900 font-semibold font-mono">94% Tepat Waktu</span>
+          </div>
         </div>
       </div>
 
@@ -728,7 +768,7 @@ export function DashboardTwoExecutive({
             </div>
           ) : (
             <div className="py-8 text-center text-xs text-zinc-400">
-              Tidak ada konten yang tertahan review. Semua jadwal aman! ✓
+              Tidak ada konten yang tertahan review. Semua jadwal aman.
             </div>
           )}
 

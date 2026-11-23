@@ -122,9 +122,9 @@ export function ClientRequestModal({ onClose }: ClientRequestModalProps) {
             <label className="block text-xs font-medium text-zinc-700 mb-1.5">Platform Distribusi</label>
             <div className="flex flex-wrap gap-2">
               {[
-                { id: 'instagram' as PlatformType, label: '📸 Instagram' },
-                { id: 'tiktok' as PlatformType, label: '🎵 TikTok' },
-                { id: 'youtube_shorts' as PlatformType, label: '🔴 YouTube Shorts' }
+                { id: 'instagram' as PlatformType, label: 'Instagram Reels & Feed' },
+                { id: 'tiktok' as PlatformType, label: 'TikTok Video' },
+                { id: 'youtube_shorts' as PlatformType, label: 'YouTube Shorts' }
               ].map(p => {
                 const isSelected = platforms.includes(p.id);
                 return (

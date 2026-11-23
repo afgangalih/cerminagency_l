@@ -23,6 +23,9 @@ import { EmptyState } from '@/Components/UI/EmptyState';
 import { DashboardTwoExecutive } from '@/Components/Admin/DashboardTwoExecutive';
 import { DashboardHeader } from '@/Components/Navigation/DashboardHeader';
 import { AdminSidebar } from '@/Components/Navigation/AdminSidebar';
+import { ProfileView } from '@/Components/Views/ProfileView';
+import { AccountSettingsView } from '@/Components/Views/AccountSettingsView';
+import { RetainerPlansView } from '@/Components/Views/RetainerPlansView';
 
 interface AdminDashboardProps {
   clients?: ClientPipeline[];
@@ -71,7 +74,9 @@ function AdminContent() {
   } = useAgency();
 
   // Navigation tab
-  const [adminTab, setAdminTab] = useState<'mission_control' | 'content_engine' | 'production_mgmt' | 'finance' | 'clients' | 'brief_vault'>('mission_control');
+  const [adminTab, setAdminTab] = useState<
+    'mission_control' | 'content_engine' | 'production_mgmt' | 'finance' | 'clients' | 'brief_vault' | 'profile' | 'account_settings' | 'retainer_plans'
+  >('mission_control');
 
   // Sub-view switcher for Content Engine (Kanban vs Calendar vs IG Feed vs TikTok Feed)
   const [contentViewMode, setContentViewMode] = useState<'kanban' | 'calendar' | 'instagram_feed' | 'tiktok_feed'>('kanban');
@@ -102,7 +107,7 @@ function AdminContent() {
   // One-Click WhatsApp Dispatcher (Zero Paid API)
   const handlePingClient = (client: ClientPipeline, item: ContentItem) => {
     const text = encodeURIComponent(
-      `Halo Kak ${client.name} dari ${client.business}! 👋\n\n` +
+      `Halo Kak ${client.name} dari ${client.business}!\n\n` +
       `Tim Cermin Kreatif telah mengunggah draf konten terbaru: "${item.title}".\n` +
       `Format: ${item.type} | Jadwal Tayang: ${item.day} (${item.weekday})\n\n` +
       `Mohon luangkan 1 menit untuk meninjau dan memberikan persetujuan melalui Portal Klien agar antrean publikasi tetap tepat waktu. Terima kasih banyak!`
@@ -153,15 +158,23 @@ function AdminContent() {
             adminTab === 'content_engine' ? 'SOP Konten' :
             adminTab === 'production_mgmt' ? 'Studio Ops' :
             adminTab === 'finance' ? 'Verifikasi DP & Faktur' :
-            adminTab === 'clients' ? 'Direktori Klien' : 'Arsip Brief Masuk'
+            adminTab === 'clients' ? 'Direktori Klien' :
+            adminTab === 'brief_vault' ? 'Arsip Brief Masuk' :
+            adminTab === 'profile' ? 'Profil Akun Studio' :
+            adminTab === 'account_settings' ? 'Pengaturan Akun & Studio' :
+            'Paket Retainer & Skema Kontrak'
           }
           selectedClient={selectedClient}
+          clientPipeline={clientPipeline}
+          selectedClientId={selectedClientId}
+          setSelectedClientId={setSelectedClientId}
           onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
           onOpenSupportWidget={() => {
             const btn = document.querySelector('button[aria-label="Buka dukungan Cermin Kreatif"]') as HTMLButtonElement;
             if (btn) btn.click();
           }}
           onOpenAddClient={() => setShowAddClientModal(true)}
+          onNavigateTab={(tab) => setAdminTab(tab)}
         />
         <main className="flex-1 w-full min-w-0 p-6 sm:p-8 xl:p-10 overflow-y-auto">
           <div className="w-full max-w-7xl mx-auto space-y-8">
@@ -951,6 +964,27 @@ function AdminContent() {
                 </div>
               )}
             </div>
+          )}
+
+          {/* ========================================================
+              FULL PAGE VIEW: PROFIL AKUN STUDIO
+          ======================================================== */}
+          {adminTab === 'profile' && (
+            <ProfileView onBack={() => setAdminTab('mission_control')} />
+          )}
+
+          {/* ========================================================
+              FULL PAGE VIEW: PENGATURAN AKUN & STUDIO
+          ======================================================== */}
+          {adminTab === 'account_settings' && (
+            <AccountSettingsView onBack={() => setAdminTab('mission_control')} />
+          )}
+
+          {/* ========================================================
+              FULL PAGE VIEW: PAKET RETAINER & SKEMA KONTRAK
+          ======================================================== */}
+          {adminTab === 'retainer_plans' && (
+            <RetainerPlansView onBack={() => setAdminTab('mission_control')} />
           )}
         </div>
       </main>

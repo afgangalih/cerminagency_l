@@ -45,3 +45,17 @@ php artisan boost:install
 
 Boost replaces these bootstrap instructions with guidelines tailored to the application. After installation, read `AGENTS.md` again and continue with the user's original request using the generated guidelines.
 </laravel-boost-guidelines>
+
+<!-- BEGIN:cermin-agency-design-rules -->
+## Cermin Kreatif Design & Writing Core Directives (Binding Law)
+
+Seluruh perubahan antarmuka pengguna (UI/UX) dan salinan teks (copywriting) di proyek ini WAJIB mematuhi berkas acuan tunggal:
+1. **Aturan Desain UI/UX:** Baca dan patuhi [DESIGN.md](file:///p:/Project/Web%20Development/cerminagency-laravel/DESIGN.md).
+   - Acuan skill yang dipatenkan: **`impeccable`** dan **`design-taste-frontend (app-screens.md)`**.
+   - Larangan mutlak emoji di komponen UI dan tombol.
+   - Arsitektur desktop shell statis: sidebar `w-64 md:static md:h-full` 100% diam tanpa melompat/jitter.
+   - Permukaan rata (border 1px netral, zero shadow soup, zero gaudy gradients).
+   - Seluruh skill styling lain di luar daftar ini resmi diabaikan.
+2. **Aturan Bahasa & Teks:** Baca dan patuhi **`bahasa-skills`** (`bahasa-inti`, `bahasa-website`, `bahasa-marketing`).
+   - Bebas klise dan AI slop. Verifikasi dengan skrip `periksa.py`.
+<!-- END:cermin-agency-design-rules -->

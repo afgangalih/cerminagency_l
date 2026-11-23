@@ -10,8 +10,6 @@ import {
   CreditCard,
   LogOut,
   ChevronRight,
-  Shield,
-  Building2,
   CheckCircle2,
   Clock,
   Sparkles,
@@ -24,9 +22,13 @@ interface DashboardHeaderProps {
   role: "admin" | "client";
   activeTabTitle: string;
   selectedClient?: ClientPipeline;
+  clientPipeline?: ClientPipeline[];
+  selectedClientId?: string;
+  setSelectedClientId?: (id: string) => void;
   onOpenSupportWidget?: () => void;
   onOpenAddClient?: () => void;
   onToggleMobileMenu?: () => void;
+  onNavigateTab?: (tab: 'profile' | 'account_settings' | 'retainer_plans') => void;
 }
 
 export function DashboardHeader({
@@ -36,6 +38,7 @@ export function DashboardHeader({
   onOpenSupportWidget,
   onOpenAddClient,
   onToggleMobileMenu,
+  onNavigateTab,
 }: DashboardHeaderProps) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -117,7 +120,7 @@ export function DashboardHeader({
 
   return (
     <header className="h-16 border-b border-zinc-200/80 bg-white/95 backdrop-blur-md px-6 sm:px-8 flex items-center justify-between shrink-0 sticky top-0 z-30 shadow-2xs">
-      {/* ── Left: Breadcrumb Context ───────────────────────── */}
+      {/* ── Left: Pure Typographic Breadcrumb (No Icons, No Badges) ── */}
       <div className="flex items-center gap-2 text-xs">
         {onToggleMobileMenu && (
           <button
@@ -125,24 +128,14 @@ export function DashboardHeader({
             className="md:hidden p-1.5 -ml-2 mr-1 rounded-lg text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100 transition cursor-pointer"
             aria-label="Toggle Menu"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-5 h-5" strokeWidth={1.5} />
           </button>
         )}
-        <span className="font-semibold text-zinc-950 flex items-center gap-1.5">
-          {isRoleAdmin ? (
-            <>
-              <Shield className="w-3.5 h-3.5 text-zinc-900" />
-              <span>Operasional Studio Cermin</span>
-            </>
-          ) : (
-            <>
-              <Building2 className="w-3.5 h-3.5 text-zinc-900" />
-              <span>{selectedClient?.business || "Portal Klien"}</span>
-            </>
-          )}
+        <span className="font-semibold text-zinc-900 tracking-tight">
+          {isRoleAdmin ? "Studio Cermin" : selectedClient?.business || "Portal Klien"}
         </span>
-        <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
-        <span className="text-zinc-500 font-medium font-inter text-[11px]">
+        <ChevronRight className="w-3.5 h-3.5 text-zinc-400" strokeWidth={1.5} />
+        <span className="text-zinc-500 font-medium font-inter text-[11px] truncate">
           {activeTabTitle}
         </span>
       </div>
@@ -155,7 +148,7 @@ export function DashboardHeader({
           title={isRoleAdmin ? "Kirim Pesan Cepat" : "Buka Dukungan Cermin"}
           className="w-9 h-9 rounded-xl border border-zinc-200/90 hover:border-zinc-300 bg-white hover:bg-zinc-50 flex items-center justify-center text-zinc-600 hover:text-zinc-950 transition-all shadow-2xs"
         >
-          <Send className="w-4 h-4" />
+          <Send className="w-4 h-4" strokeWidth={1.5} />
         </button>
 
         {/* Notifications Popover */}
@@ -165,7 +158,7 @@ export function DashboardHeader({
             title="Pemberitahuan Aktivitas"
             className="w-9 h-9 rounded-xl border border-zinc-200/90 hover:border-zinc-300 bg-white hover:bg-zinc-50 flex items-center justify-center text-zinc-600 hover:text-zinc-950 transition-all shadow-2xs relative"
           >
-            <Bell className="w-4 h-4" />
+            <Bell className="w-4 h-4" strokeWidth={1.5} />
             {unreadCount > 0 && (
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
             )}
@@ -237,44 +230,51 @@ export function DashboardHeader({
 
               {/* Menu Items */}
               <div className="space-y-0.5 text-xs text-zinc-700 font-medium">
-                <Link
-                  href={isRoleAdmin ? "/admin" : "/portal"}
-                  onClick={() => setProfileOpen(false)}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-100 hover:text-zinc-950 transition"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileOpen(false);
+                    if (onNavigateTab) onNavigateTab('profile');
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-100 hover:text-zinc-950 transition cursor-pointer text-left"
                 >
-                  <User className="w-4 h-4 text-zinc-500" />
+                  <User className="w-4 h-4 text-zinc-500" strokeWidth={1.5} />
                   <span>
                     {isRoleAdmin ? "Profil Akun Studio" : "Profil Brand PIC"}
                   </span>
-                </Link>
+                </button>
 
                 <button
+                  type="button"
                   onClick={() => {
                     setProfileOpen(false);
-                    if (onOpenSupportWidget) onOpenSupportWidget();
+                    if (onNavigateTab) onNavigateTab('account_settings');
                   }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-100 hover:text-zinc-950 transition text-left"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-100 hover:text-zinc-950 transition cursor-pointer text-left"
                 >
-                  <Settings className="w-4 h-4 text-zinc-500" />
+                  <Settings className="w-4 h-4 text-zinc-500" strokeWidth={1.5} />
                   <span>
-                    {isRoleAdmin ? "Pengaturan Agensi" : "Pengaturan Notifikasi"}
+                    {isRoleAdmin ? "Pengaturan Akun & Studio" : "Pengaturan Notifikasi"}
                   </span>
                 </button>
 
                 <div className="h-px bg-zinc-100 my-1" />
 
-                <Link
-                  href={isRoleAdmin ? "/admin" : "/portal"}
-                  onClick={() => setProfileOpen(false)}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-100 hover:text-zinc-950 transition"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileOpen(false);
+                    if (onNavigateTab) onNavigateTab('retainer_plans');
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-zinc-100 hover:text-zinc-950 transition cursor-pointer text-left"
                 >
-                  <CreditCard className="w-4 h-4 text-zinc-500" />
+                  <CreditCard className="w-4 h-4 text-zinc-500" strokeWidth={1.5} />
                   <span>
                     {isRoleAdmin
                       ? "Paket Retainer & Invoices"
                       : "Paket Kontrak & Tagihan"}
                   </span>
-                </Link>
+                </button>
 
                 <div className="h-px bg-zinc-100 my-1" />
 
@@ -286,7 +286,7 @@ export function DashboardHeader({
                   onClick={() => setProfileOpen(false)}
                   className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-rose-50 text-rose-600 hover:text-rose-700 transition cursor-pointer text-left"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-4 h-4" strokeWidth={1.5} />
                   <span className="font-semibold">Log out</span>
                 </Link>
               </div>

@@ -35,7 +35,7 @@ export function ClientSidebar({
 
   const handleWhatsAppPIC = () => {
     const text = encodeURIComponent(
-      `Halo Kak Dimas (Creative Lead Cermin Kreatif)! 👋\n` +
+      `Halo Kak Dimas (Creative Lead Cermin Kreatif)!\n` +
       `Saya dari ${selectedClient.business} (${selectedClient.name}). Ingin konsultasi mengenai jadwal produksi dan draf konten bulan ini.`
     );
     window.open(`https://wa.me/6281234567890?text=${text}`, '_blank');

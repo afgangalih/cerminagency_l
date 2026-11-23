@@ -74,7 +74,7 @@ export default function Login({
             {/* Quick Demo Role Fillers */}
             <div className="mb-5 p-3 rounded-xl bg-zinc-50 border border-zinc-200/80">
                 <span className="text-[10px] font-inter uppercase text-zinc-400 block mb-2 font-medium">
-                    ⚡ Akses Cepat Demo (1-Klik Isi Kredensial)
+                    Akses Cepat Demo (1-Klik Isi Kredensial)
                 </span>
                 <div className="grid grid-cols-2 gap-2">
                     <button
@@ -82,14 +82,14 @@ export default function Login({
                         onClick={fillDemoAdmin}
                         className="py-1.5 px-2.5 rounded-lg text-[11px] font-medium bg-white border border-zinc-200 text-zinc-800 hover:bg-zinc-100 transition text-center shadow-xs cursor-pointer"
                     >
-                        👑 Tim Admin Agensi
+                        Masuk Akun Admin
                     </button>
                     <button
                         type="button"
                         onClick={fillDemoClient}
                         className="py-1.5 px-2.5 rounded-lg text-[11px] font-medium bg-white border border-zinc-200 text-zinc-800 hover:bg-zinc-100 transition text-center shadow-xs cursor-pointer"
                     >
-                        ☕ Klien (Maven Coffee)
+                        Masuk Akun Klien
                     </button>
                 </div>
             </div>
