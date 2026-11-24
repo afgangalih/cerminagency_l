@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Route;
 // 1. PUBLIC MARKETING & BRIEF ROUTES
 // ============================================================================
 Route::get('/', [MarketingController::class, 'index'])->name('home');
+Route::get('/services/{slug}', [\App\Http\Controllers\ServiceController::class, 'show'])->name('services.show');
+Route::get('/services/{parentSlug}/{subSlug}', [\App\Http\Controllers\ServiceController::class, 'subShow'])->name('services.sub');
 Route::post('/brief/submit', [MarketingController::class, 'submitBrief'])->name('brief.submit');
 
 // ============================================================================

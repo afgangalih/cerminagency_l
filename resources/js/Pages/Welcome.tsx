@@ -41,8 +41,8 @@ export default function Welcome() {
         {/* 7. Our Services (Dark Section #121212) */}
         <OurServicesDarkSection />
 
-        {/* 8. Retainer Packages & Transparent Pricing */}
-        <PricingSection />
+        {/* 8. Retainer Packages & Transparent Pricing (Disimpan aman, dinonaktifkan sementara sesuai permintaan klien) */}
+        {/* <PricingSection /> */}
 
         {/* 9. Client Testimonials & Big Metrics Ribbon (94% Retensi & 18.2 Jam SLA) */}
         <TestimonialsMetricsSection />

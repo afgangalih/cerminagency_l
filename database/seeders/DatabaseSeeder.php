@@ -363,5 +363,8 @@ class DatabaseSeeder extends Seeder
             'shooter' => 'Farhan',
             'raw_folder_url' => 'https://drive.google.com',
         ]);
+
+        // 8. Public Dynamic Services
+        $this->call(ServiceSeeder::class);
     }
 }

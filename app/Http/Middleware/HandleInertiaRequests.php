@@ -34,6 +34,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'nav_services' => fn () => \App\Models\Service::active()->get(['id', 'title', 'slug', 'badge']),
         ];
     }
 }

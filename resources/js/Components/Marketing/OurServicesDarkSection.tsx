@@ -1,11 +1,13 @@
 'use client';
 
 import React from 'react';
+import { Link } from '@inertiajs/react';
 import { Share2, Video, Palette, ArrowRight, CheckCircle2, ChevronRight } from 'lucide-react';
 
 export function OurServicesDarkSection() {
   const services = [
     {
+      slug: 'social-media-management',
       title: 'Social Media Management',
       tag: 'End-to-End Retainer',
       icon: Share2,
@@ -16,9 +18,10 @@ export function OurServicesDarkSection() {
         'Penulisan naskah, hook engaging & copywriting caption',
         'Distribusi konten berkala & laporan analisis performa',
       ],
-      linkText: 'Konsultasi Social Media',
+      linkText: 'Pelajari Social Media Management',
     },
     {
+      slug: 'instagram-tiktok-feeds',
       title: 'Instagram & TikTok Feeds',
       tag: 'Video Production 9:16',
       icon: Video,
@@ -29,9 +32,10 @@ export function OurServicesDarkSection() {
         'Editing dinamis, sound design & color grading sinematik',
         'Standar format 9:16 vertikal dengan SLA revisi teratur',
       ],
-      linkText: 'Produksi Video Feeds',
+      linkText: 'Pelajari Instagram & TikTok Feeds',
     },
     {
+      slug: 'graphic-design',
       title: 'Graphic Design',
       tag: 'Visual Identity & Grid 3x3',
       icon: Palette,
@@ -42,7 +46,7 @@ export function OurServicesDarkSection() {
         'Penyusunan palet warna, tipografi & visual branding',
         'Simulasi feed 3x3 tertata rapi sebelum tayang publik',
       ],
-      linkText: 'Lihat Desain Grafis',
+      linkText: 'Pelajari Graphic Design',
     },
   ];
 
@@ -110,13 +114,13 @@ export function OurServicesDarkSection() {
                 </div>
 
                 <div className="pt-8">
-                  <a
-                    href="#brief-section"
+                  <Link
+                    href={`/services/${item.slug}`}
                     className="w-full py-2.5 rounded-xl bg-blue-50/70 hover:bg-[#01A0CA] text-[#01A0CA] hover:text-white text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer shadow-2xs group-hover:bg-[#01A0CA] group-hover:text-white"
                   >
                     <span>{item.linkText}</span>
                     <ChevronRight className="w-3.5 h-3.5" />
-                  </a>
+                  </Link>
                 </div>
               </div>
             );

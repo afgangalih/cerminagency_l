@@ -122,13 +122,13 @@ export function MarketingNav() {
               </button>
             </div>
 
-            {/* Direct Link: Paket Retainer */}
+            {/* Direct Link: Konsultasi / Brief */}
             <a 
-              href="#pricing" 
+              href="#brief-section" 
               className="px-4 py-2 rounded-lg hover:text-[#01A0CA] hover:bg-zinc-50 transition"
               onMouseEnter={() => setActiveMenu(null)}
             >
-              Paket Retainer
+              Konsultasi
             </a>
           </nav>
 
@@ -245,89 +245,93 @@ export function MarketingNav() {
 
                     <ul className="space-y-1.5 text-xs font-medium text-zinc-700">
                       <li>
-                        <a 
-                          href="#services" 
+                        <Link 
+                          href="/services/social-media-management" 
                           onClick={() => setActiveMenu(null)} 
-                          className="flex items-center justify-between hover:text-[#01A0CA] transition py-1 group"
+                          className="flex items-center justify-between hover:text-[#01A0CA] transition py-1 group font-bold text-zinc-900"
                         >
-                          <span className="group-hover:translate-x-0.5 transition-transform">Social Media Management</span>
+                          <span className="group-hover:translate-x-0.5 transition-transform text-[#01A0CA]">Social Media Management</span>
                           <CheckCircle className="w-3.5 h-3.5 text-[#01A0CA] shrink-0" />
-                        </a>
+                        </Link>
                       </li>
                       <li>
-                        <a 
-                          href="#services" 
+                        <Link 
+                          href="/services/social-media-management" 
                           onClick={() => setActiveMenu(null)} 
                           className="block hover:text-[#01A0CA] transition py-1 hover:translate-x-0.5"
                         >
                           Perencanaan Kalender Konten
-                        </a>
+                        </Link>
                       </li>
                       <li>
-                        <a 
-                          href="#services" 
+                        <Link 
+                          href="/services/social-media-management" 
                           onClick={() => setActiveMenu(null)} 
                           className="block hover:text-[#01A0CA] transition py-1 hover:translate-x-0.5"
                         >
                           Copywriting Naskah &amp; Captions
-                        </a>
+                        </Link>
                       </li>
                       <li>
-                        <a 
-                          href="#services" 
+                        <Link 
+                          href="/services/social-media-management" 
                           onClick={() => setActiveMenu(null)} 
                           className="block hover:text-[#01A0CA] transition py-1 hover:translate-x-0.5"
                         >
                           Pelaporan &amp; Analisis Insight
-                        </a>
+                        </Link>
                       </li>
                     </ul>
                   </div>
 
-                  {/* Top-Right: Branding & Graphic Design */}
+                  {/* Top-Right: Graphic Design */}
                   <div>
                     <div className="flex items-center gap-2 mb-3 h-6">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-[#01A0CA] text-white uppercase tracking-wider">
+                        All
+                      </span>
                       <h4 className="font-bold text-sm text-[#01A0CA]">
-                        Branding &amp; Graphic Design
+                        Graphic Design
                       </h4>
                     </div>
 
                     <ul className="space-y-1.5 text-xs font-medium text-zinc-700">
                       <li>
-                        <a 
-                          href="#services" 
+                        <Link 
+                          href="/services/graphic-design" 
+                          onClick={() => setActiveMenu(null)} 
+                          className="flex items-center justify-between hover:text-[#01A0CA] transition py-1 group font-bold text-zinc-900"
+                        >
+                          <span className="group-hover:translate-x-0.5 transition-transform text-[#01A0CA]">Graphic Design</span>
+                          <CheckCircle className="w-3.5 h-3.5 text-[#01A0CA] shrink-0" />
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          href="/services/graphic-design" 
                           onClick={() => setActiveMenu(null)} 
                           className="block hover:text-[#01A0CA] transition py-1 hover:translate-x-0.5"
                         >
-                          Graphic Design &amp; Grid Feed (3x3)
-                        </a>
+                          Grid Feed (3x3 Puzzle &amp; Feeds)
+                        </Link>
                       </li>
                       <li>
-                        <a 
-                          href="#services" 
+                        <Link 
+                          href="/services/graphic-design" 
                           onClick={() => setActiveMenu(null)} 
                           className="block hover:text-[#01A0CA] transition py-1 hover:translate-x-0.5"
                         >
                           Desain Cover Reels &amp; Story Template
-                        </a>
+                        </Link>
                       </li>
                       <li>
-                        <a 
-                          href="#services" 
+                        <Link 
+                          href="/services/graphic-design" 
                           onClick={() => setActiveMenu(null)} 
                           className="block hover:text-[#01A0CA] transition py-1 hover:translate-x-0.5"
                         >
                           Identitas Visual &amp; Brandbook
-                        </a>
-                      </li>
-                      <li>
-                        <a 
-                          href="#services" 
-                          onClick={() => setActiveMenu(null)} 
-                          className="block hover:text-[#01A0CA] transition py-1 hover:translate-x-0.5"
-                        >
-                          Desain Carousel Edukasi &amp; Promo
-                        </a>
+                        </Link>
                       </li>
                     </ul>
                   </div>
@@ -369,13 +373,14 @@ export function MarketingNav() {
                     </h5>
                     <ul className="space-y-1.5 text-xs text-zinc-600 font-medium">
                       <li>
-                        <a 
-                          href="#works" 
+                        <Link 
+                          href="/services/instagram-tiktok-feeds" 
                           onClick={() => setActiveMenu(null)} 
-                          className="block hover:text-[#01A0CA] transition py-1 hover:translate-x-0.5"
+                          className="flex items-center justify-between hover:text-[#01A0CA] transition py-1 group font-bold text-zinc-900"
                         >
-                          Instagram &amp; TikTok Feeds (9:16 4K)
-                        </a>
+                          <span className="group-hover:translate-x-0.5 transition-transform text-[#01A0CA]">Instagram &amp; TikTok Feeds</span>
+                          <CheckCircle className="w-3.5 h-3.5 text-[#01A0CA] shrink-0" />
+                        </Link>
                       </li>
                       <li>
                         <a 
@@ -547,10 +552,10 @@ export function MarketingNav() {
                 </button>
                 {mobileSubMenu === 'services' && (
                   <div className="pl-4 py-2 space-y-2 text-xs text-zinc-600 bg-zinc-50 rounded-lg">
-                    <a href="#services" onClick={() => setMobileOpen(false)} className="block py-1">Social Media Management</a>
-                    <a href="#works" onClick={() => setMobileOpen(false)} className="block py-1">Instagram & TikTok Feeds (9:16)</a>
-                    <a href="#services" onClick={() => setMobileOpen(false)} className="block py-1">Graphic Design & Feeds 3x3</a>
-                    <a href="#about" onClick={() => setMobileOpen(false)} className="block py-1">Studio Syuting Fisik (Malang)</a>
+                    <Link href="/services/social-media-management" onClick={() => setMobileOpen(false)} className="block py-1 hover:text-[#01A0CA] font-semibold">Social Media Management</Link>
+                    <Link href="/services/instagram-tiktok-feeds" onClick={() => setMobileOpen(false)} className="block py-1 hover:text-[#01A0CA] font-semibold">Instagram &amp; TikTok Feeds</Link>
+                    <Link href="/services/graphic-design" onClick={() => setMobileOpen(false)} className="block py-1 hover:text-[#01A0CA] font-semibold">Graphic Design</Link>
+                    <a href="#about" onClick={() => setMobileOpen(false)} className="block py-1 text-zinc-500">Studio Syuting Fisik (Malang)</a>
                   </div>
                 )}
               </div>
@@ -576,8 +581,8 @@ export function MarketingNav() {
               </div>
 
               {/* Direct links */}
-              <a href="#pricing" onClick={() => setMobileOpen(false)} className="block py-2.5">
-                Paket Retainer
+              <a href="#brief-section" onClick={() => setMobileOpen(false)} className="block py-2.5">
+                Konsultasi Layanan
               </a>
               <Link href="/portal" onClick={() => setMobileOpen(false)} className="block py-2.5 text-zinc-600">
                 Client Portal Demo

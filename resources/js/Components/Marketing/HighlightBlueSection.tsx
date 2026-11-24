@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Link } from '@inertiajs/react';
 import { ChevronRight } from 'lucide-react';
 
 export function HighlightBlueSection() {
@@ -9,7 +10,7 @@ export function HighlightBlueSection() {
       title: 'Social Media Management',
       subtitle: 'Customized Content Strategy',
       buttonText: 'Selengkapnya',
-      href: '#services',
+      href: '/services/social-media-management',
       // Card 1: 3D Calendar Illustration
       visual: (
         <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center">
@@ -63,7 +64,7 @@ export function HighlightBlueSection() {
       title: 'Instagram & TikTok Feeds',
       subtitle: 'Video Vertikal 9:16 4K',
       buttonText: 'Selengkapnya',
-      href: '#works',
+      href: '/services/instagram-tiktok-feeds',
       // Card 2: 3D Floating Social Media / App Icons (Instagram, TikTok, YouTube, Facebook)
       visual: (
         <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center">
@@ -97,10 +98,10 @@ export function HighlightBlueSection() {
       ),
     },
     {
-      title: 'Graphic Design (3x3)',
+      title: 'Graphic Design',
       subtitle: 'Identitas & Grid Feed',
       buttonText: 'Selengkapnya',
-      href: '#services',
+      href: '/services/graphic-design',
       // Card 3: 3D Grid 3x3 + Alert / Approval Bubble
       visual: (
         <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center">
@@ -178,13 +179,13 @@ export function HighlightBlueSection() {
                   </div>
 
                   <div>
-                    <a
+                    <Link
                       href={card.href}
                       className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#141B2D] hover:bg-[#0A0F1A] text-white text-xs font-bold transition shadow-xs group-hover:bg-[#01A0CA]"
                     >
                       <span>{card.buttonText}</span>
                       <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                    </a>
+                    </Link>
                   </div>
                 </div>
 

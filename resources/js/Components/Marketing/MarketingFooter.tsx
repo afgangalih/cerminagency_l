@@ -133,23 +133,23 @@ export function MarketingFooter() {
 
             <ul className="space-y-3.5 text-sm font-medium text-zinc-600">
               <li>
-                <a href="#services" className="hover:text-[#01A0CA] transition-colors">
+                <Link href="/services/social-media-management" className="hover:text-[#01A0CA] transition-colors">
                   Social Media Management
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#services" className="hover:text-[#01A0CA] transition-colors">
-                  Instagram &amp; TikTok Feeds (9:16)
-                </a>
+                <Link href="/services/instagram-tiktok-feeds" className="hover:text-[#01A0CA] transition-colors">
+                  Instagram &amp; TikTok Feeds
+                </Link>
               </li>
               <li>
-                <a href="#services" className="hover:text-[#01A0CA] transition-colors">
-                  Graphic Design &amp; Feeds 3×3
-                </a>
+                <Link href="/services/graphic-design" className="hover:text-[#01A0CA] transition-colors">
+                  Graphic Design
+                </Link>
               </li>
               <li>
-                <a href="#pricing" className="hover:text-[#01A0CA] transition-colors">
-                  Paket Retainer Bulanan
+                <a href="#brief-section" className="hover:text-[#01A0CA] transition-colors">
+                  Konsultasi Layanan
                 </a>
               </li>
               <li>
