@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use App\Models\Invoice;
+use App\Models\Portfolio;
+use App\Models\PortfolioCategory;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,7 +18,37 @@ class MarketingController extends Controller
      */
     public function index(): Response
     {
-        return Inertia::render('Welcome');
+        $portfolios = Portfolio::active()
+            ->with('category:slug,name,short_label')
+            ->get();
+
+        $portfolioCategories = PortfolioCategory::active()
+            ->withCount(['portfolios' => fn ($query) => $query->where('is_active', true)])
+            ->get(['id', 'slug', 'name', 'short_label', 'icon_name', 'service_slug']);
+
+        return Inertia::render('Welcome', [
+            'portfolios' => $portfolios,
+            'portfolioCategories' => $portfolioCategories,
+        ]);
+    }
+
+    /**
+     * JSON fallback endpoint for landing portfolio showcase (resilient across HMR/partial states).
+     */
+    public function featuredPortfolios(): JsonResponse
+    {
+        $portfolios = Portfolio::active()
+            ->with('category:slug,name,short_label')
+            ->get();
+
+        $portfolioCategories = PortfolioCategory::active()
+            ->withCount(['portfolios' => fn ($query) => $query->where('is_active', true)])
+            ->get(['id', 'slug', 'name', 'short_label', 'icon_name', 'service_slug']);
+
+        return response()->json([
+            'portfolios' => $portfolios,
+            'categories' => $portfolioCategories,
+        ]);
     }
 
     /**

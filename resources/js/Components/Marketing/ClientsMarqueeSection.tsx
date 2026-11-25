@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { Link } from '@inertiajs/react';
 import { ChevronRight } from 'lucide-react';
 
 interface ClientLogo {
@@ -143,14 +144,14 @@ export function ClientsMarqueeSection() {
 
       {/* Bottom CTA Pill button */}
       <div className="flex justify-center pt-10 md:pt-12">
-        <a
-          href="#works"
+        <Link
+          href="/our-clients"
           className="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full border border-[#e7eaf3] bg-white text-[13px] md:text-sm shadow-xs hover:border-[#01A0CA] transition group cursor-pointer"
         >
           <span className="text-[#677788]">Lihat selengkapnya</span>
           <span className="font-semibold text-[#01A0CA]">Our Clients</span>
           <ChevronRight className="w-3.5 h-3.5 text-[#01A0CA] group-hover:translate-x-0.5 transition-transform" />
-        </a>
+        </Link>
       </div>
     </section>
   );

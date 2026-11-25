@@ -364,7 +364,11 @@ class DatabaseSeeder extends Seeder
             'raw_folder_url' => 'https://drive.google.com',
         ]);
 
-        // 8. Public Dynamic Services
-        $this->call(ServiceSeeder::class);
+        // 8. Public Dynamic Services, Portfolios & Client Stories
+        $this->call([
+            ServiceSeeder::class,
+            PortfolioSeeder::class,
+            ClientStorySeeder::class,
+        ]);
     }
 }

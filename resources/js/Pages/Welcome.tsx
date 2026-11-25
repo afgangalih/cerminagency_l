@@ -1,6 +1,7 @@
 import React from 'react';
 import { Head } from '@inertiajs/react';
 import { AgencyProvider } from '@/context/AgencyContext';
+import { PortfolioCategoryItem, PortfolioItem } from '@/types/portfolio';
 import { MarketingNav } from '@/Components/Marketing/MarketingNav';
 import { HeroSection } from '@/Components/Marketing/HeroSection';
 import { HighlightBlueSection } from '@/Components/Marketing/HighlightBlueSection';
@@ -15,7 +16,12 @@ import { BriefFormSection } from '@/Components/Marketing/BriefFormSection';
 import { FaqSection } from '@/Components/Marketing/FaqSection';
 import { MarketingFooter } from '@/Components/Marketing/MarketingFooter';
 
-export default function Welcome() {
+interface WelcomeProps {
+  portfolios?: PortfolioItem[];
+  portfolioCategories?: PortfolioCategoryItem[];
+}
+
+export default function Welcome({ portfolios = [], portfolioCategories = [] }: WelcomeProps) {
   return (
     <AgencyProvider>
       <Head title="Cermin Kreatif — Studio Produksi Video & Retainer Agensi Indonesia" />
@@ -35,8 +41,8 @@ export default function Welcome() {
         {/* 5. Diverse Experience - Client Brand Marquee (3 Rows Infinite Animation) */}
         <ClientsMarqueeSection />
 
-        {/* 6. Our Works (Category Sidebar + 6 Vertical Video Cards 9:16) */}
-        <OurWorksSection />
+        {/* 6. Our Works (Dynamic Portfolio Showcase from MySQL) */}
+        <OurWorksSection portfolios={portfolios} categories={portfolioCategories} />
 
         {/* 7. Our Services (Dark Section #121212) */}
         <OurServicesDarkSection />

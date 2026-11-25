@@ -75,14 +75,6 @@ export function MarketingFooter() {
               </div>
             </div>
 
-            {/* Operating Hours under Map */}
-            <div className="flex items-center gap-2 text-xs text-zinc-600 font-medium pt-1">
-              <Clock className="w-3.5 h-3.5 text-zinc-800 shrink-0" />
-              <span>
-                Online Setiap Hari:{' '}
-                <strong className="font-semibold text-zinc-900">09.00 s/d 21.00 WIB.</strong>
-              </span>
-            </div>
           </div>
 
           {/* ================= COLUMN 2: Company (span 2) ================= */}
@@ -101,25 +93,19 @@ export function MarketingFooter() {
                   Contact Us
                 </a>
               </li>
-              <li className="flex items-center gap-2">
-                <a href="#works" className="hover:text-[#01A0CA] transition-colors">Portfolio</a>
-                <span className="px-1.5 py-0.5 text-[9px] font-bold tracking-wider rounded uppercase bg-[#121212] text-white leading-none">
-                  Update
-                </span>
+              <li>
+                <Link href="/portfolio" className="hover:text-[#01A0CA] transition-colors">Portfolio</Link>
               </li>
               <li>
-                <a href="#pricing" className="text-[#01A0CA] hover:underline font-semibold transition-colors">
+                <a href="#pricing" className="hover:text-[#01A0CA] transition-colors">
                   Partnership
                 </a>
               </li>
               <li>
                 <a href="#about" className="hover:text-[#01A0CA] transition-colors">Careers</a>
               </li>
-              <li className="flex items-center gap-2">
+              <li>
                 <a href="#faq" className="hover:text-[#01A0CA] transition-colors">Blog</a>
-                <span className="px-1.5 py-0.5 text-[9px] font-semibold tracking-wider rounded uppercase bg-blue-50 text-[#01A0CA] border border-[#01A0CA]/20 leading-none">
-                  Insight
-                </span>
               </li>
             </ul>
           </div>
@@ -333,15 +319,11 @@ export function MarketingFooter() {
           </div>
         </div>
 
-        {/* Copyright & DJKI Legal Bar */}
+        {/* Copyright Bar */}
         <div className="mt-4 pt-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-[11px] text-zinc-400">
           <p>
             Cermin Kreatif adalah merek milik PT Cermin Kreatif Studio Media © 2026
           </p>
-          <div className="flex items-center gap-1.5 text-[#01A0CA] font-medium">
-            <CheckCircle2 className="w-3.5 h-3.5 fill-[#01A0CA] text-white shrink-0" />
-            <span>Terdaftar pada Direktorat Jenderal Kekayaan Intelektual (DJKI).</span>
-          </div>
         </div>
 
       </div>

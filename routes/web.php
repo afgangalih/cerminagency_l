@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ClientPortalController;
 use App\Http\Controllers\MarketingController;
+use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +18,9 @@ use Illuminate\Support\Facades\Route;
 // 1. PUBLIC MARKETING & BRIEF ROUTES
 // ============================================================================
 Route::get('/', [MarketingController::class, 'index'])->name('home');
+Route::get('/api/portfolios/featured', [MarketingController::class, 'featuredPortfolios'])->name('api.portfolios.featured');
+Route::get('/portfolio', [PortfolioController::class, 'index'])->name('portfolio.index');
+Route::get('/our-clients', [ClientController::class, 'index'])->name('clients.index');
 Route::get('/services/{slug}', [\App\Http\Controllers\ServiceController::class, 'show'])->name('services.show');
 Route::get('/services/{parentSlug}/{subSlug}', [\App\Http\Controllers\ServiceController::class, 'subShow'])->name('services.sub');
 Route::post('/brief/submit', [MarketingController::class, 'submitBrief'])->name('brief.submit');

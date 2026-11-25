@@ -432,9 +432,9 @@ export function MarketingNav() {
                       </a>
                     </li>
                     <li>
-                      <a href="#testimonials" onClick={() => setActiveMenu(null)} className="hover:text-[#01A0CA] transition block">
+                      <Link href="/our-clients" onClick={() => setActiveMenu(null)} className="hover:text-[#01A0CA] transition block">
                         Our Clients
-                      </a>
+                      </Link>
                     </li>
                     <li>
                       <a href="#pricing" onClick={() => setActiveMenu(null)} className="hover:text-[#01A0CA] transition block">
@@ -445,26 +445,20 @@ export function MarketingNav() {
 
                   {/* Right Column */}
                   <ul className="space-y-2.5 font-medium text-xs">
-                    <li className="flex items-center gap-2">
-                      <a href="#works" onClick={() => setActiveMenu(null)} className="hover:text-[#01A0CA] transition">
+                    <li>
+                      <Link href="/portfolio" onClick={() => setActiveMenu(null)} className="hover:text-[#01A0CA] transition block">
                         Portfolio
-                      </a>
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-[#121212] text-white">
-                        Update
-                      </span>
+                      </Link>
                     </li>
                     <li>
                       <a href="#about" onClick={() => setActiveMenu(null)} className="hover:text-[#01A0CA] transition block">
                         Careers
                       </a>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <a href="#faq" onClick={() => setActiveMenu(null)} className="hover:text-[#01A0CA] transition">
+                    <li>
+                      <a href="#faq" onClick={() => setActiveMenu(null)} className="hover:text-[#01A0CA] transition block">
                         Blog
                       </a>
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-[#01A0CA]/10 text-[#01A0CA] border border-[#01A0CA]/20">
-                        Insight
-                      </span>
                     </li>
                   </ul>
                 </div>

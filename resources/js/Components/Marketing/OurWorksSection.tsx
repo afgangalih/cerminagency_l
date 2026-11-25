@@ -1,186 +1,226 @@
 'use client';
 
-import React, { useState } from 'react';
-import { ArrowUpRight, Play, Sparkles } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from '@inertiajs/react';
+import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import { PortfolioCategoryItem, PortfolioItem } from '@/types/portfolio';
+import { PortfolioDetailModal } from '@/Components/Portfolio/PortfolioDetailModal';
 
-interface ProjectItem {
-  id: number;
-  title: string;
-  category: string;
-  categoryKey: string;
-  thumbnail: string;
-  format: string;
-  stats: string;
+interface OurWorksSectionProps {
+  portfolios?: PortfolioItem[];
+  categories?: PortfolioCategoryItem[];
 }
 
-export function OurWorksSection() {
+export function OurWorksSection({ portfolios = [], categories = [] }: OurWorksSectionProps) {
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
+  const [items, setItems] = useState<PortfolioItem[]>(portfolios);
+  const [categoryList, setCategoryList] = useState<PortfolioCategoryItem[]>(categories);
+  const hasFetchedFallback = useRef(false);
 
-  const categories = [
-    { key: 'all', label: 'Featured (Highlight 10+)' },
-    { key: 'fnb', label: 'Food & Beverage' },
-    { key: 'beauty', label: 'Skincare & Klinik' },
-    { key: 'lifestyle', label: 'Fashion & Lifestyle' },
-    { key: 'commercial', label: 'Brand Commercial' },
-  ];
+  useEffect(() => {
+    if (portfolios.length > 0) {
+      setItems(portfolios);
+    }
+  }, [portfolios]);
 
-  const projects: ProjectItem[] = [
-    {
-      id: 1,
-      title: 'Maven Coffee Roasters',
-      category: 'Specialty Coffee & F&B',
-      categoryKey: 'fnb',
-      thumbnail: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop&q=80',
-      format: '12 Reels + 8 Post Feed',
-      stats: '142K+ Views Organik',
-    },
-    {
-      id: 2,
-      title: 'Lumen Skin Clinic',
-      category: 'Estetika Medis & Beauty',
-      categoryKey: 'beauty',
-      thumbnail: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=800&auto=format&fit=crop&q=80',
-      format: '20 Reels Edukasi Dokter',
-      stats: '89K+ Interaksi Klien',
-    },
-    {
-      id: 3,
-      title: 'Arche Streetwear & Denim',
-      category: 'Urban Fashion & Lifestyle',
-      categoryKey: 'lifestyle',
-      thumbnail: 'https://images.unsplash.com/photo-1523381294911-8d3cead13475?w=800&auto=format&fit=crop&q=80',
-      format: 'Lookbook Video 9:16',
-      stats: '2.4x Kenaikan Konversi',
-    },
-    {
-      id: 4,
-      title: 'The Daily Matcha House',
-      category: 'Kafe Modern & Pastry',
-      categoryKey: 'fnb',
-      thumbnail: 'https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=800&auto=format&fit=crop&q=80',
-      format: '8 Reels Menu Seasonal',
-      stats: '95K+ Engagement',
-    },
-    {
-      id: 5,
-      title: 'Djelajah Outdoor Living',
-      category: 'Peralatan Petualang & Apparel',
-      categoryKey: 'lifestyle',
-      thumbnail: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800&auto=format&fit=crop&q=80',
-      format: 'Cinematic Drone & Macro',
-      stats: 'Trending TikTok Explore',
-    },
-    {
-      id: 6,
-      title: 'Kopi Padas Nusantara',
-      category: 'Roastery & Retail Beans',
-      categoryKey: 'commercial',
-      thumbnail: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&auto=format&fit=crop&q=80',
-      format: 'Company Profile & Campaign',
-      stats: '350K+ Jangkauan Nasional',
-    },
-  ];
+  useEffect(() => {
+    if (categories.length > 0) {
+      setCategoryList(categories);
+    }
+  }, [categories]);
 
-  const filteredProjects = activeCategory === 'all'
-    ? projects
-    : projects.filter(p => p.categoryKey === activeCategory);
+  // JSON fallback when rendered via HMR without full Inertia page reload
+  useEffect(() => {
+    if (portfolios.length === 0 && !hasFetchedFallback.current) {
+      hasFetchedFallback.current = true;
+      fetch('/api/portfolios/featured')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.portfolios) setItems(data.portfolios);
+          if (data?.categories) setCategoryList(data.categories);
+        })
+        .catch(() => {
+          // Silent fallback
+        });
+    }
+  }, [portfolios.length]);
+
+  const visibleProjects = useMemo(() => {
+    const filtered =
+      activeCategory === 'all'
+        ? items.filter((p) => p.is_featured)
+        : items.filter((p) => p.category_slug === activeCategory);
+
+    // Fallback to top 6 active portfolios if no featured flag matched
+    const source = filtered.length > 0 ? filtered : items;
+    return source.slice(0, 6);
+  }, [activeCategory, items]);
+
+  const filterItems = useMemo(() => {
+    const featuredCount = items.filter((p) => p.is_featured).length || items.length;
+    return [
+      {
+        slug: 'all',
+        label: 'Featured Works',
+        count: Math.min(featuredCount, 6),
+      },
+      ...categoryList.map((cat) => ({
+        slug: cat.slug,
+        label: cat.short_label || cat.name,
+        count: cat.portfolios_count ?? items.filter((p) => p.category_slug === cat.slug).length,
+      })),
+    ];
+  }, [categoryList, items]);
 
   return (
-    <section id="our-works" className="py-20 md:py-28 bg-zinc-50/60 border-b border-zinc-200/80">
+    <section id="our-works" className="py-20 md:py-24 bg-zinc-50/70 border-b border-zinc-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <span className="text-xs font-mono uppercase tracking-widest text-[#01A0CA] font-semibold">
-            SELECTED PORTFOLIO
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#121212]">
-            Our Works & Showreels
-          </h2>
-          <p className="text-sm sm:text-base text-zinc-600 font-normal">
-            Beberapa hasil karya video vertikal dan kampanye media sosial yang kami rancang bersama mitra brand di seluruh Indonesia.
-          </p>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-2.5 max-w-2xl">
+            <p className="text-xs font-mono uppercase tracking-widest text-[#01A0CA] font-bold">
+              Selected Portfolio
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#121212]">
+              Our Works &amp; Showreels
+            </h2>
+            <p className="text-sm sm:text-base text-zinc-600 font-normal leading-relaxed">
+              Hasil karya manajemen media sosial, video vertikal 9:16, dan desain visual yang kami kerjakan bersama mitra brand di Indonesia.
+            </p>
+          </div>
+
+          <Link
+            href="/portfolio"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-zinc-200 bg-white hover:border-[#01A0CA] hover:text-[#01A0CA] text-[#121212] text-xs font-bold shadow-2xs transition shrink-0 self-start md:self-auto"
+          >
+            <span>Lihat Semua Portofolio ({items.length})</span>
+            <ArrowRight className="w-4 h-4 text-[#01A0CA]" />
+          </Link>
         </div>
 
-        {/* 2-Column Layout (Figma Style: Sidebar Category on Left, Grid on Right) */}
+        {/* Mobile/Tablet Horizontal Filter Chips */}
+        <div className="flex lg:hidden items-center gap-2 overflow-x-auto pb-2 -mx-4 px-4">
+          {filterItems.map((item) => {
+            const isActive = activeCategory === item.slug;
+            return (
+              <button
+                key={item.slug}
+                type="button"
+                onClick={() => setActiveCategory(item.slug)}
+                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer shrink-0 ${
+                  isActive
+                    ? 'bg-[#01A0CA] text-white shadow-sm shadow-[#01A0CA]/25'
+                    : 'bg-white border border-zinc-200 text-zinc-600 hover:border-[#01A0CA] hover:text-[#01A0CA]'
+                }`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* 2-Column Desktop Layout: Category Sidebar + 6 Clean Project Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* SISI KIRI: Sidebar Category Filter */}
-          <div className="lg:col-span-3 bg-white rounded-2xl border border-zinc-200/80 p-3 shadow-xs space-y-1">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 px-3 py-1 block">
-              Kategori Industri
-            </span>
-            {categories.map((cat) => {
-              const isActive = activeCategory === cat.key;
+          {/* Desktop Sidebar Filter */}
+          <aside className="hidden lg:block lg:col-span-3 bg-white rounded-2xl border border-zinc-200/80 p-3 shadow-xs space-y-1">
+            <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-400 px-3 py-2">
+              Kategori Layanan
+            </p>
+
+            {filterItems.map((item) => {
+              const isActive = activeCategory === item.slug;
               return (
                 <button
-                  key={cat.key}
-                  onClick={() => setActiveCategory(cat.key)}
-                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center justify-between ${
+                  key={item.slug}
+                  type="button"
+                  onClick={() => setActiveCategory(item.slug)}
+                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center justify-between gap-2 ${
                     isActive
-                      ? 'bg-[#121212] text-white shadow-xs'
-                      : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
+                      ? 'bg-[#01A0CA] text-white shadow-sm shadow-[#01A0CA]/20'
+                      : 'text-zinc-600 hover:text-[#01A0CA] hover:bg-[#01A0CA]/5'
                   }`}
                 >
-                  <span>{cat.label}</span>
-                  {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#01A0CA]" />}
+                  <span className="truncate">{item.label}</span>
+                  <span
+                    className={`text-[10px] font-mono px-2 py-0.5 rounded-md shrink-0 ${
+                      isActive
+                        ? 'bg-white/20 text-white font-bold'
+                        : 'bg-zinc-100 text-zinc-500'
+                    }`}
+                  >
+                    {item.count}
+                  </span>
                 </button>
               );
             })}
-          </div>
 
-          {/* SISI KANAN: Project Cards Grid (6 Projects) */}
-          <div className="lg:col-span-9 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((project) => (
-              <div
-                key={project.id}
-                className="bg-white rounded-2xl border border-zinc-200/80 overflow-hidden shadow-xs hover:shadow-md transition duration-300 group flex flex-col justify-between"
+            <div className="pt-3 mt-2 border-t border-zinc-100 px-1">
+              <Link
+                href="/portfolio"
+                className="w-full px-3 py-2.5 rounded-xl text-xs font-bold text-[#01A0CA] hover:bg-[#01A0CA]/5 flex items-center justify-between transition"
               >
-                <div>
-                  <div className="relative aspect-[4/3] bg-zinc-950 overflow-hidden">
-                    <img
-                      src={project.thumbnail}
-                      alt={project.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500 opacity-90"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                    <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-xs text-[10px] font-mono text-white font-medium">
-                      {project.format}
-                    </div>
-                    <div className="absolute bottom-2.5 left-3 text-white">
-                      <span className="text-[10px] font-mono text-[#01A0CA] block uppercase font-semibold">
-                        {project.stats}
+                <span>Eksplorasi Arsip Lengkap</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </aside>
+
+          {/* Project Cards Grid (Clean Image + High-Contrast Text Block Below) */}
+          <div className="lg:col-span-9 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {visibleProjects.map((project) => (
+              <article
+                key={project.id}
+                onClick={() => setSelectedItem(project)}
+                className="bg-white rounded-2xl border border-zinc-200/90 overflow-hidden shadow-2xs hover:border-[#01A0CA]/60 hover:shadow-lg transition-all duration-200 group flex flex-col cursor-pointer"
+              >
+                {/* Clean Image Frame (No distracting text/pills colliding over photo) */}
+                <div className="relative aspect-[16/10] bg-zinc-100 overflow-hidden">
+                  <img
+                    src={project.thumbnail_url}
+                    alt={`${project.client_name} - ${project.title}`}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                  />
+                </div>
+
+                {/* Structured High-Contrast Card Body */}
+                <div className="p-5 flex-1 flex flex-col justify-between gap-4">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#01A0CA] truncate">
+                        {project.category?.short_label || project.industry}
                       </span>
                     </div>
-                  </div>
 
-                  <div className="p-4 space-y-1">
-                    <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-wider block">
-                      {project.category}
-                    </span>
-                    <h3 className="font-bold text-sm sm:text-base text-[#121212] group-hover:text-[#01A0CA] transition leading-tight">
-                      {project.title}
+                    <h3 className="font-bold text-base text-[#121212] group-hover:text-[#01A0CA] transition leading-snug">
+                      {project.client_name}
                     </h3>
+
+                    <p className="text-xs text-zinc-500 leading-relaxed line-clamp-2">
+                      {project.title}
+                    </p>
+                  </div>
+
+                  {/* Clean Metadata Footer */}
+                  <div className="pt-3 border-t border-zinc-100 flex items-center justify-between gap-2 text-xs">
+                    <span className="text-[11px] font-medium text-zinc-600 truncate">
+                      {project.metrics || project.deliverables_summary}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#01A0CA] shrink-0">
+                      <span>Detail</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    </span>
                   </div>
                 </div>
-
-                <div className="p-4 pt-0">
-                  <a
-                    href="#brief-section"
-                    className="w-full py-2 rounded-xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-200/70 text-zinc-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition"
-                  >
-                    <span>Minta Format Serupa</span>
-                    <ArrowUpRight className="w-3.5 h-3.5 text-[#01A0CA]" />
-                  </a>
-                </div>
-              </div>
+              </article>
             ))}
           </div>
-
         </div>
-
       </div>
+
+      {/* Reusable Interactive Portfolio Detail Modal */}
+      <PortfolioDetailModal item={selectedItem} onClose={() => setSelectedItem(null)} />
     </section>
   );
 }
-
