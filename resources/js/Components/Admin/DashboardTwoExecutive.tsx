@@ -130,8 +130,8 @@ function RevenueBarChart({ totalMRR }: { totalMRR: number }) {
                     style={{ height: `${item.height}%` }}
                     className={`w-full rounded-t-lg transition-all duration-300 ${
                       isHovered
-                        ? "bg-zinc-950"
-                        : "bg-gradient-to-t from-zinc-800 to-zinc-900/80 group-hover:from-zinc-900 group-hover:to-zinc-950"
+                        ? "bg-[#008db3] shadow-md shadow-[#01A0CA]/20"
+                        : "bg-gradient-to-t from-[#01A0CA] to-sky-400 group-hover:from-[#008db3] group-hover:to-sky-300"
                     }`}
                   />
                 </div>
@@ -139,7 +139,7 @@ function RevenueBarChart({ totalMRR }: { totalMRR: number }) {
                 {/* Day Label */}
                 <span
                   className={`text-[11px] font-medium transition-colors ${
-                    isHovered ? "text-zinc-950 font-bold" : "text-zinc-500"
+                    isHovered ? "text-[#01A0CA] font-bold" : "text-zinc-500"
                   }`}
                 >
                   {item.day}
@@ -152,10 +152,10 @@ function RevenueBarChart({ totalMRR }: { totalMRR: number }) {
 
       <div className="pt-3 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-zinc-900" />
+          <span className="w-2 h-2 rounded-full bg-[#01A0CA]" />
           Pembayaran Termin DP 50%
         </span>
-        <span className="font-inter text-[11px]">7 Hari Terakhir</span>
+        <span className="font-mono text-[11px]">7 Hari Terakhir</span>
       </div>
     </div>
   );
@@ -181,12 +181,12 @@ function ProductionVolumeChart({ contents }: { contents: ContentItem[] }) {
           </p>
         </div>
         <div className="flex items-center gap-3 text-xs">
-          <span className="flex items-center gap-1 text-zinc-700">
-            <span className="w-2.5 h-2.5 rounded-full bg-zinc-950" />
+          <span className="flex items-center gap-1.5 font-medium text-zinc-800">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#01A0CA]" />
             Reels 9:16 ({reelsCount})
           </span>
-          <span className="flex items-center gap-1 text-zinc-500">
-            <span className="w-2.5 h-2.5 rounded-full bg-zinc-400" />
+          <span className="flex items-center gap-1.5 text-zinc-500">
+            <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
             Carousel ({carouselCount})
           </span>
         </div>
@@ -197,12 +197,12 @@ function ProductionVolumeChart({ contents }: { contents: ContentItem[] }) {
         <svg viewBox="0 0 500 140" className="w-full h-36 overflow-visible">
           <defs>
             <linearGradient id="reelsGlow" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#09090b" stopOpacity="0.15" />
-              <stop offset="100%" stopColor="#09090b" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="#01A0CA" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#01A0CA" stopOpacity="0.0" />
             </linearGradient>
             <linearGradient id="carouselGlow" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#a1a1aa" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="#a1a1aa" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity="0.0" />
             </linearGradient>
           </defs>
 
@@ -225,23 +225,22 @@ function ProductionVolumeChart({ contents }: { contents: ContentItem[] }) {
           <path
             d="M 0 110 Q 80 85 160 50 T 320 30 T 500 15"
             fill="none"
-            stroke="#09090b"
-            strokeWidth="2.5"
+            stroke="#01A0CA"
+            strokeWidth="3"
             strokeLinecap="round"
           />
           <path
             d="M 0 120 Q 90 100 180 80 T 340 70 T 500 65"
             fill="none"
-            stroke="#a1a1aa"
-            strokeWidth="2"
-            strokeDasharray="4 4"
+            stroke="#6366f1"
+            strokeWidth="2.5"
             strokeLinecap="round"
           />
 
           {/* Target Milestone Dots */}
-          <circle cx="160" cy="50" r="4" fill="#09090b" className="animate-pulse" />
-          <circle cx="320" cy="30" r="4" fill="#09090b" />
-          <circle cx="500" cy="15" r="5" fill="#09090b" />
+          <circle cx="160" cy="50" r="4" fill="#01A0CA" className="animate-pulse" />
+          <circle cx="320" cy="30" r="4" fill="#01A0CA" />
+          <circle cx="500" cy="15" r="5" fill="#01A0CA" />
         </svg>
 
         <div className="flex justify-between text-[11px] font-inter text-zinc-400 pt-1">
@@ -421,7 +420,7 @@ function BillingHealthCard({
         ) : (
           <button
             onClick={() => onInspectProof(pendingDP[0])}
-            className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold shadow-xs transition"
+            className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold shadow-xs transition cursor-pointer"
           >
             <span>Periksa Bukti Bayar ({pendingDP[0].business})</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -549,7 +548,7 @@ export function DashboardTwoExecutive({
       {/* ── 1. Top Action Header ───────────────────────────── */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 pb-3 border-b border-zinc-200/80">
         <div>
-          <span className="text-[10px] font-inter uppercase tracking-wider text-zinc-400 font-semibold block mb-0.5">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#01A0CA] font-bold block mb-0.5">
             PUSAT OPERASIONAL • CERMIN KREATIF STUDIO
           </span>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950">
@@ -563,14 +562,14 @@ export function DashboardTwoExecutive({
         <div className="flex items-center gap-2">
           <button
             onClick={onOpenAddContent}
-            className="px-3.5 py-2 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-50 text-zinc-900 text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition"
+            className="px-3.5 py-2 rounded-xl bg-white border border-[#01A0CA]/30 hover:border-[#01A0CA]/60 hover:bg-[#01A0CA]/5 text-zinc-900 hover:text-[#01A0CA] text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition cursor-pointer"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-3.5 h-3.5 text-[#01A0CA]" />
             <span>Buat Draf Konten</span>
           </button>
           <button
             onClick={onOpenAddClient}
-            className="px-3.5 py-2 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition"
+            className="px-3.5 py-2 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Daftarkan Klien</span>
@@ -581,11 +580,16 @@ export function DashboardTwoExecutive({
       {/* ── 2. Top 4 Dense KPI Cards (Refined & Insightful Studio Metrics) ───── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Active Retainers */}
-        <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs hover:border-zinc-300 transition-all flex flex-col justify-between">
+        <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs hover:border-[#01A0CA]/40 transition-all flex flex-col justify-between group">
           <div className="space-y-1">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
-              Brand Retainer Aktif
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
+                Brand Retainer Aktif
+              </span>
+              <div className="w-7 h-7 rounded-lg bg-[#01A0CA]/10 text-[#01A0CA] flex items-center justify-center">
+                <Building2 className="w-4 h-4" />
+              </div>
+            </div>
             <div className="flex items-baseline gap-1.5 whitespace-nowrap pt-0.5">
               <span className="text-2xl sm:text-3xl font-bold font-inter text-zinc-950 tracking-tight tabular-nums">
                 {clients.length}
@@ -599,16 +603,21 @@ export function DashboardTwoExecutive({
           </div>
           <div className="pt-3 mt-3 border-t border-zinc-100 flex items-center justify-between text-[11px]">
             <span className="text-zinc-500 truncate max-w-[130px]">Maven, Lumen, Arche</span>
-            <span className="text-zinc-900 font-semibold font-mono">100% Retensi</span>
+            <span className="text-emerald-700 font-semibold font-mono bg-emerald-50 px-1.5 py-0.2 rounded">100% Retensi</span>
           </div>
         </div>
 
         {/* KPI 2: MRR Revenue */}
-        <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs hover:border-zinc-300 transition-all flex flex-col justify-between">
+        <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs hover:border-emerald-300 transition-all flex flex-col justify-between group">
           <div className="space-y-1">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
-              Monthly Retainer (MRR)
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
+                Monthly Retainer (MRR)
+              </span>
+              <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <CreditCard className="w-4 h-4" />
+              </div>
+            </div>
             <div className="flex items-baseline gap-1.5 whitespace-nowrap pt-0.5">
               <span className="text-2xl sm:text-3xl font-bold font-inter text-zinc-950 tracking-tight tabular-nums">
                 Rp {(totalMRR / 1000000).toFixed(1)}
@@ -622,16 +631,21 @@ export function DashboardTwoExecutive({
           </div>
           <div className="pt-3 mt-3 border-t border-zinc-100 flex items-center justify-between text-[11px]">
             <span className="text-zinc-500">Termin 1 (DP 50%)</span>
-            <span className="text-zinc-900 font-semibold font-mono">100% Terkumpul</span>
+            <span className="text-[#01A0CA] font-semibold font-mono bg-sky-50 px-1.5 py-0.2 rounded">100% Terkumpul</span>
           </div>
         </div>
 
         {/* KPI 3: Video Production Output */}
-        <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs hover:border-zinc-300 transition-all flex flex-col justify-between">
+        <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs hover:border-[#01A0CA]/40 transition-all flex flex-col justify-between group">
           <div className="space-y-1">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
-              Kapasitas Produksi Video
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
+                Kapasitas Produksi Video
+              </span>
+              <div className="w-7 h-7 rounded-lg bg-sky-50 text-[#01A0CA] flex items-center justify-center">
+                <Film className="w-4 h-4" />
+              </div>
+            </div>
             <div className="flex items-baseline gap-1.5 whitespace-nowrap pt-0.5">
               <span className="text-2xl sm:text-3xl font-bold font-inter text-zinc-950 tracking-tight tabular-nums">
                 {totalReelsUsed}
@@ -644,9 +658,9 @@ export function DashboardTwoExecutive({
             </div>
             {/* Visual subtle progress bar */}
             <div className="pt-1.5 space-y-1">
-              <div className="w-full bg-zinc-100 rounded-full h-1.5 overflow-hidden">
+              <div className="w-full bg-zinc-100 rounded-full h-2 overflow-hidden">
                 <div
-                  className="bg-zinc-900 h-1.5 rounded-full transition-all duration-500"
+                  className="bg-gradient-to-r from-[#01A0CA] to-sky-400 h-2 rounded-full transition-all duration-500 shadow-2xs"
                   style={{
                     width: `${Math.min(
                       100,
@@ -656,7 +670,7 @@ export function DashboardTwoExecutive({
                 />
               </div>
               <div className="flex items-center justify-between text-[11px] text-zinc-500">
-                <span>{Math.round((totalReelsUsed / (totalReelsTarget || 1)) * 100)}% kuota terpakai</span>
+                <span className="font-medium text-[#01A0CA]">{Math.round((totalReelsUsed / (totalReelsTarget || 1)) * 100)}% kuota terpakai</span>
                 <span className="text-zinc-900 font-mono font-medium">
                   {totalReelsTarget - totalReelsUsed} sisa slot
                 </span>
@@ -670,11 +684,16 @@ export function DashboardTwoExecutive({
         </div>
 
         {/* KPI 4: Approval Speed SLA */}
-        <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs hover:border-zinc-300 transition-all flex flex-col justify-between">
+        <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs hover:border-indigo-300 transition-all flex flex-col justify-between group">
           <div className="space-y-1">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
-              Kecepatan Review Klien
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
+                Kecepatan Review Klien
+              </span>
+              <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <Clock className="w-4 h-4" />
+              </div>
+            </div>
             <div className="flex items-baseline gap-1.5 whitespace-nowrap pt-0.5">
               <span className="text-2xl sm:text-3xl font-bold font-inter text-zinc-950 tracking-tight tabular-nums">
                 18.2
@@ -688,7 +707,7 @@ export function DashboardTwoExecutive({
           </div>
           <div className="pt-3 mt-3 border-t border-zinc-100 flex items-center justify-between text-[11px]">
             <span className="text-zinc-500">Batas SLA: &lt; 24 Jam</span>
-            <span className="text-zinc-900 font-semibold font-mono">94% Tepat Waktu</span>
+            <span className="text-emerald-700 font-semibold font-mono bg-emerald-50 px-1.5 py-0.2 rounded">94% Tepat Waktu</span>
           </div>
         </div>
       </div>
@@ -757,7 +776,7 @@ export function DashboardTwoExecutive({
 
                     <button
                       onClick={() => onPingClient(client, item)}
-                      className="px-3 py-1.5 rounded-xl bg-zinc-950 hover:bg-zinc-800 text-white font-semibold text-[11px] shrink-0 transition flex items-center gap-1 shadow-2xs"
+                      className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] shrink-0 transition flex items-center gap-1 shadow-2xs cursor-pointer"
                     >
                       <span>Ping WA</span>
                       <ArrowUpRight className="w-3 h-3" />

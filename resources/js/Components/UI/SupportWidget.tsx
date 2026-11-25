@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef, useEffect } from "react";
 import {
@@ -271,7 +271,7 @@ function HomeTab({
             </div>
             <p className="text-xs text-zinc-500">Biasanya direspons dalam 2 jam kerja studio</p>
           </div>
-          <div className="w-9 h-9 rounded-xl bg-zinc-900 text-white flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm shrink-0 ml-3">
+          <div className="w-9 h-9 rounded-xl bg-[#01A0CA] text-white flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm shrink-0 ml-3">
             <Send size={15} />
           </div>
         </button>
@@ -347,7 +347,7 @@ function MessagesTab({ onNewMessage }: { onNewMessage: () => void }) {
       <div className="p-4 border-t border-zinc-100 bg-zinc-50/50">
         <button
           onClick={onNewMessage}
-          className="w-full flex items-center justify-center gap-2 bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-semibold py-3 rounded-xl shadow-sm hover:shadow-md active:scale-[0.99] transition-all"
+          className="w-full flex items-center justify-center gap-2 bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold py-3 rounded-xl shadow-sm hover:shadow-md active:scale-[0.99] transition-all cursor-pointer"
         >
           <Send size={13} />
           Mulai Percakapan Baru
@@ -550,7 +550,7 @@ function ChatThreadView({ onBack }: { onBack: () => void }) {
 
         <div className="flex items-center gap-2">
           <div className="relative">
-            <div className="w-7 h-7 rounded-full bg-zinc-900 text-white text-[10px] font-bold flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#01A0CA] to-sky-400 text-white text-[10px] font-bold flex items-center justify-center">
               CK
             </div>
             <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white" />
@@ -572,21 +572,21 @@ function ChatThreadView({ onBack }: { onBack: () => void }) {
           return (
             <div key={msg.id} className={`flex ${isClient ? "justify-end" : "justify-start"}`}>
               {!isClient && (
-                <div className="w-6 h-6 rounded-full bg-zinc-900 text-white text-[9px] font-bold flex items-center justify-center mr-2 mt-1 shrink-0">
+                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#01A0CA] to-sky-400 text-white text-[9px] font-bold flex items-center justify-center mr-2 mt-1 shrink-0">
                   CK
                 </div>
               )}
               <div
                 className={`max-w-[80%] px-3.5 py-2.5 rounded-2xl text-xs leading-relaxed shadow-sm ${
                   isClient
-                    ? "bg-zinc-950 text-white rounded-br-xs"
+                    ? "bg-[#01A0CA] text-white rounded-br-xs"
                     : "bg-white text-zinc-800 border border-zinc-200/80 rounded-bl-xs"
                 }`}
               >
                 <p>{msg.text}</p>
-                <div className={`flex items-center gap-1 mt-1 ${isClient ? "justify-end text-zinc-400" : "text-zinc-400"}`}>
+                <div className={`flex items-center gap-1 mt-1 ${isClient ? "justify-end text-sky-100" : "text-zinc-400"}`}>
                   <span className="text-[9px]">{msg.time}</span>
-                  {isClient && <CheckCheck size={11} className="text-zinc-400" />}
+                  {isClient && <CheckCheck size={11} className="text-sky-100" />}
                 </div>
               </div>
             </div>
@@ -625,7 +625,7 @@ function ChatThreadView({ onBack }: { onBack: () => void }) {
               onClick={send}
               disabled={!input.trim()}
               aria-label="Kirim pesan"
-              className="w-7 h-7 rounded-xl bg-zinc-950 text-white flex items-center justify-center disabled:opacity-30 hover:bg-zinc-800 transition-all ml-1 shadow-sm"
+              className="w-7 h-7 rounded-xl bg-[#01A0CA] text-white flex items-center justify-center disabled:opacity-30 hover:bg-[#008db3] transition-all ml-1 shadow-sm cursor-pointer"
             >
               <Send size={12} />
             </button>
@@ -669,7 +669,7 @@ export default function SupportWidget() {
       <button
         onClick={() => setOpen(!open)}
         aria-label={open ? "Tutup dukungan Cermin Kreatif" : "Buka dukungan Cermin Kreatif"}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-zinc-950 text-white shadow-[0_12px_32px_rgba(0,0,0,0.3)] ring-1 ring-white/10 flex items-center justify-center transition-all duration-300 ease-out hover:scale-105 active:scale-95 group`}
+        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-gradient-to-tr from-[#01A0CA] to-sky-400 text-white shadow-[0_12px_32px_rgba(1,160,202,0.35)] ring-2 ring-white flex items-center justify-center transition-all duration-300 ease-out hover:scale-105 active:scale-95 group cursor-pointer`}
       >
         <div className="relative w-6 h-6 flex items-center justify-center">
           {/* ChevronDown when open, MessageSquare when closed */}

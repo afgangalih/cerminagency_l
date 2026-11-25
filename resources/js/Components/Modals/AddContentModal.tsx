@@ -68,7 +68,7 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
         </button>
 
         <div className="flex items-center gap-2.5 mb-5">
-          <div className="w-9 h-9 rounded-xl bg-zinc-900 text-white flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-[#01A0CA]/10 text-[#01A0CA] border border-[#01A0CA]/20 flex items-center justify-center">
             <Plus className="w-4 h-4" />
           </div>
           <div>
@@ -156,10 +156,10 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
               <button
                 type="button"
                 onClick={() => togglePlatform('instagram')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer ${
                   platforms.includes('instagram')
-                    ? 'bg-zinc-900 border-zinc-900 text-white'
-                    : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:bg-zinc-100'
+                    ? 'bg-[#01A0CA] border-[#01A0CA] text-white shadow-2xs'
+                    : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:border-[#01A0CA]/40'
                 }`}
               >
                 Instagram
@@ -167,10 +167,10 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
               <button
                 type="button"
                 onClick={() => togglePlatform('tiktok')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer ${
                   platforms.includes('tiktok')
-                    ? 'bg-zinc-900 border-zinc-900 text-white'
-                    : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:bg-zinc-100'
+                    ? 'bg-[#01A0CA] border-[#01A0CA] text-white shadow-2xs'
+                    : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:border-[#01A0CA]/40'
                 }`}
               >
                 TikTok
@@ -178,10 +178,10 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
               <button
                 type="button"
                 onClick={() => togglePlatform('youtube_shorts')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer ${
                   platforms.includes('youtube_shorts')
-                    ? 'bg-zinc-900 border-zinc-900 text-white'
-                    : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:bg-zinc-100'
+                    ? 'bg-[#01A0CA] border-[#01A0CA] text-white shadow-2xs'
+                    : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:border-[#01A0CA]/40'
                 }`}
               >
                 YouTube Shorts
@@ -221,7 +221,7 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-medium transition shadow-sm cursor-pointer"
+              className="px-5 py-2 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold transition shadow-sm cursor-pointer"
             >
               Simpan Konten
             </button>

@@ -483,7 +483,7 @@ function PortalContent() {
                           <button
                             type="button"
                             onClick={() => setSelectedContent(nextDropContent)}
-                            className="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-medium transition cursor-pointer shadow-xs shrink-0"
+                            className="px-4 py-2 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold transition cursor-pointer shadow-xs shrink-0"
                           >
                             Buka Preview
                           </button>
@@ -497,18 +497,18 @@ function PortalContent() {
 
                     {/* Format Mix Ratios in Next Drop Footer */}
                     <div className="mt-5 pt-4 border-t border-zinc-100 flex flex-wrap items-center justify-between text-xs text-zinc-600 gap-2">
-                      <span className="text-[11px] font-inter text-zinc-400">Variasi Format Akun:</span>
+                      <span className="text-[11px] font-mono text-zinc-400">Variasi Format Akun:</span>
                       <div className="flex items-center gap-3">
-                        <span className="inline-flex items-center gap-1 font-medium">
-                          <Film className="w-3.5 h-3.5 text-zinc-900" />
+                        <span className="inline-flex items-center gap-1 font-semibold text-[#01A0CA]">
+                          <Film className="w-3.5 h-3.5" />
                           <span>{reelsCount} Reels 9:16</span>
                         </span>
-                        <span className="inline-flex items-center gap-1 font-medium">
-                          <Layers className="w-3.5 h-3.5 text-zinc-600" />
+                        <span className="inline-flex items-center gap-1 font-semibold text-indigo-600">
+                          <Layers className="w-3.5 h-3.5" />
                           <span>{carouselCount} Korsel Feed</span>
                         </span>
-                        <span className="inline-flex items-center gap-1 font-medium">
-                          <ImageIcon className="w-3.5 h-3.5 text-zinc-500" />
+                        <span className="inline-flex items-center gap-1 font-semibold text-zinc-700">
+                          <ImageIcon className="w-3.5 h-3.5" />
                           <span>{imageCount} Single Post</span>
                         </span>
                       </div>
@@ -520,24 +520,24 @@ function PortalContent() {
                     <div>
                       <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
                         <div>
-                          <span className="text-[11px] font-inter uppercase text-zinc-400 font-semibold tracking-wide">
+                          <span className="text-[11px] font-mono uppercase text-[#01A0CA] font-bold tracking-wide">
                             SERAPAN KUOTA BULANAN
                           </span>
                           <h3 className="text-sm font-semibold text-zinc-900">
                             Realisasi Paket ({totalRetainerQuota} Konten)
                           </h3>
                         </div>
-                        <span className="text-base font-bold font-inter text-zinc-900">
+                        <span className="text-base font-bold font-mono text-[#01A0CA]">
                           {percentageFulfillment}% Tuntas
                         </span>
                       </div>
 
                       {/* Stacked Progress Bar */}
                       <div className="mt-5 space-y-2">
-                        <div className="w-full bg-zinc-100 h-3 rounded-full overflow-hidden flex">
+                        <div className="w-full bg-zinc-100 h-3 rounded-full overflow-hidden flex shadow-inner">
                           <div 
                             style={{ width: `${(approvedCount / totalRetainerQuota) * 100}%` }}
-                            className="bg-emerald-600 h-full transition-all duration-500" 
+                            className="bg-emerald-500 h-full transition-all duration-500" 
                             title={`Disetujui: ${approvedCount}`}
                           />
                           <div 
@@ -547,7 +547,7 @@ function PortalContent() {
                           />
                           <div 
                             style={{ width: `${(inProductionCount / totalRetainerQuota) * 100}%` }}
-                            className="bg-zinc-300 h-full transition-all duration-500" 
+                            className="bg-[#01A0CA] h-full transition-all duration-500" 
                             title={`Produksi & Edit: ${inProductionCount}`}
                           />
                         </div>
@@ -555,29 +555,29 @@ function PortalContent() {
                         {/* Visual Breakdown Legend */}
                         <div className="grid grid-cols-3 gap-2 pt-2">
                           <div className="p-2.5 rounded-lg bg-emerald-50/70 border border-emerald-100">
-                            <span className="text-[10px] font-inter text-emerald-800 uppercase block">Siap Tayang</span>
-                            <span className="text-base font-bold text-emerald-900 font-inter">{approvedCount}</span>
+                            <span className="text-[10px] font-mono text-emerald-800 uppercase block font-semibold">Siap Tayang</span>
+                            <span className="text-base font-bold text-emerald-900 font-mono">{approvedCount}</span>
                             <span className="text-[10px] text-emerald-700 block mt-0.5">Final Terkunci</span>
                           </div>
 
                           <div className="p-2.5 rounded-lg bg-amber-50/70 border border-amber-100">
-                            <span className="text-[10px] font-inter text-amber-800 uppercase block">Perlu Review</span>
-                            <span className="text-base font-bold text-amber-900 font-inter">{pendingCount}</span>
+                            <span className="text-[10px] font-mono text-amber-800 uppercase block font-semibold">Perlu Review</span>
+                            <span className="text-base font-bold text-amber-900 font-mono">{pendingCount}</span>
                             <span className="text-[10px] text-amber-700 block mt-0.5">Menunggu Klien</span>
                           </div>
 
-                          <div className="p-2.5 rounded-lg bg-zinc-50 border border-zinc-200">
-                            <span className="text-[10px] font-inter text-zinc-500 uppercase block">Dapur Studio</span>
-                            <span className="text-base font-bold text-zinc-800 font-inter">{inProductionCount}</span>
-                            <span className="text-[10px] text-zinc-500 block mt-0.5">Shoot & Edit</span>
+                          <div className="p-2.5 rounded-lg bg-sky-50/70 border border-[#01A0CA]/20">
+                            <span className="text-[10px] font-mono text-[#01A0CA] uppercase block font-semibold">Dapur Studio</span>
+                            <span className="text-base font-bold text-[#01A0CA] font-mono">{inProductionCount}</span>
+                            <span className="text-[10px] text-sky-700 block mt-0.5">Shoot &amp; Edit</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
                     <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
-                      <span>Sisa kuota bulan berjalan: <strong>{totalRetainerQuota - approvedCount} Konten</strong></span>
-                      <span className="text-[11px] font-inter text-emerald-700 font-medium">SLA Tepat Waktu 100%</span>
+                      <span>Sisa kuota bulan berjalan: <strong className="text-zinc-900">{totalRetainerQuota - approvedCount} Konten</strong></span>
+                      <span className="text-[11px] font-mono text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">SLA Tepat Waktu 100%</span>
                     </div>
                   </div>
                 </div>
@@ -591,7 +591,7 @@ function PortalContent() {
                         Perlu Tindakan Anda: Antrean Draf Menunggu Persetujuan
                       </h2>
                     </div>
-                    <span className="text-xs font-inter text-zinc-600 bg-zinc-100 px-2.5 py-1 rounded-md font-medium">
+                    <span className="text-xs font-mono text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md font-bold">
                       {pendingReviews.length} Draf Belum Ditinjau
                     </span>
                   </div>
@@ -602,7 +602,7 @@ function PortalContent() {
                         <div 
                           key={item.id}
                           onClick={() => setSelectedContent(item)}
-                          className="p-4 rounded-xl border border-zinc-200/90 bg-zinc-50/50 hover:bg-white hover:border-zinc-300 transition flex items-center justify-between gap-3 cursor-pointer shadow-2xs group"
+                          className="p-4 rounded-xl border border-zinc-200/90 bg-zinc-50/50 hover:bg-white hover:border-[#01A0CA]/40 transition flex items-center justify-between gap-3 cursor-pointer shadow-2xs group"
                         >
                           <div className="flex items-center gap-3.5 min-w-0">
                             <div className="w-12 h-14 rounded-lg bg-zinc-900 overflow-hidden shrink-0 shadow-2xs relative">
@@ -615,14 +615,14 @@ function PortalContent() {
                               <div className="flex items-center gap-2 flex-wrap text-xs font-inter text-zinc-500">
                                 <span className="font-semibold text-zinc-800">{item.day} ({item.weekday})</span>
                                 <span>•</span>
-                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-200 text-zinc-800 font-bold">{item.type}</span>
+                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#01A0CA]/10 text-[#01A0CA] font-bold font-mono">{item.type}</span>
                               </div>
-                              <h3 className="text-sm font-semibold text-zinc-900 mt-1 truncate">{item.title}</h3>
+                              <h3 className="text-sm font-semibold text-zinc-900 mt-1 truncate group-hover:text-[#01A0CA] transition-colors">{item.title}</h3>
                               <p className="text-[11px] text-zinc-500 line-clamp-1 mt-0.5 font-light">{item.caption}</p>
                             </div>
                           </div>
 
-                          <button className="px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs transition shadow-xs shrink-0">
+                          <button className="px-3.5 py-1.5 rounded-lg bg-[#01A0CA] hover:bg-[#008db3] text-white font-semibold text-xs transition shadow-xs shrink-0 cursor-pointer">
                             Review
                           </button>
                         </div>
@@ -751,7 +751,7 @@ function PortalContent() {
                         <div className="flex items-center gap-3">
                           <div className="w-44 bg-zinc-100 h-2 rounded-full overflow-hidden">
                             <div 
-                              className={`h-full ${task.progress === 100 ? 'bg-emerald-600' : 'bg-zinc-900'}`}
+                              className={`h-full ${task.progress === 100 ? 'bg-emerald-600' : 'bg-[#01A0CA]'}`}
                               style={{ width: `${task.progress}%` }}
                             />
                           </div>
@@ -805,8 +805,8 @@ function PortalContent() {
                         onClick={() => setActivePillarIndex(idx)}
                         className={`p-6 rounded-2xl border transition-all cursor-pointer relative shadow-xs flex flex-col justify-between ${
                           isSelected 
-                            ? 'bg-zinc-950 text-white border-zinc-950 shadow-md ring-2 ring-zinc-950/20' 
-                            : 'bg-white text-zinc-900 border-zinc-200 hover:border-zinc-300'
+                            ? 'bg-gradient-to-br from-[#01A0CA] to-[#008db3] text-white border-[#01A0CA] shadow-md ring-2 ring-[#01A0CA]/20' 
+                            : 'bg-white text-zinc-900 border-zinc-200 hover:border-[#01A0CA]/40'
                         }`}
                       >
                         <div>
@@ -935,7 +935,7 @@ function PortalContent() {
                     />
                     <button
                       type="submit"
-                      className="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-medium flex items-center justify-center gap-2 transition cursor-pointer shadow-xs shrink-0"
+                      className="px-5 py-2.5 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer shadow-xs shrink-0"
                     >
                       <Send className="w-3.5 h-3.5" />
                       <span>Kirim Usulan Topik</span>

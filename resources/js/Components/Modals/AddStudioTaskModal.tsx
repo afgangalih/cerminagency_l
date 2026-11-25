@@ -51,7 +51,7 @@ export function AddStudioTaskModal({ onClose }: AddStudioTaskModalProps) {
         </button>
 
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-9 h-9 rounded-xl bg-zinc-900 text-white flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-[#01A0CA]/10 text-[#01A0CA] border border-[#01A0CA]/20 flex items-center justify-center">
             <Film className="w-4 h-4" />
           </div>
           <div>
@@ -154,7 +154,7 @@ export function AddStudioTaskModal({ onClose }: AddStudioTaskModalProps) {
               max="100"
               value={progress}
               onChange={(e) => setProgress(parseInt(e.target.value, 10))}
-              className="w-full accent-zinc-900 cursor-pointer"
+              className="w-full accent-[#01A0CA] cursor-pointer"
             />
           </div>
 
@@ -168,7 +168,7 @@ export function AddStudioTaskModal({ onClose }: AddStudioTaskModalProps) {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-medium transition shadow-sm cursor-pointer"
+              className="px-5 py-2 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold transition shadow-sm cursor-pointer"
             >
               Tambah Task Studio
             </button>

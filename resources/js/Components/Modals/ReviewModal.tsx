@@ -554,7 +554,7 @@ export function ReviewModal({ item, onClose }: ReviewModalProps) {
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-medium hover:bg-zinc-800 flex items-center gap-1.5 cursor-pointer shadow-sm"
+                      className="px-4 py-1.5 rounded-lg bg-[#01A0CA] text-white text-xs font-semibold hover:bg-[#008db3] flex items-center gap-1.5 cursor-pointer shadow-sm"
                     >
                       <Send className="w-3.5 h-3.5" />
                       <span>Kirim Masukan Revisi</span>
@@ -585,9 +585,9 @@ export function ReviewModal({ item, onClose }: ReviewModalProps) {
                     </a>
                     <button
                       onClick={handleApprove}
-                      className="flex-1 py-1.5 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="flex-1 py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                     >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                       <span>Setujui Versi Ini</span>
                     </button>
                   </div>
@@ -604,9 +604,9 @@ export function ReviewModal({ item, onClose }: ReviewModalProps) {
                   </button>
                   <button
                     onClick={handleApprove}
-                    className="flex-1 py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                    className="flex-1 py-2.5 px-4 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white font-semibold text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
                   >
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <CheckCircle2 className="w-4 h-4 text-white" />
                     <span>Setujui Konten (Siap Tayang)</span>
                   </button>
                 </div>

@@ -120,22 +120,22 @@ export function DashboardHeader({
 
   return (
     <header className="h-16 border-b border-zinc-200/80 bg-white/95 backdrop-blur-md px-6 sm:px-8 flex items-center justify-between shrink-0 sticky top-0 z-30 shadow-2xs">
-      {/* ── Left: Pure Typographic Breadcrumb (No Icons, No Badges) ── */}
+      {/* ── Left: Pure Typographic Breadcrumb with Brand Accent ── */}
       <div className="flex items-center gap-2 text-xs">
         {onToggleMobileMenu && (
           <button
             onClick={onToggleMobileMenu}
-            className="md:hidden p-1.5 -ml-2 mr-1 rounded-lg text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100 transition cursor-pointer"
+            className="md:hidden p-1.5 -ml-2 mr-1 rounded-lg text-zinc-600 hover:text-[#01A0CA] hover:bg-[#01A0CA]/10 transition cursor-pointer"
             aria-label="Toggle Menu"
           >
             <Menu className="w-5 h-5" strokeWidth={1.5} />
           </button>
         )}
-        <span className="font-semibold text-zinc-900 tracking-tight">
+        <span className="font-bold text-zinc-900 tracking-tight">
           {isRoleAdmin ? "Studio Cermin" : selectedClient?.business || "Portal Klien"}
         </span>
         <ChevronRight className="w-3.5 h-3.5 text-zinc-400" strokeWidth={1.5} />
-        <span className="text-zinc-500 font-medium font-inter text-[11px] truncate">
+        <span className="text-[#01A0CA] font-semibold font-mono text-[11px] truncate bg-[#01A0CA]/10 px-2 py-0.5 rounded-md">
           {activeTabTitle}
         </span>
       </div>
@@ -146,7 +146,7 @@ export function DashboardHeader({
         <button
           onClick={onOpenSupportWidget}
           title={isRoleAdmin ? "Kirim Pesan Cepat" : "Buka Dukungan Cermin"}
-          className="w-9 h-9 rounded-xl border border-zinc-200/90 hover:border-zinc-300 bg-white hover:bg-zinc-50 flex items-center justify-center text-zinc-600 hover:text-zinc-950 transition-all shadow-2xs"
+          className="w-9 h-9 rounded-xl border border-zinc-200/90 hover:border-[#01A0CA]/40 bg-white hover:bg-[#01A0CA]/5 flex items-center justify-center text-zinc-600 hover:text-[#01A0CA] transition-all shadow-2xs"
         >
           <Send className="w-4 h-4" strokeWidth={1.5} />
         </button>
@@ -156,11 +156,11 @@ export function DashboardHeader({
           <button
             onClick={() => setNotificationsOpen(!notificationsOpen)}
             title="Pemberitahuan Aktivitas"
-            className="w-9 h-9 rounded-xl border border-zinc-200/90 hover:border-zinc-300 bg-white hover:bg-zinc-50 flex items-center justify-center text-zinc-600 hover:text-zinc-950 transition-all shadow-2xs relative"
+            className="w-9 h-9 rounded-xl border border-zinc-200/90 hover:border-[#01A0CA]/40 bg-white hover:bg-[#01A0CA]/5 flex items-center justify-center text-zinc-600 hover:text-[#01A0CA] transition-all shadow-2xs relative"
           >
             <Bell className="w-4 h-4" strokeWidth={1.5} />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white" />
+              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-[#01A0CA] ring-2 ring-white animate-pulse" />
             )}
           </button>
 
@@ -170,7 +170,7 @@ export function DashboardHeader({
                 <span className="text-xs font-semibold text-zinc-900">
                   Pemberitahuan
                 </span>
-                <span className="text-[10px] font-inter text-zinc-400">
+                <span className="text-[10px] font-mono text-[#01A0CA] font-bold bg-[#01A0CA]/10 px-2 py-0.5 rounded-full">
                   {unreadCount} Baru
                 </span>
               </div>
@@ -183,7 +183,7 @@ export function DashboardHeader({
                     <p className="font-medium text-zinc-900 leading-snug">
                       {notif.title}
                     </p>
-                    <p className="text-[10px] text-zinc-400 font-inter">
+                    <p className="text-[10px] text-zinc-400 font-mono">
                       {notif.time}
                     </p>
                   </div>
@@ -200,19 +200,19 @@ export function DashboardHeader({
         <div className="relative" ref={profileRef}>
           <button
             onClick={() => setProfileOpen(!profileOpen)}
-            className="flex items-center gap-2 p-0.5 rounded-full hover:ring-2 hover:ring-zinc-900/10 transition group"
+            className="flex items-center gap-2 p-0.5 rounded-full hover:ring-2 hover:ring-[#01A0CA]/30 transition group"
           >
-            <div className="w-9 h-9 rounded-full bg-zinc-950 text-white font-bold text-xs flex items-center justify-center shadow-xs">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#01A0CA] to-sky-400 text-white font-bold text-xs flex items-center justify-center shadow-xs ring-1 ring-white">
               {avatarInitials}
             </div>
           </button>
 
-          {/* Contextual Dropdown Menu (Exact Reference Design) */}
+          {/* Contextual Dropdown Menu */}
           {profileOpen && (
             <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl border border-zinc-200/90 shadow-[0_20px_45px_rgba(0,0,0,0.12)] p-2 z-50 animate-in fade-in zoom-in-95 origin-top-right">
               {/* User Header Profile */}
-              <div className="flex items-center gap-3 p-3 border-b border-zinc-100 bg-zinc-50/60 rounded-xl mb-1">
-                <div className="w-10 h-10 rounded-full bg-zinc-950 text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-xs">
+              <div className="flex items-center gap-3 p-3 border-b border-zinc-100 bg-sky-50/30 rounded-xl mb-1">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#01A0CA] to-sky-400 text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-xs">
                   {avatarInitials}
                 </div>
                 <div className="min-w-0">

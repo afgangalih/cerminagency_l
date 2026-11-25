@@ -10,7 +10,8 @@ import {
   Users, Plus, Share2, Receipt, CheckCircle2, Unlock, ChevronRight, 
   ChevronDown, ExternalLink, Menu, X, ArrowUpRight, AlertTriangle, 
   ShieldCheck, Calendar, Grid3X3, Eye, Heart, MessageCircle, Clock,
-  Sparkles, Check, Filter, Trash2, RefreshCw, Database, Building2
+  Sparkles, Check, Filter, Trash2, RefreshCw, Database, Building2,
+  Copy, Search
 } from 'lucide-react';
 import { AddContentModal } from '@/Components/Modals/AddContentModal';
 import { AddClientModal } from '@/Components/Modals/AddClientModal';
@@ -96,6 +97,16 @@ function AdminContent() {
   const [brandDropdownOpen, setBrandDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [clientPicFilter, setClientPicFilter] = useState<string>('ALL');
+  const [studioPhaseFilter, setStudioPhaseFilter] = useState<string>('all');
+  const [briefSearchTerm, setBriefSearchTerm] = useState<string>('');
+  const [copiedBriefId, setCopiedBriefId] = useState<string | null>(null);
+
+  const handleCopyBrief = (id: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedBriefId(id);
+    triggerNotification('Ringkasan brief berhasil disalin ke clipboard!');
+    setTimeout(() => setCopiedBriefId(null), 2500);
+  };
 
   const uniqueClientPics = Array.from(
     new Set(clientPipeline.map((c) => c.picAssigned).filter(Boolean))
@@ -235,14 +246,14 @@ function AdminContent() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2.5">
-                  {/* Multi-view Switcher */}
+                  {/* Multi-view Switcher with Brand Styling */}
                   <div className="inline-flex rounded-xl p-1 bg-white border border-zinc-200 shadow-2xs">
                     <button
                       onClick={() => setContentViewMode('kanban')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
                         contentViewMode === 'kanban' 
-                          ? 'bg-zinc-900 text-white shadow-2xs' 
-                          : 'text-zinc-600 hover:text-zinc-900'
+                          ? 'bg-[#01A0CA] text-white shadow-xs' 
+                          : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
                       }`}
                     >
                       <Kanban className="w-3.5 h-3.5" />
@@ -251,10 +262,10 @@ function AdminContent() {
 
                     <button
                       onClick={() => setContentViewMode('calendar')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
                         contentViewMode === 'calendar' 
-                          ? 'bg-zinc-900 text-white shadow-2xs' 
-                          : 'text-zinc-600 hover:text-zinc-900'
+                          ? 'bg-[#01A0CA] text-white shadow-xs' 
+                          : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
                       }`}
                     >
                       <Calendar className="w-3.5 h-3.5" />
@@ -263,10 +274,10 @@ function AdminContent() {
 
                     <button
                       onClick={() => setContentViewMode('instagram_feed')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
                         contentViewMode === 'instagram_feed' 
-                          ? 'bg-zinc-900 text-white shadow-2xs' 
-                          : 'text-zinc-600 hover:text-zinc-900'
+                          ? 'bg-[#01A0CA] text-white shadow-xs' 
+                          : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
                       }`}
                     >
                       <Grid3X3 className="w-3.5 h-3.5" />
@@ -275,10 +286,10 @@ function AdminContent() {
 
                     <button
                       onClick={() => setContentViewMode('tiktok_feed')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
                         contentViewMode === 'tiktok_feed' 
-                          ? 'bg-zinc-900 text-white shadow-2xs' 
-                          : 'text-zinc-600 hover:text-zinc-900'
+                          ? 'bg-[#01A0CA] text-white shadow-xs' 
+                          : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
                       }`}
                     >
                       <Film className="w-3.5 h-3.5" />
@@ -289,7 +300,7 @@ function AdminContent() {
                   {/* Add Content Button */}
                   <button
                     onClick={() => setShowAddContentModal(true)}
-                    className="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs flex items-center gap-1.5 transition shadow-xs cursor-pointer"
+                    className="px-3.5 py-2 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white font-semibold text-xs flex items-center gap-1.5 transition shadow-xs cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Jadwalkan Konten</span>
@@ -299,35 +310,35 @@ function AdminContent() {
 
               {/* Platform Filter Controls */}
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-zinc-400 font-inter text-[11px] flex items-center gap-1">
-                  <Filter className="w-3 h-3" /> Filter Platform:
+                <span className="text-zinc-400 font-mono text-[11px] flex items-center gap-1">
+                  <Filter className="w-3 h-3 text-[#01A0CA]" /> Filter:
                 </span>
                 <button
                   onClick={() => setPlatformFilter('all')}
-                  className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer ${
                     platformFilter === 'all'
-                      ? 'bg-zinc-900 text-white'
-                      : 'bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50'
+                      ? 'bg-[#01A0CA] text-white shadow-2xs'
+                      : 'bg-white border border-zinc-200 text-zinc-600 hover:border-[#01A0CA]/30'
                   }`}
                 >
                   Semua
                 </button>
                 <button
                   onClick={() => setPlatformFilter('instagram')}
-                  className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer ${
                     platformFilter === 'instagram'
-                      ? 'bg-zinc-900 text-white'
-                      : 'bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50'
+                      ? 'bg-[#01A0CA] text-white shadow-2xs'
+                      : 'bg-white border border-zinc-200 text-zinc-600 hover:border-[#01A0CA]/30'
                   }`}
                 >
                   Instagram
                 </button>
                 <button
                   onClick={() => setPlatformFilter('tiktok')}
-                  className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer ${
                     platformFilter === 'tiktok'
-                      ? 'bg-zinc-900 text-white'
-                      : 'bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50'
+                      ? 'bg-[#01A0CA] text-white shadow-2xs'
+                      : 'bg-white border border-zinc-200 text-zinc-600 hover:border-[#01A0CA]/30'
                   }`}
                 >
                   TikTok
@@ -357,18 +368,18 @@ function AdminContent() {
                   {contentViewMode === 'kanban' && (
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-x-auto pb-4">
                       {[
-                        { key: 'script', label: '1. Riset & Naskah', count: filteredContents.filter(c => c.stage === 'script').length },
-                        { key: 'production', label: '2. Produksi & Edit', count: filteredContents.filter(c => c.stage === 'production').length },
-                        { key: 'review', label: '3. Menunggu Review', count: filteredContents.filter(c => c.stage === 'review').length },
-                        { key: 'revision', label: '4. Perlu Revisi', count: filteredContents.filter(c => c.stage === 'revision').length },
-                        { key: 'scheduled', label: '5. Siap Tayang', count: filteredContents.filter(c => c.stage === 'scheduled').length }
+                        { key: 'script', label: '1. Riset & Naskah', count: filteredContents.filter(c => c.stage === 'script').length, badge: 'bg-sky-50 text-sky-700 border border-sky-200/60' },
+                        { key: 'production', label: '2. Produksi & Edit', count: filteredContents.filter(c => c.stage === 'production').length, badge: 'bg-indigo-50 text-indigo-700 border border-indigo-200/60' },
+                        { key: 'review', label: '3. Menunggu Review', count: filteredContents.filter(c => c.stage === 'review').length, badge: 'bg-amber-50 text-amber-700 border border-amber-200/60' },
+                        { key: 'revision', label: '4. Perlu Revisi', count: filteredContents.filter(c => c.stage === 'revision').length, badge: 'bg-rose-50 text-rose-700 border border-rose-200/60' },
+                        { key: 'scheduled', label: '5. Siap Tayang', count: filteredContents.filter(c => c.stage === 'scheduled').length, badge: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' }
                       ].map(column => {
                         const itemsInCol = filteredContents.filter(c => c.stage === column.key);
                         return (
                           <div key={column.key} className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-2xs flex flex-col min-w-[240px]">
                             <div className="flex items-center justify-between pb-3 mb-3 border-b border-zinc-100">
                               <span className="text-xs font-semibold text-zinc-900">{column.label}</span>
-                              <span className="text-[10px] font-inter px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 font-bold">
+                              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${column.badge}`}>
                                 {column.count}
                               </span>
                             </div>
@@ -377,14 +388,14 @@ function AdminContent() {
                               {itemsInCol.map(item => (
                                 <div
                                   key={item.id}
-                                  className="p-3.5 rounded-xl border border-zinc-200/90 bg-zinc-50/50 hover:bg-white hover:border-zinc-300 transition shadow-2xs space-y-2.5 group"
+                                  className="p-3.5 rounded-xl border border-zinc-200/90 bg-zinc-50/50 hover:bg-white hover:border-[#01A0CA]/40 transition shadow-2xs space-y-2.5 group"
                                 >
                                   <div className="flex justify-between items-start gap-1">
-                                    <span className="text-[10px] font-inter font-medium text-zinc-500">
+                                    <span className="text-[10px] font-mono font-medium text-zinc-500">
                                       {item.day} ({item.weekday})
                                     </span>
                                     <div className="flex items-center gap-1">
-                                      <span className="text-[9px] font-inter px-1.5 py-0.2 rounded bg-zinc-200 text-zinc-800 font-bold">
+                                      <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-[#01A0CA]/10 text-[#01A0CA] font-bold">
                                         {item.version}
                                       </span>
                                       <button
@@ -401,7 +412,7 @@ function AdminContent() {
                                     {item.title}
                                   </h4>
 
-                                  <div className="text-[10px] font-inter text-zinc-400 uppercase">
+                                  <div className="text-[10px] font-mono text-zinc-400 uppercase">
                                     {item.platforms.join(' • ')}
                                   </div>
 
@@ -409,7 +420,7 @@ function AdminContent() {
                                   <div className="pt-2 border-t border-zinc-200/60 flex items-center justify-between text-[11px]">
                                     <button
                                       onClick={() => setSelectedPreviewContent(item)}
-                                      className="text-zinc-600 hover:text-zinc-900 font-medium flex items-center gap-1 cursor-pointer"
+                                      className="text-zinc-600 hover:text-[#01A0CA] font-medium flex items-center gap-1 cursor-pointer transition"
                                     >
                                       <Eye className="w-3 h-3" />
                                       <span>Pratinjau</span>
@@ -521,7 +532,7 @@ function AdminContent() {
                   {contentViewMode === 'instagram_feed' && (
                     <div className="max-w-md mx-auto bg-white border border-zinc-200 rounded-2xl p-6 shadow-xs">
                       <div className="flex items-center gap-4 pb-5 border-b border-zinc-100">
-                        <div className="w-14 h-14 rounded-full bg-zinc-900 text-white flex items-center justify-center font-bold text-base shadow-xs">
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#01A0CA] to-sky-500 text-white flex items-center justify-center font-bold text-base shadow-xs ring-2 ring-[#01A0CA]/20">
                           {selectedClient.business.substring(0, 2).toUpperCase()}
                         </div>
                         <div>
@@ -613,7 +624,7 @@ function AdminContent() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowAddStudioTaskModal(true)}
-                    className="px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-medium flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+                    className="px-3.5 py-2 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Tambah Task Studio</span>
@@ -631,6 +642,86 @@ function AdminContent() {
                 </div>
               </div>
 
+              {/* Studio Operational Executive KPIs */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-[#01A0CA]/10 text-[#01A0CA] flex items-center justify-center shrink-0">
+                    <Film className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-inter text-zinc-400 uppercase tracking-wider font-semibold">Total Task</div>
+                    <div className="text-xl font-bold text-zinc-900 font-inter">{videoTasks.length}</div>
+                    <div className="text-[10px] text-zinc-500">Syuting & Pascaproduksi</div>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center shrink-0">
+                    <Clock className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-inter text-zinc-400 uppercase tracking-wider font-semibold">Sedang Berjalan</div>
+                    <div className="text-xl font-bold text-amber-700 font-inter">
+                      {videoTasks.filter(t => t.status === 'Sedang Berjalan').length}
+                    </div>
+                    <div className="text-[10px] text-zinc-500">Proses Take / Editing</div>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-inter text-zinc-400 uppercase tracking-wider font-semibold">Selesai / QC Lolos</div>
+                    <div className="text-xl font-bold text-emerald-700 font-inter">
+                      {videoTasks.filter(t => t.status === 'Selesai').length}
+                    </div>
+                    <div className="text-[10px] text-zinc-500">Master 4K Siap</div>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center shrink-0">
+                    <Building2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-inter text-zinc-400 uppercase tracking-wider font-semibold">Brand di Studio</div>
+                    <div className="text-xl font-bold text-indigo-700 font-inter">
+                      {new Set(videoTasks.map(t => t.clientId)).size}
+                    </div>
+                    <div className="text-[10px] text-zinc-500">Klien Aktif Produksi</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Studio Phase Filters */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                <span className="text-xs font-semibold text-zinc-500 flex items-center gap-1.5 shrink-0">
+                  <Filter className="w-3.5 h-3.5 text-[#01A0CA]" />
+                  Tahapan:
+                </span>
+                {[
+                  { key: 'all', label: `Semua (${videoTasks.length})` },
+                  { key: 'Riset & Naskah', label: 'Riset & Naskah' },
+                  { key: 'Produksi & Shoot', label: 'Produksi & Shoot' },
+                  { key: 'Penyuntingan & Desain', label: 'Penyuntingan & Desain' },
+                  { key: 'Quality Control', label: 'Quality Control' },
+                ].map(phase => (
+                  <button
+                    key={phase.key}
+                    onClick={() => setStudioPhaseFilter(phase.key)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer shrink-0 ${
+                      studioPhaseFilter === phase.key
+                        ? 'bg-[#01A0CA] text-white font-semibold shadow-xs'
+                        : 'bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
+                    }`}
+                  >
+                    {phase.label}
+                  </button>
+                ))}
+              </div>
+
               {videoTasks.length === 0 ? (
                 <EmptyState
                   icon={Film}
@@ -639,61 +730,112 @@ function AdminContent() {
                   actionLabel="+ Tambah Task Studio Pertama"
                   onAction={() => setShowAddStudioTaskModal(true)}
                 />
+              ) : videoTasks.filter(t => studioPhaseFilter === 'all' || t.phase === studioPhaseFilter).length === 0 ? (
+                <EmptyState
+                  icon={Film}
+                  title="Tidak Ada Task di Tahapan Ini"
+                  description={`Belum ada task produksi studio untuk tahapan "${studioPhaseFilter}".`}
+                  actionLabel="Lihat Semua Tahapan"
+                  onAction={() => setStudioPhaseFilter('all')}
+                />
               ) : (
-                <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-xs divide-y divide-zinc-100">
-                  {videoTasks.map(task => {
-                    const client = clientPipeline.find(c => c.id === task.clientId) || selectedClient;
-                    return (
-                      <div key={task.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="space-y-1.5 min-w-0">
-                          <div className="flex items-center gap-2.5 flex-wrap">
-                            <span className="text-xs font-inter font-medium px-2 py-0.5 rounded bg-zinc-100 text-zinc-700">
-                              {client.business}
-                            </span>
-                            <span className="text-sm font-semibold text-zinc-900">{task.title}</span>
-                            <span className="text-[10px] font-inter px-2 py-0.5 rounded bg-zinc-200 text-zinc-800">
-                              {task.phase}
-                            </span>
+                <div className="bg-white border border-zinc-200/90 rounded-2xl overflow-hidden shadow-xs divide-y divide-zinc-100">
+                  {videoTasks
+                    .filter(t => studioPhaseFilter === 'all' || t.phase === studioPhaseFilter)
+                    .map(task => {
+                      const client = clientPipeline.find(c => c.id === task.clientId) || selectedClient;
+                      
+                      const getPhaseStyle = (ph: string) => {
+                        if (ph.includes('Riset')) return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+                        if (ph.includes('Produksi') || ph.includes('Shoot')) return 'bg-sky-50 text-[#01A0CA] border-sky-200';
+                        if (ph.includes('Penyuntingan') || ph.includes('Desain')) return 'bg-amber-50 text-amber-700 border-amber-200';
+                        if (ph.includes('Quality') || ph.includes('QC')) return 'bg-purple-50 text-purple-700 border-purple-200';
+                        return 'bg-zinc-100 text-zinc-700 border-zinc-200';
+                      };
+
+                      const getStatusStyle = (st: string) => {
+                        if (st === 'Selesai') return 'bg-emerald-50 text-emerald-700 border-emerald-300';
+                        if (st === 'Sedang Berjalan') return 'bg-amber-50 text-amber-700 border-amber-300';
+                        return 'bg-zinc-50 text-zinc-700 border-zinc-200';
+                      };
+
+                      return (
+                        <div key={task.id} className="p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 hover:bg-zinc-50/50 transition">
+                          <div className="space-y-2 min-w-0 flex-1">
+                            <div className="flex items-center gap-2.5 flex-wrap">
+                              <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-[#01A0CA]/10 text-[#01A0CA] border border-[#01A0CA]/20">
+                                {client.business}
+                              </span>
+                              <span className="text-sm font-semibold text-zinc-900">{task.title}</span>
+                              <span className={`text-[10px] font-inter font-medium px-2 py-0.5 rounded-full border ${getPhaseStyle(task.phase)}`}>
+                                {task.phase}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-4 text-xs text-zinc-500 font-light flex-wrap">
+                              <span className="flex items-center gap-1.5">
+                                <span className="text-zinc-400">Shooter / DOP:</span>
+                                <strong className="text-zinc-800 font-medium">{task.shooter}</strong>
+                              </span>
+                              <span className="text-zinc-300">•</span>
+                              <span className="flex items-center gap-1.5">
+                                <span className="text-zinc-400">Penyimpanan Master:</span>
+                                <span className="font-mono text-zinc-700 bg-zinc-100 px-1.5 py-0.5 rounded text-[11px]">{task.rawFolder}</span>
+                              </span>
+                            </div>
+
+                            {/* Visual Progress Bar */}
+                            <div className="w-full max-w-md pt-1">
+                              <div className="flex justify-between items-center text-[11px] font-inter mb-1">
+                                <span className="text-zinc-400">Progres Studio</span>
+                                <span className="font-semibold text-[#01A0CA]">{task.progress}%</span>
+                              </div>
+                              <div className="w-full h-1.5 bg-zinc-100 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full rounded-full bg-gradient-to-r from-[#01A0CA] to-sky-400 transition-all duration-300"
+                                  style={{ width: `${task.progress}%` }}
+                                />
+                              </div>
+                            </div>
                           </div>
-                          <p className="text-xs text-zinc-500 font-light">
-                            Shooter: <strong className="text-zinc-800">{task.shooter}</strong> • Penyimpanan: {task.rawFolder}
-                          </p>
-                        </div>
 
-                        <div className="flex items-center gap-3 shrink-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-inter text-zinc-700 font-semibold">{task.progress}%</span>
-                            <input
-                              type="range"
-                              min="0"
-                              max="100"
-                              value={task.progress}
-                              onChange={(e) => updateStudioTask(task.id, parseInt(e.target.value, 10), task.status)}
-                              className="w-24 sm:w-28 accent-zinc-900 cursor-pointer"
-                            />
+                          <div className="flex items-center gap-3 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-zinc-100">
+                            {/* Slider Range */}
+                            <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200/80 px-3 py-1.5 rounded-xl">
+                              <span className="text-xs font-inter text-zinc-700 font-semibold min-w-8 text-right">{task.progress}%</span>
+                              <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={task.progress}
+                                onChange={(e) => updateStudioTask(task.id, parseInt(e.target.value, 10), task.status)}
+                                className="w-24 sm:w-28 accent-[#01A0CA] cursor-pointer"
+                              />
+                            </div>
+
+                            {/* Status Dropdown */}
+                            <select
+                              value={task.status}
+                              onChange={(e) => updateStudioTask(task.id, task.progress, e.target.value as any)}
+                              className={`border rounded-xl px-3 py-1.5 text-xs font-medium cursor-pointer transition focus:outline-none focus:ring-2 focus:ring-[#01A0CA]/20 ${getStatusStyle(task.status)}`}
+                            >
+                              <option value="Dalam Antrean">Dalam Antrean</option>
+                              <option value="Sedang Berjalan">Sedang Berjalan</option>
+                              <option value="Selesai">Selesai</option>
+                            </select>
+
+                            {/* Delete Button */}
+                            <button
+                              onClick={() => deleteStudioTask(task.id)}
+                              className="p-2 rounded-xl text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                              title="Hapus task studio"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </div>
-
-                          <select
-                            value={task.status}
-                            onChange={(e) => updateStudioTask(task.id, task.progress, e.target.value as any)}
-                            className="bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-zinc-800 font-medium cursor-pointer"
-                          >
-                            <option value="Dalam Antrean">Dalam Antrean</option>
-                            <option value="Sedang Berjalan">Sedang Berjalan</option>
-                            <option value="Selesai">Selesai</option>
-                          </select>
-
-                          <button
-                            onClick={() => deleteStudioTask(task.id)}
-                            className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
-                            title="Hapus task studio"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                 </div>
               )}
             </div>
@@ -780,9 +922,9 @@ function AdminContent() {
                               ) : (
                                 <button
                                   onClick={() => setSelectedProofClient(client)}
-                                  className="px-3.5 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs inline-flex items-center gap-1.5 transition shadow-xs cursor-pointer"
+                                  className="px-3.5 py-1.5 rounded-lg bg-[#01A0CA] hover:bg-[#008db3] text-white font-semibold text-xs inline-flex items-center gap-1.5 transition shadow-xs cursor-pointer"
                                 >
-                                  <Unlock className="w-3.5 h-3.5 text-emerald-400" />
+                                  <Unlock className="w-3.5 h-3.5 text-white" />
                                   <span>Buka Akses</span>
                                 </button>
                               )}
@@ -815,7 +957,7 @@ function AdminContent() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowAddClientModal(true)}
-                    className="px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+                    className="px-4 py-2.5 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white font-semibold text-xs flex items-center gap-1.5 transition shadow-sm cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Tambah Klien Baru</span>
@@ -929,7 +1071,7 @@ function AdminContent() {
                             setSelectedClientId(cl.id);
                             setAdminTab('content_engine');
                           }}
-                          className="flex-1 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-medium transition cursor-pointer"
+                          className="flex-1 py-2 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold transition cursor-pointer shadow-xs"
                         >
                           Buka Konten Brand Ini
                         </button>
@@ -955,13 +1097,101 @@ function AdminContent() {
           ======================================================== */}
           {adminTab === 'brief_vault' && (
             <div className="space-y-6">
-              <div className="pb-2 border-b border-zinc-200">
-                <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900">
-                  Vault Brief & Dokumen Onboarding
-                </h1>
-                <p className="text-xs text-zinc-500 font-light mt-1">
-                  Arsip kesepakatan awal brand, target audiens, dan problem statement klien untuk referensi tim kreatif.
-                </p>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-2 border-b border-zinc-200">
+                <div>
+                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900">
+                    Vault Brief & Dokumen Onboarding
+                  </h1>
+                  <p className="text-xs text-zinc-500 font-light mt-1">
+                    Arsip kesepakatan awal brand, target audiens, dan problem statement klien untuk referensi tim kreatif.
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => setShowAddClientModal(true)}
+                  className="px-3.5 py-2 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah Klien & Brief</span>
+                </button>
+              </div>
+
+              {/* Brief Executive KPIs */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-[#01A0CA]/10 text-[#01A0CA] flex items-center justify-center shrink-0">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-inter text-zinc-400 uppercase tracking-wider font-semibold">Total Dokumen Brief</div>
+                    <div className="text-xl font-bold text-zinc-900 font-inter">{clientPipeline.length} Brief</div>
+                    <div className="text-[10px] text-zinc-500">Arsip Brand Onboarding</div>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-inter text-zinc-400 uppercase tracking-wider font-semibold">Produksi Aktif (DP Lunas)</div>
+                    <div className="text-xl font-bold text-emerald-700 font-inter">
+                      {clientPipeline.filter(c => c.isUnlocked).length} Brand
+                    </div>
+                    <div className="text-[10px] text-zinc-500">Akses Kalender Terbuka</div>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-inter text-zinc-400 uppercase tracking-wider font-semibold">Alokasi Konten Aktif</div>
+                    <div className="text-xl font-bold text-indigo-700 font-inter">
+                      {clientPipeline.reduce((acc, c) => acc + ((c.reelsMax || 0) + (c.postsMax || 0)), 0)} Konten
+                    </div>
+                    <div className="text-[10px] text-zinc-500">Kapasitas Bulanan Klien</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Search & Filter Bar */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 border border-zinc-200/90 rounded-2xl shadow-xs">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Cari nama brand, PIC, email, atau problem statement..."
+                    value={briefSearchTerm}
+                    onChange={(e) => setBriefSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-8 py-2 bg-zinc-50/70 border border-zinc-200 rounded-xl text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#01A0CA]/20 focus:border-[#01A0CA] transition"
+                  />
+                  {briefSearchTerm && (
+                    <button
+                      onClick={() => setBriefSearchTerm('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 text-xs cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+
+                {uniqueClientPics.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-zinc-500 font-medium shrink-0">Filter PIC:</span>
+                    <select
+                      value={clientPicFilter}
+                      onChange={(e) => setClientPicFilter(e.target.value)}
+                      className="bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2 text-xs font-medium text-zinc-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#01A0CA]/20"
+                    >
+                      <option value="ALL">Semua PIC ({clientPipeline.length})</option>
+                      {uniqueClientPics.map((pic) => (
+                        <option key={pic} value={pic}>PIC: {pic}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
 
               {clientPipeline.length === 0 ? (
@@ -972,40 +1202,143 @@ function AdminContent() {
                   actionLabel="+ Tambah Klien & Brief"
                   onAction={() => setShowAddClientModal(true)}
                 />
+              ) : clientPipeline.filter(cl => {
+                  const matchesSearch = 
+                    cl.business.toLowerCase().includes(briefSearchTerm.toLowerCase()) ||
+                    cl.name.toLowerCase().includes(briefSearchTerm.toLowerCase()) ||
+                    cl.email.toLowerCase().includes(briefSearchTerm.toLowerCase()) ||
+                    (cl.briefNotes && cl.briefNotes.toLowerCase().includes(briefSearchTerm.toLowerCase())) ||
+                    cl.id.toLowerCase().includes(briefSearchTerm.toLowerCase());
+                  const matchesPic = clientPicFilter === 'ALL' || cl.picAssigned === clientPicFilter;
+                  return matchesSearch && matchesPic;
+                }).length === 0 ? (
+                <EmptyState
+                  icon={FileText}
+                  title="Tidak Ada Dokumen Brief yang Cocok"
+                  description={
+                    briefSearchTerm
+                      ? `Tidak ditemukan brief untuk kata kunci "${briefSearchTerm}".`
+                      : "Brief klien baru yang masuk dari form landing page atau ditambah manual akan diarsipkan di sini."
+                  }
+                  actionLabel={briefSearchTerm ? "Reset Pencarian" : "+ Tambah Klien & Brief"}
+                  onAction={() => {
+                    if (briefSearchTerm) {
+                      setBriefSearchTerm('');
+                    } else {
+                      setShowAddClientModal(true);
+                    }
+                  }}
+                />
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {clientPipeline.map(cl => (
-                    <div key={cl.id} className="p-6 rounded-2xl bg-white border border-zinc-200 shadow-xs space-y-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-semibold text-base text-zinc-900">{cl.business}</h3>
-                          <p className="text-xs text-zinc-400 font-inter mt-0.5">PIC: {cl.name} ({cl.email})</p>
+                  {clientPipeline
+                    .filter(cl => {
+                      const matchesSearch = 
+                        cl.business.toLowerCase().includes(briefSearchTerm.toLowerCase()) ||
+                        cl.name.toLowerCase().includes(briefSearchTerm.toLowerCase()) ||
+                        cl.email.toLowerCase().includes(briefSearchTerm.toLowerCase()) ||
+                        (cl.briefNotes && cl.briefNotes.toLowerCase().includes(briefSearchTerm.toLowerCase())) ||
+                        cl.id.toLowerCase().includes(briefSearchTerm.toLowerCase());
+                      const matchesPic = clientPicFilter === 'ALL' || cl.picAssigned === clientPicFilter;
+                      return matchesSearch && matchesPic;
+                    })
+                    .map(cl => (
+                      <div key={cl.id} className="p-6 rounded-2xl bg-white border border-zinc-200/90 shadow-xs hover:border-[#01A0CA]/40 transition space-y-4 flex flex-col justify-between">
+                        <div className="space-y-4">
+                          {/* Brand Header */}
+                          <div className="flex justify-between items-start gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#01A0CA] to-sky-400 text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
+                                {cl.business.substring(0, 2).toUpperCase()}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <h3 className="font-semibold text-base text-zinc-900 leading-tight truncate">{cl.business}</h3>
+                                  {cl.isUnlocked && (
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Klien Aktif" />
+                                  )}
+                                </div>
+                                <p className="text-xs text-zinc-500 font-inter mt-0.5 truncate">
+                                  PIC: <span className="text-zinc-800 font-medium">{cl.name}</span> • {cl.email}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-col items-end gap-1 shrink-0">
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#01A0CA]/10 text-[#01A0CA] border border-[#01A0CA]/20 font-bold">
+                                {cl.id}
+                              </span>
+                              <span className={`text-[10px] font-inter font-medium px-2 py-0.5 rounded-full border ${
+                                cl.isUnlocked 
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                                  : 'bg-amber-50 text-amber-700 border-amber-200'
+                              }`}>
+                                {cl.isUnlocked ? 'Aktif (DP Lunas)' : 'Menunggu DP'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Package & Quota summary */}
+                          <div className="flex items-center justify-between text-xs bg-zinc-50 border border-zinc-200/70 p-2.5 rounded-xl">
+                            <div className="flex items-center gap-1.5 text-zinc-700">
+                              <span className="text-zinc-400 font-inter">Paket:</span>
+                              <span className="font-semibold text-zinc-900">{cl.package}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-zinc-700">
+                              <span className="text-zinc-400 font-inter">Kuota:</span>
+                              <span className="font-mono font-bold text-[#01A0CA]">{((cl.reelsUsed || 0) + (cl.postsUsed || 0))}/{((cl.reelsMax || 0) + (cl.postsMax || 0))}</span>
+                              <span className="text-zinc-400 text-[10px]">Konten</span>
+                            </div>
+                          </div>
+
+                          {/* Brief Quote Box */}
+                          <div className="p-4 rounded-xl bg-sky-50/40 border-l-4 border-[#01A0CA] border-y border-r border-sky-100/60 text-xs text-zinc-800 leading-relaxed space-y-1">
+                            <div className="flex items-center gap-1.5 text-[10px] font-inter uppercase tracking-wider font-semibold text-[#01A0CA]">
+                              <Sparkles className="w-3 h-3" />
+                              <span>Target Audiens & Problem Statement:</span>
+                            </div>
+                            <p className="italic text-zinc-700 font-normal">
+                              "{cl.briefNotes || 'Belum ada catatan khusus.'}"
+                            </p>
+                          </div>
                         </div>
-                        <span className="text-[10px] font-inter px-2 py-0.5 rounded bg-zinc-100 text-zinc-600 font-medium">
-                          {cl.id}
-                        </span>
-                      </div>
 
-                      <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200/80 text-xs text-zinc-700 leading-relaxed font-light">
-                        <strong className="text-zinc-900 font-medium block mb-1">Catatan Target / Problem Klien:</strong>
-                        "{cl.briefNotes}"
-                      </div>
+                        {/* Footer Actions */}
+                        <div className="pt-3 border-t border-zinc-100 flex items-center justify-between gap-2">
+                          <button
+                            onClick={() => handleCopyBrief(cl.id, `Brief ${cl.business}:\nPIC: ${cl.name} (${cl.email})\nPaket: ${cl.package}\nTarget/Problem: ${cl.briefNotes}`)}
+                            className={`px-3 py-1.5 rounded-xl border text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${
+                              copiedBriefId === cl.id
+                                ? 'border-emerald-300 bg-emerald-50 text-emerald-700 font-semibold'
+                                : 'border-zinc-200 hover:bg-zinc-50 text-zinc-700'
+                            }`}
+                          >
+                            {copiedBriefId === cl.id ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>Tersalin!</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3.5 h-3.5 text-zinc-500" />
+                                <span>Salin Brief</span>
+                              </>
+                            )}
+                          </button>
 
-                      <div className="pt-2 flex justify-between items-center text-xs font-inter text-zinc-500">
-                        <span>Paket: {cl.package}</span>
-                        <button
-                          onClick={() => {
-                            setSelectedClientId(cl.id);
-                            setAdminTab('content_engine');
-                          }}
-                          className="text-zinc-900 hover:underline font-medium flex items-center gap-1 cursor-pointer"
-                        >
-                          <span>Kelola Naskah di Kanban</span>
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </button>
+                          <button
+                            onClick={() => {
+                              setSelectedClientId(cl.id);
+                              setAdminTab('content_engine');
+                            }}
+                            className="px-3.5 py-1.5 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold flex items-center gap-1 shadow-xs transition cursor-pointer"
+                          >
+                            <span>Kelola Naskah di Kanban</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               )}
             </div>

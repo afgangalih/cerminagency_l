@@ -47,9 +47,9 @@ export function LockedFeatureModal({ onClose }: LockedFeatureModalProps) {
         <div className="mt-6 space-y-3">
           <button
             onClick={handleSimulatePayment}
-            className="w-full py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs flex items-center justify-center gap-2 transition shadow-sm cursor-pointer"
+            className="w-full py-3 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white font-semibold text-xs flex items-center justify-center gap-2 transition shadow-sm cursor-pointer"
           >
-            <Unlock className="w-4 h-4 text-emerald-400" />
+            <Unlock className="w-4 h-4 text-white" />
             <span>Simulasikan Bayar DP (Buka Gembok Sekarang)</span>
           </button>
 
