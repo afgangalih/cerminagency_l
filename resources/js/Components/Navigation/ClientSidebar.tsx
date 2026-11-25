@@ -64,7 +64,7 @@ export function ClientSidebar({
           {/* 1. Header: Client Brand Profile */}
           <div className="p-3 border-b border-zinc-100 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-7 h-7 rounded-lg bg-zinc-950 text-white font-bold flex items-center justify-center text-xs shrink-0 tracking-tight">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#01A0CA] to-[#008db3] text-white font-bold flex items-center justify-center text-xs shrink-0 tracking-tight shadow-xs">
                 {selectedClient.business.substring(0, 2).toUpperCase()}
               </div>
               <div className="min-w-0">
@@ -72,15 +72,15 @@ export function ClientSidebar({
                   <span className="font-semibold text-xs text-zinc-950 truncate">
                     {selectedClient.business}
                   </span>
-                  <span className={`text-[9px] font-inter px-1.5 py-0.2 rounded font-medium shrink-0 ${
+                  <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded font-semibold shrink-0 ${
                     accountType === 'official' 
-                      ? 'bg-emerald-50 text-emerald-700' 
-                      : 'bg-amber-50 text-amber-700'
+                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/50' 
+                      : 'bg-amber-50 text-amber-700 border border-amber-200/50'
                   }`}>
                     {accountType === 'official' ? 'Resmi' : 'Demo'}
                   </span>
                 </div>
-                <span className="text-[10px] text-zinc-400 font-inter block truncate">
+                <span className="text-[10px] text-zinc-400 font-mono block truncate">
                   {selectedClient.instagram}
                 </span>
               </div>
@@ -97,23 +97,25 @@ export function ClientSidebar({
 
           {/* 2. Quota Usage Widget */}
           <div className="p-3 border-b border-zinc-100 shrink-0">
-            <div className="bg-zinc-50/70 border border-zinc-200/60 rounded-xl p-3 space-y-2.5">
+            <div className="bg-sky-50/40 border border-[#01A0CA]/20 rounded-xl p-3 space-y-2.5">
               <div className="flex items-center justify-between text-[11px]">
-                <span className="font-medium text-zinc-700">Kuota Konten Bulan Ini</span>
-                <span className="font-inter text-[10px] text-zinc-400">Oktober</span>
+                <span className="font-semibold text-zinc-900">Kuota Konten Bulan Ini</span>
+                <span className="font-mono text-[10px] text-[#01A0CA] font-medium bg-white px-1.5 py-0.5 rounded border border-[#01A0CA]/20">
+                  Bulan Berjalan
+                </span>
               </div>
 
               {/* Reels Progress */}
               <div className="space-y-1">
                 <div className="flex justify-between text-[11px] text-zinc-600">
-                  <span>Reels & Video</span>
-                  <span className="font-inter text-zinc-900 font-semibold text-[10px]">
+                  <span className="font-medium">Reels & Video (9:16)</span>
+                  <span className="font-mono text-zinc-900 font-semibold text-[10px]">
                     {selectedClient.reelsUsed} / {selectedClient.reelsMax}
                   </span>
                 </div>
-                <div className="w-full bg-zinc-200/70 h-1.5 rounded-full overflow-hidden">
+                <div className="w-full bg-zinc-200/70 h-2 rounded-full overflow-hidden">
                   <div 
-                    className="bg-zinc-900 h-full rounded-full transition-all duration-500"
+                    className="bg-[#01A0CA] h-full rounded-full transition-all duration-500 shadow-2xs"
                     style={{ width: `${reelsPercent}%` }}
                   />
                 </div>
@@ -122,14 +124,14 @@ export function ClientSidebar({
               {/* Posts Progress */}
               <div className="space-y-1">
                 <div className="flex justify-between text-[11px] text-zinc-600">
-                  <span>Carousel / Feed</span>
-                  <span className="font-inter text-zinc-900 font-semibold text-[10px]">
+                  <span className="font-medium">Carousel & Desain Feed</span>
+                  <span className="font-mono text-zinc-900 font-semibold text-[10px]">
                     {selectedClient.postsUsed} / {selectedClient.postsMax}
                   </span>
                 </div>
-                <div className="w-full bg-zinc-200/70 h-1.5 rounded-full overflow-hidden">
+                <div className="w-full bg-zinc-200/70 h-2 rounded-full overflow-hidden">
                   <div 
-                    className="bg-zinc-900 h-full rounded-full transition-all duration-500"
+                    className="bg-sky-500 h-full rounded-full transition-all duration-500 shadow-2xs"
                     style={{ width: `${postsPercent}%` }}
                   />
                 </div>
@@ -138,9 +140,9 @@ export function ClientSidebar({
               {/* Request Button */}
               <button
                 onClick={onOpenRequestModal}
-                className="w-full py-1.5 px-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs flex items-center justify-center gap-1.5 transition shadow-2xs cursor-pointer mt-1"
+                className="w-full py-1.5 px-3 rounded-lg bg-[#01A0CA] hover:bg-[#008db3] text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition shadow-xs cursor-pointer mt-1"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5" strokeWidth={2} />
                 <span>Ajukan Konten Baru</span>
               </button>
             </div>
@@ -149,7 +151,7 @@ export function ClientSidebar({
           {/* 3. Navigation Links */}
           <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
             <div>
-              <div className="px-2 mb-1 text-[11px] font-medium text-zinc-400">
+              <div className="px-2 mb-1.5 text-[10px] font-semibold tracking-wider uppercase text-zinc-400">
                 Menu Portal
               </div>
               <nav className="space-y-0.5">
@@ -157,12 +159,12 @@ export function ClientSidebar({
                   onClick={() => onTabClick('overview')}
                   className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer ${
                     activeTab === 'overview'
-                      ? 'bg-zinc-900 text-white shadow-2xs'
+                      ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold border-l-2 border-[#01A0CA] shadow-2xs'
                       : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <LayoutDashboard className="w-4 h-4 shrink-0" />
+                    <LayoutDashboard className={`w-4 h-4 shrink-0 ${activeTab === 'overview' ? 'text-[#01A0CA]' : 'text-zinc-500'}`} strokeWidth={1.75} />
                     <span>Dasbor Utama</span>
                   </div>
                 </button>
@@ -171,12 +173,12 @@ export function ClientSidebar({
                   onClick={() => onTabClick('calendar')}
                   className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer ${
                     activeTab === 'calendar'
-                      ? 'bg-zinc-900 text-white shadow-2xs'
+                      ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold border-l-2 border-[#01A0CA] shadow-2xs'
                       : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Calendar className="w-4 h-4 shrink-0" />
+                    <Calendar className={`w-4 h-4 shrink-0 ${activeTab === 'calendar' ? 'text-[#01A0CA]' : 'text-zinc-500'}`} strokeWidth={1.75} />
                     <span>Kalender & Feed IG</span>
                   </div>
                   {isDemo && <Lock className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
@@ -186,12 +188,12 @@ export function ClientSidebar({
                   onClick={() => onTabClick('production')}
                   className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer ${
                     activeTab === 'production'
-                      ? 'bg-zinc-900 text-white shadow-2xs'
+                      ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold border-l-2 border-[#01A0CA] shadow-2xs'
                       : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Film className="w-4 h-4 shrink-0" />
+                    <Film className={`w-4 h-4 shrink-0 ${activeTab === 'production' ? 'text-[#01A0CA]' : 'text-zinc-500'}`} strokeWidth={1.75} />
                     <span>Progres Video & Shoot</span>
                   </div>
                   {isDemo && <Lock className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
@@ -201,12 +203,12 @@ export function ClientSidebar({
                   onClick={() => onTabClick('strategy')}
                   className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer ${
                     activeTab === 'strategy'
-                      ? 'bg-zinc-900 text-white shadow-2xs'
+                      ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold border-l-2 border-[#01A0CA] shadow-2xs'
                       : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Compass className="w-4 h-4 shrink-0" />
+                    <Compass className={`w-4 h-4 shrink-0 ${activeTab === 'strategy' ? 'text-[#01A0CA]' : 'text-zinc-500'}`} strokeWidth={1.75} />
                     <span>Strategi Brand & Hook</span>
                   </div>
                 </button>

@@ -27,7 +27,7 @@ export function AddOnQuotaModal({ onClose }: AddOnQuotaModalProps) {
         </button>
 
         <div className="flex items-center gap-2.5 mb-4">
-          <div className="w-9 h-9 rounded-xl bg-zinc-900 text-white flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-[#01A0CA]/10 text-[#01A0CA] border border-[#01A0CA]/20 flex items-center justify-center">
             <Plus className="w-5 h-5" />
           </div>
           <div>

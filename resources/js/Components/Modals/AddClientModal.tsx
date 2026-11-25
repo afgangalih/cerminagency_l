@@ -95,7 +95,7 @@ export function AddClientModal({ onClose }: AddClientModalProps) {
         </button>
 
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-zinc-900 text-white flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-[#01A0CA]/10 text-[#01A0CA] border border-[#01A0CA]/20 flex items-center justify-center">
             <Building2 className="w-5 h-5" />
           </div>
           <div>
@@ -183,15 +183,15 @@ export function AddClientModal({ onClose }: AddClientModalProps) {
                   onClick={() => setSelectedPkgIndex(idx)}
                   className={`p-3 rounded-xl border text-left transition cursor-pointer ${
                     selectedPkgIndex === idx
-                      ? 'border-zinc-900 bg-zinc-900 text-white shadow-xs'
+                      ? 'border-[#01A0CA] bg-[#01A0CA] text-white shadow-xs'
                       : 'border-zinc-200 bg-zinc-50/50 hover:bg-zinc-100/70 text-zinc-800'
                   }`}
                 >
                   <div className="font-semibold text-xs leading-snug">{pkg.name.split(' (')[0]}</div>
-                  <div className={`text-[11px] font-inter mt-1 ${selectedPkgIndex === idx ? 'text-zinc-300' : 'text-zinc-500'}`}>
+                  <div className={`text-[11px] font-inter mt-1 ${selectedPkgIndex === idx ? 'text-sky-100' : 'text-zinc-500'}`}>
                     {pkg.price} / bln
                   </div>
-                  <div className={`text-[10px] mt-1 font-inter ${selectedPkgIndex === idx ? 'text-emerald-300' : 'text-emerald-700'}`}>
+                  <div className={`text-[10px] mt-1 font-inter ${selectedPkgIndex === idx ? 'text-white font-semibold' : 'text-emerald-700'}`}>
                     Kuota: {pkg.reels} Video Reels
                   </div>
                 </button>
@@ -226,7 +226,7 @@ export function AddClientModal({ onClose }: AddClientModalProps) {
                     type="checkbox"
                     checked={isUnlocked}
                     onChange={(e) => setIsUnlocked(e.target.checked)}
-                    className="w-4 h-4 rounded border-zinc-300 accent-zinc-900"
+                    className="w-4 h-4 rounded border-zinc-300 accent-[#01A0CA]"
                   />
                   <span>Langsung Verifikasi DP 50% (Akses Langsung Buka)</span>
                 </label>
@@ -255,7 +255,7 @@ export function AddClientModal({ onClose }: AddClientModalProps) {
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-medium transition shadow-sm cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold transition shadow-sm cursor-pointer"
             >
               Simpan & Daftarkan Klien
             </button>

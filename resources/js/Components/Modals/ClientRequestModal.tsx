@@ -59,7 +59,7 @@ export function ClientRequestModal({ onClose }: ClientRequestModalProps) {
         </button>
 
         <div className="flex items-center gap-2.5 mb-5">
-          <div className="w-9 h-9 rounded-xl bg-zinc-900 text-white flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-[#01A0CA]/10 text-[#01A0CA] border border-[#01A0CA]/20 flex items-center justify-center">
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
@@ -132,10 +132,10 @@ export function ClientRequestModal({ onClose }: ClientRequestModalProps) {
                     key={p.id}
                     type="button"
                     onClick={() => togglePlatform(p.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer ${
                       isSelected 
-                        ? 'bg-zinc-900 text-white border-zinc-900' 
-                        : 'bg-zinc-50 text-zinc-600 border-zinc-200 hover:bg-zinc-100'
+                        ? 'bg-[#01A0CA] text-white border-[#01A0CA] shadow-2xs' 
+                        : 'bg-zinc-50 text-zinc-600 border-zinc-200 hover:border-[#01A0CA]/40'
                     }`}
                   >
                     {p.label}
@@ -166,7 +166,7 @@ export function ClientRequestModal({ onClose }: ClientRequestModalProps) {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+              className="px-5 py-2 rounded-lg bg-[#01A0CA] hover:bg-[#008db3] text-white font-semibold text-xs flex items-center gap-1.5 transition shadow-sm cursor-pointer"
             >
               <Send className="w-3.5 h-3.5" />
               <span>Kirim Pengajuan</span>

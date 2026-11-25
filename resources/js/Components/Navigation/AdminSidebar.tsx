@@ -97,18 +97,25 @@ export function AdminSidebar({
       `}>
         {/* Top: Precise h-16 Header, Client Management, Quick Action, Grouped Navigation */}
         <div className="flex flex-col min-h-0 flex-1">
-          {/* 1. Header (Exact h-16 matching DashboardHeader for continuous hairline border) */}
+          {/* 1. Header with Official Cermin Brand Logo */}
           <div className="h-16 px-4 sm:px-5 border-b border-zinc-200/80 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-7 h-7 rounded-lg bg-zinc-950 text-white flex items-center justify-center font-bold text-xs tracking-tight shrink-0 shadow-2xs">
-                CK
-              </div>
+              <img
+                src="/images/cermin-logo.png"
+                alt="Cermin Kreatif"
+                className="w-8 h-8 rounded-full object-cover shrink-0 shadow-xs border border-zinc-200/80"
+              />
               <div className="min-w-0">
-                <span className="font-semibold text-xs text-zinc-950 tracking-tight block truncate">
-                  Cermin Kreatif
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-xs text-zinc-950 tracking-tight block truncate">
+                    Cermin Kreatif
+                  </span>
+                  <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-[#01A0CA]/10 text-[#01A0CA]">
+                    ADMIN
+                  </span>
+                </div>
                 <span className="text-[10px] font-mono text-zinc-400 block -mt-0.5">
-                  Studio OS
+                  Studio OS • Komando
                 </span>
               </div>
             </div>
@@ -127,31 +134,33 @@ export function AdminSidebar({
           <div className="px-3.5 pt-3.5 pb-2 shrink-0 relative" ref={brandDropdownRef}>
             <div className="px-1 mb-1.5 flex items-center justify-between text-[10px] font-semibold tracking-wider uppercase text-zinc-400">
               <span>Manajemen Klien</span>
-              <span className="font-mono text-[9px] text-zinc-400">{clientPipeline.length} Brand</span>
+              <span className="font-mono text-[9px] text-[#01A0CA] font-medium bg-[#01A0CA]/10 px-1.5 py-0.2 rounded">
+                {clientPipeline.length} Brand
+              </span>
             </div>
 
             <button
               onClick={() => setBrandDropdownOpen(!brandDropdownOpen)}
-              className="w-full bg-zinc-50/90 hover:bg-zinc-100/90 border border-zinc-200/80 rounded-xl p-2.5 flex items-center justify-between transition cursor-pointer text-left group shadow-2xs"
+              className="w-full bg-zinc-50/90 hover:bg-white hover:border-[#01A0CA]/40 border border-zinc-200/80 rounded-xl p-2.5 flex items-center justify-between transition cursor-pointer text-left group shadow-2xs"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-zinc-950 text-white flex items-center justify-center font-bold text-xs tracking-tight shrink-0 shadow-2xs">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#01A0CA] to-[#008db3] text-white flex items-center justify-center font-bold text-xs tracking-tight shrink-0 shadow-xs">
                   {getClientInitials(selectedClient?.business || 'CK')}
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 ring-2 ring-emerald-500/20" />
                     <span className="text-xs font-semibold text-zinc-950 truncate block leading-tight">
                       {selectedClient?.business || 'Pilih Brand'}
                     </span>
                   </div>
-                  <span className="text-[10px] text-zinc-400 font-mono block truncate pl-3 mt-0.5">
+                  <span className="text-[10px] text-zinc-500 font-mono block truncate mt-0.5">
                     {selectedClient?.package || 'Retainer Aktif'} • PIC: {selectedClient?.picAssigned || 'Studio Lead'}
                   </span>
                 </div>
               </div>
               <ChevronDown
-                className={`w-3.5 h-3.5 text-zinc-400 group-hover:text-zinc-700 transition-transform duration-200 shrink-0 ${
+                className={`w-3.5 h-3.5 text-zinc-400 group-hover:text-[#01A0CA] transition-transform duration-200 shrink-0 ${
                   brandDropdownOpen ? 'rotate-180' : ''
                 }`}
                 strokeWidth={1.5}
@@ -171,9 +180,9 @@ export function AdminSidebar({
                   <div className="flex items-center gap-1 px-1 py-1 overflow-x-auto border-b border-zinc-100">
                     <button
                       onClick={() => setSelectedPicFilter('ALL')}
-                      className={`px-2 py-0.5 rounded text-[10px] font-medium transition cursor-pointer whitespace-nowrap ${
+                      className={`px-2 py-0.5 rounded text-[10px] font-semibold transition cursor-pointer whitespace-nowrap ${
                         selectedPicFilter === 'ALL'
-                          ? 'bg-zinc-900 text-white shadow-2xs'
+                          ? 'bg-[#01A0CA] text-white shadow-2xs'
                           : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
                       }`}
                     >
@@ -186,9 +195,9 @@ export function AdminSidebar({
                         <button
                           key={pic}
                           onClick={() => setSelectedPicFilter(pic)}
-                          className={`px-2 py-0.5 rounded text-[10px] font-medium transition cursor-pointer whitespace-nowrap ${
+                          className={`px-2 py-0.5 rounded text-[10px] font-semibold transition cursor-pointer whitespace-nowrap ${
                             selectedPicFilter === pic
-                              ? 'bg-zinc-900 text-white shadow-2xs'
+                              ? 'bg-[#01A0CA] text-white shadow-2xs'
                               : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
                           }`}
                         >
@@ -211,14 +220,14 @@ export function AdminSidebar({
                         }}
                         className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
                           isSelected
-                            ? 'bg-zinc-100 text-zinc-950 font-semibold'
+                            ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold'
                             : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
                         }`}
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
                           <div
                             className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 ${
-                              isSelected ? 'bg-zinc-950 text-white' : 'bg-zinc-100 text-zinc-700'
+                              isSelected ? 'bg-[#01A0CA] text-white' : 'bg-zinc-100 text-zinc-700'
                             }`}
                           >
                             {getClientInitials(client.business)}
@@ -230,7 +239,7 @@ export function AdminSidebar({
                             </span>
                           </div>
                         </div>
-                        {isSelected && <Check className="w-3.5 h-3.5 text-zinc-950 shrink-0 ml-1.5" strokeWidth={1.5} />}
+                        {isSelected && <Check className="w-3.5 h-3.5 text-[#01A0CA] shrink-0 ml-1.5" strokeWidth={2} />}
                       </button>
                     );
                   })}
@@ -262,13 +271,13 @@ export function AdminSidebar({
           <div className="px-3.5 pb-2 shrink-0">
             <button
               onClick={onOpenAddContent}
-              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg border border-zinc-200/80 bg-zinc-50/70 hover:bg-zinc-100/90 text-zinc-700 text-xs font-medium transition cursor-pointer shadow-2xs"
+              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg border border-[#01A0CA]/30 bg-gradient-to-r from-[#01A0CA]/5 to-transparent hover:from-[#01A0CA]/15 hover:border-[#01A0CA]/50 text-zinc-800 hover:text-[#01A0CA] text-xs font-medium transition cursor-pointer shadow-2xs group"
             >
               <span className="flex items-center gap-2">
-                <Plus className="w-3.5 h-3.5 text-zinc-500" strokeWidth={1.5} />
-                <span>Jadwalkan Konten</span>
+                <Plus className="w-3.5 h-3.5 text-[#01A0CA] group-hover:scale-110 transition-transform" strokeWidth={2} />
+                <span className="font-semibold">Jadwalkan Konten</span>
               </span>
-              <kbd className="text-[10px] font-mono text-zinc-400 bg-white px-1.5 py-0.2 rounded border border-zinc-200/70">
+              <kbd className="text-[10px] font-mono text-[#01A0CA] bg-white px-1.5 py-0.2 rounded border border-[#01A0CA]/20">
                 +N
               </kbd>
             </button>
@@ -280,7 +289,7 @@ export function AdminSidebar({
             <div>
               <div className="px-2 mb-1.5 flex items-center justify-between text-[10px] font-semibold tracking-wider uppercase text-zinc-400">
                 <span>Produksi Brand</span>
-                <span className="font-mono text-[9px] text-zinc-400 truncate max-w-[80px]">
+                <span className="font-mono text-[9px] text-zinc-500 truncate max-w-[90px]">
                   {selectedClient?.business || 'Klien'}
                 </span>
               </div>
@@ -291,17 +300,17 @@ export function AdminSidebar({
                     setAdminTab('content_engine');
                     setMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer ${
                     adminTab === 'content_engine'
-                      ? 'bg-zinc-900 text-white shadow-2xs'
+                      ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold border-l-2 border-[#01A0CA] shadow-2xs'
                       : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Kanban className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                    <Kanban className={`w-4 h-4 shrink-0 ${adminTab === 'content_engine' ? 'text-[#01A0CA]' : 'text-zinc-500'}`} strokeWidth={1.75} />
                     <span>SOP Konten (Multi-View)</span>
                   </div>
-                  <span className={`text-[10px] font-mono ${adminTab === 'content_engine' ? 'text-zinc-300' : 'text-zinc-400'}`}>
+                  <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-md ${adminTab === 'content_engine' ? 'bg-[#01A0CA] text-white font-bold' : 'text-zinc-400 bg-zinc-100'}`}>
                     {activeClientContents.length}
                   </span>
                 </button>
@@ -311,17 +320,17 @@ export function AdminSidebar({
                     setAdminTab('production_mgmt');
                     setMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer ${
                     adminTab === 'production_mgmt'
-                      ? 'bg-zinc-900 text-white shadow-2xs'
+                      ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold border-l-2 border-[#01A0CA] shadow-2xs'
                       : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Film className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                    <Film className={`w-4 h-4 shrink-0 ${adminTab === 'production_mgmt' ? 'text-[#01A0CA]' : 'text-zinc-500'}`} strokeWidth={1.75} />
                     <span>Produksi & Syuting</span>
                   </div>
-                  <span className={`text-[10px] font-mono ${adminTab === 'production_mgmt' ? 'text-zinc-300' : 'text-zinc-400'}`}>
+                  <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-md ${adminTab === 'production_mgmt' ? 'bg-[#01A0CA] text-white font-bold' : 'text-zinc-400 bg-zinc-100'}`}>
                     {videoTasks.length}
                   </span>
                 </button>
@@ -339,22 +348,18 @@ export function AdminSidebar({
                     setAdminTab('mission_control');
                     setMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer ${
                     adminTab === 'mission_control'
-                      ? 'bg-zinc-900 text-white shadow-2xs'
+                      ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold border-l-2 border-[#01A0CA] shadow-2xs'
                       : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <LayoutDashboard className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                    <LayoutDashboard className={`w-4 h-4 shrink-0 ${adminTab === 'mission_control' ? 'text-[#01A0CA]' : 'text-zinc-500'}`} strokeWidth={1.75} />
                     <span>Pusat Kendali</span>
                   </div>
                   {stalledReviews.length > 0 && (
-                    <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
-                      adminTab === 'mission_control' 
-                        ? 'bg-zinc-800 text-zinc-300' 
-                        : 'bg-zinc-100 text-zinc-600'
-                    }`}>
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-md bg-amber-500 text-white font-bold animate-pulse">
                       {stalledReviews.length}
                     </span>
                   )}
@@ -365,17 +370,17 @@ export function AdminSidebar({
                     setAdminTab('clients');
                     setMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer ${
                     adminTab === 'clients'
-                      ? 'bg-zinc-900 text-white shadow-2xs'
+                      ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold border-l-2 border-[#01A0CA] shadow-2xs'
                       : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Users className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                    <Users className={`w-4 h-4 shrink-0 ${adminTab === 'clients' ? 'text-[#01A0CA]' : 'text-zinc-500'}`} strokeWidth={1.75} />
                     <span>Direktori Klien</span>
                   </div>
-                  <span className={`text-[10px] font-mono ${adminTab === 'clients' ? 'text-zinc-300' : 'text-zinc-400'}`}>
+                  <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-md ${adminTab === 'clients' ? 'bg-[#01A0CA] text-white font-bold' : 'text-zinc-400 bg-zinc-100'}`}>
                     {clientPipeline.length}
                   </span>
                 </button>
@@ -385,22 +390,18 @@ export function AdminSidebar({
                     setAdminTab('finance');
                     setMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer ${
                     adminTab === 'finance'
-                      ? 'bg-zinc-900 text-white shadow-2xs'
+                      ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold border-l-2 border-[#01A0CA] shadow-2xs'
                       : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Receipt className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                    <Receipt className={`w-4 h-4 shrink-0 ${adminTab === 'finance' ? 'text-[#01A0CA]' : 'text-zinc-500'}`} strokeWidth={1.75} />
                     <span>Verifikasi DP & Faktur</span>
                   </div>
                   {pendingInvoices.length > 0 && (
-                    <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
-                      adminTab === 'finance' 
-                        ? 'bg-zinc-800 text-zinc-300' 
-                        : 'bg-zinc-100 text-zinc-600'
-                    }`}>
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-md bg-emerald-500 text-white font-bold">
                       {pendingInvoices.length}
                     </span>
                   )}
@@ -411,14 +412,14 @@ export function AdminSidebar({
                     setAdminTab('brief_vault');
                     setMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer ${
                     adminTab === 'brief_vault'
-                      ? 'bg-zinc-900 text-white shadow-2xs'
+                      ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold border-l-2 border-[#01A0CA] shadow-2xs'
                       : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <FileText className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                    <FileText className={`w-4 h-4 shrink-0 ${adminTab === 'brief_vault' ? 'text-[#01A0CA]' : 'text-zinc-500'}`} strokeWidth={1.75} />
                     <span>Arsip Brief Masuk</span>
                   </div>
                 </button>

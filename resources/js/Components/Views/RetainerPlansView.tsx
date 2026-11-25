@@ -115,7 +115,7 @@ export function RetainerPlansView({ onBack }: RetainerPlansViewProps) {
 
         <button
           onClick={() => handleContactBilling('Konsultasi Custom')}
-          className="px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-medium transition cursor-pointer shadow-xs flex items-center gap-1.5"
+          className="px-3.5 py-1.5 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold transition cursor-pointer shadow-xs flex items-center gap-1.5"
         >
           <span>Hubungi Billing</span>
           <ArrowUpRight className="w-3.5 h-3.5" strokeWidth={1.5} />
@@ -155,7 +155,7 @@ export function RetainerPlansView({ onBack }: RetainerPlansViewProps) {
               </div>
               <div className="w-full bg-zinc-200/60 h-1.5 rounded-full mt-2.5 overflow-hidden">
                 <div 
-                  className="bg-zinc-900 h-full rounded-full transition-all duration-300"
+                  className="bg-[#01A0CA] h-full rounded-full transition-all duration-300"
                   style={{ width: `${Math.min(100, (selectedClient.reelsUsed / (selectedClient.reelsMax || 1)) * 100)}%` }}
                 />
               </div>
@@ -168,7 +168,7 @@ export function RetainerPlansView({ onBack }: RetainerPlansViewProps) {
               </div>
               <div className="w-full bg-zinc-200/60 h-1.5 rounded-full mt-2.5 overflow-hidden">
                 <div 
-                  className="bg-zinc-900 h-full rounded-full transition-all duration-300"
+                  className="bg-sky-500 h-full rounded-full transition-all duration-300"
                   style={{ width: `${Math.min(100, (selectedClient.postsUsed / (selectedClient.postsMax || 1)) * 100)}%` }}
                 />
               </div>
@@ -194,7 +194,7 @@ export function RetainerPlansView({ onBack }: RetainerPlansViewProps) {
             key={pkg.id}
             className={`p-6 sm:p-7 rounded-2xl border flex flex-col justify-between transition ${
               pkg.highlighted
-                ? 'border-zinc-900 bg-white ring-1 ring-zinc-900/10 shadow-xs'
+                ? 'border-[#01A0CA] bg-white ring-1 ring-[#01A0CA]/20 shadow-xs'
                 : 'border-zinc-200/90 bg-white shadow-2xs'
             }`}
           >
@@ -202,7 +202,7 @@ export function RetainerPlansView({ onBack }: RetainerPlansViewProps) {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-mono uppercase tracking-wider text-zinc-400">Tier Retainer</span>
                 {pkg.badge && (
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-zinc-900 text-white">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#01A0CA] text-white">
                     {pkg.badge}
                   </span>
                 )}
@@ -264,10 +264,10 @@ export function RetainerPlansView({ onBack }: RetainerPlansViewProps) {
             <div className="pt-6 mt-6 border-t border-zinc-100">
               <button
                 onClick={() => handleContactBilling(pkg.name)}
-                className={`w-full py-2.5 px-4 rounded-xl text-xs font-medium transition cursor-pointer text-center ${
+                className={`w-full py-2.5 px-4 rounded-xl text-xs font-semibold transition cursor-pointer text-center ${
                   pkg.highlighted
-                    ? 'bg-zinc-900 hover:bg-zinc-800 text-white shadow-2xs'
-                    : 'border border-zinc-200/80 bg-white hover:bg-zinc-50 text-zinc-800'
+                    ? 'bg-[#01A0CA] hover:bg-[#008db3] text-white shadow-xs'
+                    : 'border border-zinc-200/80 bg-white hover:border-[#01A0CA]/40 hover:text-[#01A0CA] text-zinc-800'
                 }`}
               >
                 Pilih / Konsultasi Paket

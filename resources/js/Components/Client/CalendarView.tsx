@@ -36,10 +36,10 @@ export function CalendarView({ onSelectItem }: CalendarViewProps) {
         <div className="inline-flex rounded-xl p-1 bg-white border border-zinc-200 shadow-sm">
           <button
             onClick={() => setViewMode('calendar')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
               viewMode === 'calendar'
-                ? 'bg-zinc-900 text-white shadow-sm'
-                : 'text-zinc-600 hover:text-zinc-900'
+                ? 'bg-[#01A0CA] text-white shadow-sm'
+                : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
             }`}
           >
             <Calendar className="w-3.5 h-3.5" />
@@ -47,10 +47,10 @@ export function CalendarView({ onSelectItem }: CalendarViewProps) {
           </button>
           <button
             onClick={() => setViewMode('instagram')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
               viewMode === 'instagram'
-                ? 'bg-zinc-900 text-white shadow-sm'
-                : 'text-zinc-600 hover:text-zinc-900'
+                ? 'bg-[#01A0CA] text-white shadow-sm'
+                : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
             }`}
           >
             <Grid3X3 className="w-3.5 h-3.5" />
@@ -58,10 +58,10 @@ export function CalendarView({ onSelectItem }: CalendarViewProps) {
           </button>
           <button
             onClick={() => setViewMode('tiktok')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
               viewMode === 'tiktok'
-                ? 'bg-zinc-900 text-white shadow-sm'
-                : 'text-zinc-600 hover:text-zinc-900'
+                ? 'bg-[#01A0CA] text-white shadow-sm'
+                : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
             }`}
           >
             <Film className="w-3.5 h-3.5" />
@@ -71,15 +71,15 @@ export function CalendarView({ onSelectItem }: CalendarViewProps) {
 
         {/* Platform Filter Buttons */}
         <div className="flex items-center gap-1.5 text-xs">
-          <span className="text-zinc-400 font-inter text-[11px] mr-1 hidden sm:inline">Filter Platform:</span>
+          <span className="text-zinc-400 font-mono text-[11px] mr-1 hidden sm:inline">Filter:</span>
           {(['all', 'instagram', 'tiktok', 'youtube_shorts'] as const).map(p => (
             <button
               key={p}
               onClick={() => setPlatformFilter(p)}
-              className={`px-2.5 py-1 rounded-md text-[11px] font-inter border transition ${
+              className={`px-2.5 py-1 rounded-md text-[11px] font-semibold border transition cursor-pointer ${
                 platformFilter === p
-                  ? 'bg-zinc-900 text-white border-zinc-900'
-                  : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-100'
+                  ? 'bg-[#01A0CA] text-white border-[#01A0CA] shadow-2xs'
+                  : 'bg-white text-zinc-600 border-zinc-200 hover:border-[#01A0CA]/40'
               }`}
             >
               {p === 'all' ? 'Semua' : p === 'instagram' ? 'Instagram' : p === 'tiktok' ? 'TikTok' : 'YT Shorts'}

@@ -69,7 +69,7 @@ export function AdminRevisionModal({ item, onClose }: AdminRevisionModalProps) {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+              className="px-5 py-2 rounded-lg bg-[#01A0CA] hover:bg-[#008db3] text-white font-semibold text-xs flex items-center gap-1.5 transition shadow-sm cursor-pointer"
             >
               <Send className="w-3.5 h-3.5" />
               <span>Unggah Draf Revisi & Kembalikan ke Klien</span>

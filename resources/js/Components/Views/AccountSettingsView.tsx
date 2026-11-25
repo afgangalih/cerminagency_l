@@ -57,15 +57,15 @@ export function AccountSettingsView({ onBack }: AccountSettingsViewProps) {
           </div>
         </div>
 
-        {/* Flat Segmented Control (Zero Icon Clutter) */}
+        {/* Flat Segmented Control */}
         <div className="inline-flex rounded-xl p-1 bg-white border border-zinc-200 shadow-2xs text-xs">
           <button
             type="button"
             onClick={() => setActiveTab('notifikasi')}
-            className={`py-1.5 px-3 rounded-lg font-medium transition cursor-pointer ${
+            className={`py-1.5 px-3 rounded-lg font-semibold transition cursor-pointer ${
               activeTab === 'notifikasi'
-                ? 'bg-zinc-900 text-white shadow-2xs'
-                : 'text-zinc-600 hover:text-zinc-900'
+                ? 'bg-[#01A0CA] text-white shadow-2xs'
+                : 'text-zinc-600 hover:text-zinc-950'
             }`}
           >
             Notifikasi
@@ -73,10 +73,10 @@ export function AccountSettingsView({ onBack }: AccountSettingsViewProps) {
           <button
             type="button"
             onClick={() => setActiveTab('keamanan')}
-            className={`py-1.5 px-3 rounded-lg font-medium transition cursor-pointer ${
+            className={`py-1.5 px-3 rounded-lg font-semibold transition cursor-pointer ${
               activeTab === 'keamanan'
-                ? 'bg-zinc-900 text-white shadow-2xs'
-                : 'text-zinc-600 hover:text-zinc-900'
+                ? 'bg-[#01A0CA] text-white shadow-2xs'
+                : 'text-zinc-600 hover:text-zinc-950'
             }`}
           >
             Keamanan
@@ -84,10 +84,10 @@ export function AccountSettingsView({ onBack }: AccountSettingsViewProps) {
           <button
             type="button"
             onClick={() => setActiveTab('operasional')}
-            className={`py-1.5 px-3 rounded-lg font-medium transition cursor-pointer ${
+            className={`py-1.5 px-3 rounded-lg font-semibold transition cursor-pointer ${
               activeTab === 'operasional'
-                ? 'bg-zinc-900 text-white shadow-2xs'
-                : 'text-zinc-600 hover:text-zinc-900'
+                ? 'bg-[#01A0CA] text-white shadow-2xs'
+                : 'text-zinc-600 hover:text-zinc-950'
             }`}
           >
             Standar Studio
@@ -304,7 +304,7 @@ export function AccountSettingsView({ onBack }: AccountSettingsViewProps) {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-medium transition cursor-pointer shadow-xs flex items-center gap-1.5"
+              className="px-5 py-2 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold transition cursor-pointer shadow-xs flex items-center gap-1.5"
             >
               <Check className="w-3.5 h-3.5" strokeWidth={1.5} />
               <span>Simpan Konfigurasi</span>
