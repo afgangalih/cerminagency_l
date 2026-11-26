@@ -84,6 +84,7 @@ interface AgencyContextType {
     version: string;
     caption: string;
     mediaUrl: string;
+    driveRawUrl?: string;
   }) => void;
   updateContentItem: (contentId: number, updates: Partial<ContentItem>) => void;
   deleteContentItem: (contentId: number) => void;
@@ -92,10 +93,11 @@ interface AgencyContextType {
   approveContent: (contentId: number) => void;
   requestRevision: (contentId: number, note: string) => { success: boolean; message: string };
   submitRevisionFix: (contentId: number, resolutionNote: string) => void;
-  moveContentStage: (contentId: number, newStage: ContentStage) => void;
+  moveContentStage: (contentId: number, newStage: ContentStage, publishedUrl?: string) => void;
   submitClientRequest: (data: {
     title: string;
     type: string;
+    pillar?: string;
     platforms: PlatformType[];
     date: string;
     caption?: string;
@@ -355,6 +357,7 @@ export function AgencyProvider({
     version: string;
     caption: string;
     mediaUrl: string;
+    driveRawUrl?: string;
   }) => {
     const { dayNumber, day, weekday } = parseDateMetadata(itemData.date);
     const newId = Date.now();
@@ -383,6 +386,7 @@ export function AgencyProvider({
       stage: itemData.stage,
       caption: itemData.caption,
       mediaUrl: itemData.mediaUrl,
+      driveRawUrl: itemData.driveRawUrl || '',
     }, {
       preserveScroll: true,
       preserveState: true,
@@ -425,10 +429,14 @@ export function AgencyProvider({
       return item;
     });
     setContentList(updated);
+    triggerNotification('Konten disetujui! Tim agensi siap menjadwalkan publikasi.');
 
     router.post(`/portal/contents/${contentId}/approve`, {}, {
       preserveScroll: true,
       preserveState: true,
+      onError: () => {
+        triggerNotification('Gagal menyetujui konten. Silakan coba lagi.');
+      },
     });
   };
 
@@ -464,6 +472,7 @@ export function AgencyProvider({
     });
 
     setContentList(updated);
+    triggerNotification('Catatan revisi berhasil dikirim ke tim kreatif agensi.');
 
     router.post(`/portal/contents/${contentId}/revision`, { note }, {
       preserveScroll: true,
@@ -503,7 +512,7 @@ export function AgencyProvider({
   };
 
   // Move stage via Kanban
-  const moveContentStage = (contentId: number, newStage: ContentStage) => {
+  const moveContentStage = (contentId: number, newStage: ContentStage, publishedUrl?: string) => {
     const updated = contentList.map(item => {
       if (item.id === contentId) {
         let status = item.status;
@@ -515,16 +524,30 @@ export function AgencyProvider({
         if (newStage === 'review') { status = 'Menunggu Review'; color = 'amber'; ball = 'client'; }
         if (newStage === 'revision') { status = 'Perlu Revisi'; color = 'rose'; ball = 'agency'; }
         if (newStage === 'scheduled') { status = 'Disetujui'; color = 'emerald'; ball = 'agency'; }
+        if (newStage === 'published') { status = 'Sudah Tayang'; color = 'sky'; ball = 'agency'; }
 
-        return { ...item, stage: newStage, status, statusColor: color, ballInCourt: ball };
+        return {
+          ...item,
+          stage: newStage,
+          status,
+          statusColor: color,
+          ballInCourt: ball,
+          publishedUrl: newStage === 'published' && publishedUrl ? publishedUrl : item.publishedUrl,
+        };
       }
       return item;
     });
 
     setContentList(updated);
+    triggerNotification(
+      newStage === 'published'
+        ? 'Konten resmi ditandai Sudah Tayang!'
+        : 'Tahapan konten berhasil diperbarui.'
+    );
 
     router.post(`/admin/contents/${contentId}/move-stage`, {
       stage: newStage,
+      publishedUrl: publishedUrl || '',
     }, {
       preserveScroll: true,
       preserveState: true,
@@ -535,13 +558,20 @@ export function AgencyProvider({
   const submitClientRequest = (data: {
     title: string;
     type: string;
+    pillar?: string;
     platforms: PlatformType[];
     date: string;
     caption?: string;
     notes?: string;
   }) => {
     const client = selectedClient;
-    const isQuotaFull = client.reelsUsed >= client.reelsMax;
+    const isReels =
+      data.type.toLowerCase().includes('reel') ||
+      data.type.toLowerCase().includes('video') ||
+      data.platforms.includes('tiktok');
+    const isQuotaFull = isReels
+      ? client.reelsUsed >= client.reelsMax
+      : client.postsUsed >= client.postsMax;
     const { dayNumber, day, weekday } = parseDateMetadata(data.date);
 
     const newId = Date.now();
@@ -554,6 +584,7 @@ export function AgencyProvider({
       weekday,
       title: data.title,
       type: data.type,
+      pillar: data.pillar || '',
       platforms: data.platforms,
       stage: 'script',
       status: 'Request Masuk',
@@ -573,7 +604,8 @@ export function AgencyProvider({
       if (c.id === client.id) {
         return {
           ...c,
-          reelsUsed: c.reelsUsed + 1
+          reelsUsed: isReels ? c.reelsUsed + 1 : c.reelsUsed,
+          postsUsed: isReels ? c.postsUsed : c.postsUsed + 1,
         };
       }
       return c;
@@ -581,10 +613,16 @@ export function AgencyProvider({
 
     setContentList(updatedContents);
     setClientPipeline(updatedClients);
+    triggerNotification(
+      isQuotaFull
+        ? `Pengajuan "${data.title}" diterima sebagai slot add-on!`
+        : `Pengajuan "${data.title}" berhasil dikirim ke tim kreatif!`
+    );
 
     router.post('/portal/contents/request', {
       title: data.title,
       type: data.type,
+      pillar: data.pillar || '',
       platforms: data.platforms,
       date: data.date,
       caption: data.caption,

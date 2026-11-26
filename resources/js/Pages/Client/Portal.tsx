@@ -1,23 +1,48 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Link, Head } from '@inertiajs/react';
-import { AgencyProvider } from '@/context/AgencyContext';
-import { useAgency } from '@/context/AgencyContext';
-import { ContentItem, ClientPipeline, VideoProductionTask } from '@/types';
-import { 
-  Calendar, Video, BarChart3, Compass, CheckCircle2, Lock, 
-  Plus, AlertCircle, ExternalLink, ArrowRight, Film, Clock, 
-  Menu, X, Sparkles, UserCheck, ChevronRight, Copy, Check,
-  MessageCircle, Send, Lightbulb, ShieldCheck, Flame, BookOpen, 
-  Layers, Image as ImageIcon
+import React, { useState, useMemo } from 'react';
+import { Link, Head, usePage } from '@inertiajs/react';
+import { AgencyProvider, useAgency } from '@/context/AgencyContext';
+import {
+  ContentItem,
+  ClientPipeline,
+  VideoProductionTask,
+  AgencyNotificationItem,
+  ContentPillarItem,
+} from '@/types';
+import {
+  Calendar,
+  BarChart3,
+  Compass,
+  CheckCircle2,
+  Lock,
+  ExternalLink,
+  ArrowRight,
+  Film,
+  Clock,
+  Sparkles,
+  ChevronRight,
+  MessageCircle,
+  Send,
+  Lightbulb,
+  Layers,
+  Image as ImageIcon,
+  Target,
+  FolderOpen,
+  UserCheck,
+  Eye,
+  AlertTriangle,
+  Clapperboard,
+  Copy,
+  Receipt,
+  ChevronLeft,
 } from 'lucide-react';
 import { CalendarView } from '@/Components/Client/CalendarView';
 import { ReviewModal } from '@/Components/Modals/ReviewModal';
 import { ClientRequestModal } from '@/Components/Modals/ClientRequestModal';
 import { LockedFeatureModal } from '@/Components/Modals/LockedFeatureModal';
-import { DashboardHeader } from '@/Components/Navigation/DashboardHeader';
-import { ClientSidebar } from '@/Components/Navigation/ClientSidebar';
+import { DashboardHeader, BreadcrumbItem } from '@/Components/Navigation/DashboardHeader';
+import { ClientSidebar, ClientTabKey } from '@/Components/Navigation/ClientSidebar';
 
 interface ClientPortalProps {
   client?: ClientPipeline | null;
@@ -40,262 +65,110 @@ export default function ClientPortal({
       initialSelectedClientId={client?.id}
       userRole="client"
     >
-      <Head title="Portal Klien - Cermin Kreatif" />
+      <Head title="Portal Klien — Cermin Kreatif" />
       <PortalContent />
     </AgencyProvider>
   );
 }
 
-// Brand Strategy Profile interface for interactive console
-interface BrandPillar {
-  title: string;
-  ratio: string;
-  targetCount: number;
-  description: string;
-  hookExamples: string[];
-}
-
-interface BrandStrategyConfig {
-  tagline: string;
-  pillars: BrandPillar[];
-  toneOfVoice: {
-    style: string;
-    greeting: string;
-    doList: string[];
-    dontList: string[];
-  };
-}
-
-// Client-specific dynamic strategy data
-const BRAND_STRATEGIES: Record<string, BrandStrategyConfig> = {
-  'Maven Coffee Roasters': {
-    tagline: 'Membangun Otoritas Specialty Coffee & Komunitas Hangat di Malang',
-    pillars: [
-      {
-        title: 'Craftsmanship & Edukasi Seduh',
-        ratio: '40%',
-        targetCount: 5,
-        description: 'Membongkar teknik roasting biji kopi lokal, panduan seduh manual V60, dan kalibrasi espresso harian.',
-        hookExamples: [
-          'Kenapa kopi Arabika selalu punya rasa asam buah segar?',
-          'Cara kalibrasi mesin espresso tiap jam 7 pagi sebelum buka kafe',
-          '3 kesalahan fatal saat seduh kopi sachet di rumah'
-        ]
-      },
-      {
-        title: 'Vibe Kedai & Budaya Komunitas',
-        ratio: '35%',
-        targetCount: 4,
-        description: 'Menampilkan interaksi barista yang hangat, suasana nongkrong ramah laptop, dan playlist kafe autentik.',
-        hookExamples: [
-          'Spot paling tenang buat kerja remote di Maven Coffee Malang',
-          'Reaksi barista saat pelanggan minta gula cair di kopi specialty',
-          'Kisah di balik petani kopi Gunung Tilu mitra kami'
-        ]
-      },
-      {
-        title: 'Signature Menu & Penawaran Terbatas',
-        ratio: '25%',
-        targetCount: 3,
-        description: 'Memicu kunjungan kedai melalui rilis menu seasonal cold brew dan promo bundling sarapan pagi.',
-        hookExamples: [
-          'Menu rahasia yang cuma dipesan barista Maven saat shift malam',
-          'Bundling kopi susu botol 1 liter hemat 25% minggu ini',
-          'Sensasi rasa cold brew fermentasi stroberi 24 jam'
-        ]
-      }
-    ],
-    toneOfVoice: {
-      style: 'Bersahabat, hangat, berwawasan kopi mendalam tanpa terkesan menggurui',
-      greeting: 'Kawan Maven',
-      doList: [
-        'Tampilkan detail crema espresso dan uap kopi secara sinematik',
-        'Sebutkan asal biji kopi dan proses pascapanen secara transparan',
-        'Gunakan musik jazz, lo-fi, atau indie folk yang menenangkan'
-      ],
-      dontList: [
-        'Hindari musik jedag-jedug yang merusak citra tenang kedai',
-        'Jangan pakai klaim berlebihan seperti "kopi terenak di dunia"'
-      ]
-    }
+const DEFAULT_PILLARS: ContentPillarItem[] = [
+  {
+    title: 'Edukasi & Tips Produk',
+    ratio: '40%',
+    targetCount: 5,
+    description:
+      'Membahas masalah spesifik audiens dan mengulas manfaat serta cara pemakaian produk secara langsung.',
   },
-  'Lumen Skin Clinic': {
-    tagline: 'Klinik Estetika Medis Tepercaya: Kulit Sehat Alami Berbasis Bukti Ilmiah',
-    pillars: [
-      {
-        title: 'Dokter Spesialis & Edukasi Bahan Aktif',
-        ratio: '45%',
-        targetCount: 5,
-        description: 'Membahas fakta medis kandungan skincare (Retinol, Niacinamide) serta mitos perawatan kulit oleh dokter ahli.',
-        hookExamples: [
-          'Dokter kulit bongkar: Jangan pakai bahan ini kalau kulitmu bruntusan!',
-          'Kenapa bekas jerawat kehitaman (PIH) susah hilang hanya dengan serum?',
-          'Perbedaan mendasar laser flek vs chemical peeling medis'
-        ]
-      },
-      {
-        title: 'Pengalaman Pasien & Standar Higienis',
-        ratio: '35%',
-        targetCount: 4,
-        description: 'Transparansi proses treatment yang nyaman, sterilisasi alat medis, dan dokumentasi perbaikan kulit riil pasien.',
-        hookExamples: [
-          'Melihat langsung proses sterilisasi alat sebelum tindakan laser',
-          'Perjalanan 3 bulan mengatasi jerawat meradang tanpa rasa sakit',
-          'Ruang konsultasi privat dokter Lumen Skin Clinic'
-        ]
-      },
-      {
-        title: 'Promo Eksklusif & Reservasi Jadwal',
-        ratio: '20%',
-        targetCount: 3,
-        description: 'Penawaran terbatas paket perawatan bulanan dan tautan langsung reservasi konsultasi dokter.',
-        hookExamples: [
-          'Paket Glowing Medical Facial khusus pelanggan baru bulan ini',
-          'Hemat 30% konsultasi dokter spesialis tiap hari Selasa',
-          'Sisa 5 slot jadwal dokter dermatologi untuk akhir pekan ini'
-        ]
-      }
-    ],
-    toneOfVoice: {
-      style: 'Menenangkan, empatik, higienis, berbasis keilmuan medis dokter estetika',
-      greeting: 'Sahabat Lumen',
-      doList: [
-        'Tampilkan penjelasan dokter dengan jas medis dan pencahayaan bersih',
-        'Gunakan data sebelum-sesudah yang jujur tanpa filter kamera',
-        'Gunakan palet warna pastel/putih yang higienis dan elegan'
-      ],
-      dontList: [
-        'Jangan pernah klaim "kulit putih instan dalam 3 hari"',
-        'Hindari visual jarum suntik atau darah yang memicu rasa takut audiens'
-      ]
-    }
+  {
+    title: 'Lifestyle & Kepercayaan',
+    ratio: '35%',
+    targetCount: 4,
+    description:
+      'Membangun kedekatan emosional melalui aktivitas keseharian brand, cerita tim, dan standar kualitas.',
   },
-  'Arche Studio Apparel': {
-    tagline: 'Streetwear Essentials: Potongan Presisi & Material Katun Berat Tahan Cuci',
-    pillars: [
-      {
-        title: 'Lookbook & Panduan Styling OOTD',
-        ratio: '50%',
-        targetCount: 6,
-        description: 'Inspirasi mix and match oversized t-shirt, cargo pants, dan panduan layering warna outfit harian.',
-        hookExamples: [
-          '3 cara styling kaos oversized biar nggak kelihatan tenggelam',
-          'Warna celana yang paling cocok buat kaos abu-abu washed',
-          'OOTD nongkrong simpel tapi kelihatan mahal dan rapi'
-        ]
-      },
-      {
-        title: 'Uji Durabilitas & Karakter Material',
-        ratio: '30%',
-        targetCount: 4,
-        description: 'Memperlihatkan ketebalan katun combed 24s/16s, jahitan rantai leher, dan sablon discharge anti-retak.',
-        hookExamples: [
-          'Uji cuci 20 kali: Apakah sablon kaos ini bakal retak?',
-          'Kenapa rib leher kaos murah gampang melar sedangkan Arche tidak?',
-          'Detail tekstur kain katun berat yang adem di cuaca tropis'
-        ]
-      },
-      {
-        title: 'Rilis Artikel Baru & Kuota Terbatas',
-        ratio: '20%',
-        targetCount: 2,
-        description: 'Menciptakan momentum peluncuran koleksi terbatas dengan hitung mundur dan penawaran hari pertama.',
-        hookExamples: [
-          'Sneak peek artikel terbaru rilis Jumat jam 19.00 WIB (Hanya 100 pcs)',
-          'Koleksi jaket corduroy edisi terbatas hampir habis',
-          'Detail bordir dada artikel eksklusif akhir tahun'
-        ]
-      }
-    ],
-    toneOfVoice: {
-      style: 'Percaya diri, modern, santai khas anak muda urban, to the point',
-      greeting: 'Bro & Sis',
-      doList: [
-        'Tampilkan fitting pakaian pada model bergerak secara dinamis',
-        'Ambil gambar close-up detail jahitan, kancing, dan tekstur kain',
-        'Gunakan musik hip-hop lo-fi atau electronic tempo sedang'
-      ],
-      dontList: [
-        'Hindari gaya bahasa formal kaku layaknya instansi pemerintah',
-        'Jangan pakai visual resolusi rendah yang menurunkan nilai produk'
-      ]
-    }
-  }
-};
+  {
+    title: 'Promo & Penawaran',
+    ratio: '25%',
+    targetCount: 3,
+    description:
+      'Memicu konversi melalui katalog produk unggulan, penawaran terbatas, dan ajakan bertindak yang jelas.',
+  },
+];
 
-const DEFAULT_STRATEGY: BrandStrategyConfig = {
-  tagline: 'Retainer Produksi Konten Video Vertikal & Manajemen Medsos',
-  pillars: [
-    {
-      title: 'Edukasi & Pembahasan Masalah',
-      ratio: '45%',
-      targetCount: 5,
-      description: 'Membahas masalah spesifik audiens dan mengulas cara pemakaian produk brand secara langsung.',
-      hookExamples: [
-        '3 kesalahan umum yang sering bikin rugi pelanggan',
-        'Cara cepat mengatasi masalah harian tanpa ribet',
-        'Fakta penting yang jarang diketahui orang awam'
-      ]
-    },
-    {
-      title: 'Dapur Produksi & Kepercayaan',
-      ratio: '35%',
-      targetCount: 4,
-      description: 'Membangun kedekatan emosional melalui cerita autentik di balik dapur produksi dan standar QC.',
-      hookExamples: [
-        'Melihat langsung standar kualitas tim kami setiap pagi',
-        'Cerita di balik pemilihan bahan baku pilihan',
-        'Keseruan tim saat menyiapkan pesanan pelanggan'
-      ]
-    },
-    {
-      title: 'Penawaran Khusus & Promo',
-      ratio: '20%',
-      targetCount: 3,
-      description: 'Memicu konversi penjualan instan melalui penawaran terbatas dan call-to-action yang tegas.',
-      hookExamples: [
-        'Promo terbatas akhir bulan khusus pengikut setia',
-        'Klaim diskon khusus sebelum kuota hari ini habis',
-        'Paket hemat bundling produk brand Anda'
-      ]
-    }
-  ],
-  toneOfVoice: {
-    style: 'Profesional, hangat, bersahabat, tepercaya',
-    greeting: 'Rekan Mitra',
-    doList: [
-      'Gunakan visual tajam dengan komposisi video vertikal 9:16',
-      'Fokus pada manfaat riil bagi pengguna produk'
-    ],
-    dontList: [
-      'Hindari istilah teknis rumit yang membingungkan audiens',
-      'Jangan gunakan klaim tanpa rujukan data'
-    ]
-  }
+const TAB_META: Record<ClientTabKey, { title: string; subtitle: string }> = {
+  overview: {
+    title: 'Ringkasan Portal',
+    subtitle:
+      'Pantau serapan kuota bulanan, target KPI, jadwal tayang terdekat, dan draf konten yang siap ditinjau.',
+  },
+  tracker: {
+    title: 'Progres Konten',
+    subtitle:
+      'Pantau perjalanan setiap konten dari tahap naskah & desain, review, siap tayang, hingga link postingan live.',
+  },
+  calendar: {
+    title: 'Kalender & Feed',
+    subtitle:
+      'Jadwal penayangan konten lintas platform serta simulasi pratinjau grid Instagram dan TikTok.',
+  },
+  production: {
+    title: 'Progres Desain & Aset',
+    subtitle:
+      'Pantau progres pengerjaan desain dan akses seluruh tautan hasil (Drive, Figma, Canva) di satu tempat.',
+  },
+  strategy: {
+    title: 'Pilar & KPI Brand',
+    subtitle:
+      'Arah tema konten, target KPI yang disepakati, dan form pengajuan ide topik baru untuk tim kreatif.',
+  },
+  profile: {
+    title: 'Profil & Akun Brand',
+    subtitle:
+      'Informasi akun login, detail paket retainer aktif, dan ringkasan brief brand Anda.',
+  },
 };
 
 function PortalContent() {
-  const { 
-    accountType, 
-    selectedClient, 
-    activeClientContents, 
-    videoTasks 
+  const page = usePage();
+  const authUser = (page.props as any)?.auth?.user;
+
+  const {
+    accountType,
+    selectedClient,
+    activeClientContents,
+    videoTasks,
+    submitClientRequest,
+    notification,
+    triggerNotification,
   } = useAgency();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'production' | 'strategy'>('overview');
+  const [activeTab, setActiveTab] = useState<ClientTabKey>('overview');
   const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showLockedModal, setShowLockedModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Mini Calendar State (for Right 3-Col Overview Rail)
+  const [miniCalDate, setMiniCalDate] = useState<Date>(() => {
+    const firstDate = activeClientContents[0]?.date;
+    if (firstDate && /^\d{4}-\d{2}/.test(firstDate)) {
+      const [y, m] = firstDate.split('-').map(Number);
+      return new Date(y, m - 1, 1);
+    }
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
+  const [selectedMiniDay, setSelectedMiniDay] = useState<number>(
+    activeClientContents[0]?.dayNumber || new Date().getDate()
+  );
+
   // Strategy interactive console state
   const [activePillarIndex, setActivePillarIndex] = useState(0);
   const [proposedTopic, setProposedTopic] = useState('');
-  const [submittedTopics, setSubmittedTopics] = useState<string[]>([]);
-  const [topicSubmittedSuccess, setTopicSubmittedSuccess] = useState(false);
+  const [trackerStageFilter, setTrackerStageFilter] = useState<'all' | 'producing' | 'review' | 'revision' | 'scheduled' | 'published'>('all');
 
-  const handleTabClick = (tab: 'overview' | 'calendar' | 'production' | 'strategy') => {
-    if (accountType === 'demo' && (tab === 'calendar' || tab === 'production')) {
+  const handleTabClick = (tab: ClientTabKey) => {
+    if (accountType === 'demo' && (tab === 'calendar' || tab === 'production' || tab === 'tracker')) {
       setShowLockedModal(true);
       return;
     }
@@ -303,55 +176,173 @@ function PortalContent() {
     setMobileMenuOpen(false);
   };
 
-  const pendingReviews = activeClientContents.filter(c => c.status === 'Menunggu Review');
-  const approvedContents = activeClientContents.filter(c => c.status === 'Disetujui');
-  const clientStudioTasks = videoTasks.filter(t => t.clientId === selectedClient.id);
+  const pendingReviews = useMemo(
+    () => activeClientContents.filter((c) => c.status === 'Menunggu Review'),
+    [activeClientContents]
+  );
+  const approvedContents = useMemo(
+    () => activeClientContents.filter((c) => c.status === 'Disetujui'),
+    [activeClientContents]
+  );
+  const clientStudioTasks = useMemo(
+    () => videoTasks.filter((t) => t.clientId === selectedClient.id),
+    [videoTasks, selectedClient.id]
+  );
 
-  // Calculated Quota Fulfillment
-  const totalRetainerQuota = (selectedClient.reelsMax || 10) + (selectedClient.postsMax || 2);
+  // Quota Fulfillment
+  const totalRetainerQuota =
+    (selectedClient.reelsMax || 10) + (selectedClient.postsMax || 2);
   const approvedCount = approvedContents.length;
   const pendingCount = pendingReviews.length;
-  const inProductionCount = Math.max(0, totalRetainerQuota - approvedCount - pendingCount);
-  const percentageFulfillment = Math.min(100, Math.round((approvedCount / totalRetainerQuota) * 100));
+  const revisionCount = activeClientContents.filter(
+    (c) => c.stage === 'revision'
+  ).length;
+  const inProductionCount = Math.max(
+    0,
+    totalRetainerQuota - approvedCount - pendingCount - revisionCount
+  );
+  const percentageFulfillment = Math.min(
+    100,
+    Math.round((approvedCount / Math.max(1, totalRetainerQuota)) * 100)
+  );
 
-  // Next Scheduled Drop Spotlight
-  const nextDropContent = activeClientContents
-    .filter(c => c.status === 'Disetujui' || c.status === 'Menunggu Review')
-    .sort((a, b) => a.dayNumber - b.dayNumber)[0] || activeClientContents[0];
+  // Next Drop Spotlight
+  const nextDropContent =
+    activeClientContents
+      .filter(
+        (c) => c.status === 'Disetujui' || c.status === 'Menunggu Review'
+      )
+      .sort((a, b) => a.dayNumber - b.dayNumber)[0] || activeClientContents[0];
 
-  // Content format distribution
-  const reelsCount = activeClientContents.filter(c => c.type.toLowerCase().includes('reel') || c.type.toLowerCase().includes('video')).length;
-  const carouselCount = activeClientContents.filter(c => c.type.toLowerCase().includes('carousel') || c.type.toLowerCase().includes('korsel')).length;
-  const imageCount = Math.max(0, activeClientContents.length - reelsCount - carouselCount);
+  // Format Mix Ratios
+  const reelsCount = activeClientContents.filter(
+    (c) =>
+      c.type.toLowerCase().includes('reel') ||
+      c.type.toLowerCase().includes('video')
+  ).length;
+  const carouselCount = activeClientContents.filter(
+    (c) =>
+      c.type.toLowerCase().includes('carousel') ||
+      c.type.toLowerCase().includes('korsel')
+  ).length;
+  const imageCount = Math.max(
+    0,
+    activeClientContents.length - reelsCount - carouselCount
+  );
 
-  // Brand Strategy Profile Lookup
-  const strategyConfig = BRAND_STRATEGIES[selectedClient.business] || DEFAULT_STRATEGIES(selectedClient.business);
+  // Real Content Pillars & KPIs from MySQL (with fallback only when not customized yet)
+  const hasCustomPillars =
+    Boolean(selectedClient.contentPillars) &&
+    (selectedClient.contentPillars?.length || 0) > 0;
+  const activePillars: ContentPillarItem[] = hasCustomPillars
+    ? selectedClient.contentPillars!
+    : DEFAULT_PILLARS;
+  const activeKpis = selectedClient.kpiTargets || [];
 
-  function DEFAULT_STRATEGIES(businessName: string): BrandStrategyConfig {
-    return {
-      ...DEFAULT_STRATEGY,
-      tagline: `Strategi Retainer Konten & Akun Media Sosial ${businessName}`
-    };
-  }
+  const safePillarIndex = Math.min(
+    activePillarIndex,
+    Math.max(0, activePillars.length - 1)
+  );
+  const currentPillar = activePillars[safePillarIndex] || activePillars[0];
 
-  // Handle Client Topic Proposal Submission
+  const getPillarContents = (pillarTitle: string, idx: number) => {
+    const exactMatched = activeClientContents.filter(
+      (c) => c.pillar && c.pillar.toLowerCase() === pillarTitle.trim().toLowerCase()
+    );
+    if (exactMatched.length > 0) return exactMatched;
+    // Fallback grouping for legacy untagged contents if no content has a pillar yet
+    const anyTagged = activeClientContents.some((c) => Boolean(c.pillar));
+    if (anyTagged) return [];
+    return activeClientContents.filter(
+      (_, cIdx) => cIdx % Math.max(1, activePillars.length) === idx
+    );
+  };
+
+  const pillarFilteredContents = currentPillar
+    ? getPillarContents(currentPillar.title, safePillarIndex)
+    : [];
+
+  // Derived Notifications for Client Header Popover
+  const clientNotifications: AgencyNotificationItem[] = useMemo(() => {
+    const items: AgencyNotificationItem[] = [];
+    pendingReviews.forEach((c) => {
+      items.push({
+        id: `rev-${c.id}`,
+        title: `Draf Siap Direview: ${c.title}`,
+        description: `Jadwal ${c.day} (${c.type}). Klik untuk meninjau & menyetujui konten.`,
+        category: 'Review',
+        time: c.day,
+        group: 'Menunggu Tindakan',
+        unread: true,
+        actionLabel: 'Review Sekarang',
+        actionType: 'review_content',
+      });
+    });
+    clientStudioTasks
+      .filter((t) => t.status === 'Selesai')
+      .forEach((t) => {
+        items.push({
+          id: `task-${t.id}`,
+          title: `Hasil Desain Siap: ${t.title}`,
+          description: `PIC ${t.shooter} telah melampirkan tautan hasil akhir.`,
+          category: 'Desain & Aset',
+          time: 'Selesai',
+          group: 'Pembaruan',
+          unread: false,
+          actionLabel: 'Lihat Tautan',
+          actionType: 'production',
+        });
+      });
+    return items;
+  }, [pendingReviews, clientStudioTasks]);
+
+  const handleHeaderNotifAction = (notif: AgencyNotificationItem) => {
+    if (notif.id.startsWith('rev-')) {
+      const cid = Number(notif.id.replace('rev-', ''));
+      const found = activeClientContents.find((c) => c.id === cid);
+      if (found) {
+        setSelectedContent(found);
+        return;
+      }
+    }
+    if (notif.actionType === 'production') {
+      handleTabClick('production');
+      return;
+    }
+    setActiveTab('overview');
+  };
+
+  // Persist Topic Proposal directly to MySQL via submitClientRequest
   const handleTopicSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!proposedTopic.trim()) return;
+    if (accountType === 'demo') {
+      setShowLockedModal(true);
+      return;
+    }
 
-    setSubmittedTopics(prev => [proposedTopic.trim(), ...prev]);
+    const todayIso = new Date().toISOString().split('T')[0];
+    submitClientRequest({
+      title: proposedTopic.trim(),
+      type: 'Reels / Video Pendek',
+      pillar: currentPillar?.title || '',
+      platforms: ['instagram', 'tiktok'],
+      date: todayIso,
+      notes: `Usulan topik dari Portal Klien untuk pilar "${currentPillar?.title || 'Umum'}".`,
+    });
     setProposedTopic('');
-    setTopicSubmittedSuccess(true);
-    setTimeout(() => setTopicSubmittedSuccess(false), 4000);
   };
 
-  // Filter contents for currently active pillar (distribute by modulo if no tag)
-  const currentPillar = strategyConfig.pillars[activePillarIndex] || strategyConfig.pillars[0];
-  const pillarFilteredContents = activeClientContents.filter((_, idx) => idx % strategyConfig.pillars.length === activePillarIndex);
+  const breadcrumbs: BreadcrumbItem[] = useMemo(() => {
+    return [
+      { label: selectedClient.business || 'Portal Klien', nav: null },
+      { label: TAB_META[activeTab].title, nav: null },
+    ];
+  }, [selectedClient.business, activeTab]);
 
   return (
-    <div className="h-screen w-full flex flex-col md:flex-row overflow-hidden bg-zinc-50 text-zinc-900 font-sans antialiased">
-      {/* Modern Client Sidebar */}
+    <div className="min-h-screen bg-[#FFFFFF] text-[#1E293B] font-sans antialiased flex">
+      {/* Structured Airy-Blue Client Sidebar */}
       <ClientSidebar
         activeTab={activeTab}
         onTabClick={handleTabClick}
@@ -359,6 +350,8 @@ function PortalContent() {
         setMobileMenuOpen={setMobileMenuOpen}
         accountType={accountType}
         selectedClient={selectedClient}
+        pendingReviewCount={pendingReviews.length}
+        studioTaskCount={clientStudioTasks.length}
         onOpenRequestModal={() => {
           if (accountType === 'demo') {
             setShowLockedModal(true);
@@ -367,783 +360,1327 @@ function PortalContent() {
           setShowRequestModal(true);
         }}
         onOpenSupport={() => {
-          const btn = document.querySelector('button[aria-label="Buka dukungan Cermin Kreatif"]') as HTMLButtonElement;
-          if (btn) btn.click();
+          const text = encodeURIComponent(
+            `Halo Tim Cermin Kreatif! Saya ${selectedClient.name} dari ${selectedClient.business}. Butuh bantuan terkait Portal Klien.`
+          );
+          window.open(`https://wa.me/6281234567890?text=${text}`, '_blank');
+          triggerNotification('Membuka obrolan dukungan WhatsApp Cermin Kreatif.');
         }}
       />
 
       {/* Main Workspace Canvas */}
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 bg-[#FCFDFF]">
         <DashboardHeader
           role="client"
-          activeTabTitle={
-            activeTab === 'overview' ? 'Ringkasan Portal' :
-            activeTab === 'calendar' ? 'Kalender & Feed Simulator' :
-            activeTab === 'production' ? 'Progres Desain & Aset' : 'Konsol Strategi & Pilar Brand'
-          }
+          activeTabTitle={TAB_META[activeTab].title}
+          breadcrumbItems={breadcrumbs}
+          notifications={clientNotifications}
+          onNotificationAction={handleHeaderNotifAction}
           selectedClient={selectedClient}
-          onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
-          onOpenSupportWidget={() => {
-            const btn = document.querySelector('button[aria-label="Buka dukungan Cermin Kreatif"]') as HTMLButtonElement;
-            if (btn) btn.click();
-          }}
+          onToggleMobileMenu={() => setMobileMenuOpen(true)}
+          onNavigateTab={() => setActiveTab('profile')}
         />
 
-        <main className="flex-1 w-full min-w-0 p-6 sm:p-8 xl:p-10 overflow-y-auto">
-          <div className="w-full max-w-7xl mx-auto space-y-8">
+        <main className="flex-1 px-5 lg:px-7 py-6">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Consistent Module Title Block Below Navbar (Matching Admin) */}
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+              <div>
+                <h1 className="text-[22px] sm:text-[24px] font-bold text-[#1E293B] tracking-tight leading-snug">
+                  {TAB_META[activeTab].title}
+                </h1>
+                <p className="text-xs text-slate-500 mt-1">
+                  {TAB_META[activeTab].subtitle}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-semibold text-slate-600 bg-white border border-slate-100 px-3 py-1.5 rounded-xl shadow-sm">
+                  Paket: <strong className="text-[#3B9BF8]">{selectedClient.package}</strong>
+                </span>
+                <span className="text-[11px] font-semibold text-slate-600 bg-white border border-slate-100 px-3 py-1.5 rounded-xl shadow-sm">
+                  Faktur: <strong className="text-slate-800">{selectedClient.invoiceNumber}</strong>
+                </span>
+              </div>
+            </div>
 
             {/* ========================================================
-                TAB 1: OVERVIEW (EXECUTIVE HUB WITH RICH VISUALS & METRICS)
+                TAB 1: OVERVIEW (9-COL LEFT + 3-COL RIGHT RAIL MATCHING REF)
             ======================================================== */}
             {activeTab === 'overview' && (
-              <div className="space-y-8">
-                
-                {/* Header Welcome */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 pb-3 border-b border-zinc-200">
-                  <div>
-                    <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900">
-                      Pusat Kendali Brand: {selectedClient.business}
-                    </h1>
-                    <p className="text-xs text-zinc-500 font-light mt-1">
-                      Pantau serapan kuota konten bulanan, jadwal tayang terdekat, dan draf video yang siap ditinjau.
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-inter text-zinc-600 bg-white border border-zinc-200 px-3 py-1.5 rounded-lg shadow-2xs">
-                      PIC Studio: <strong className="text-zinc-950 font-semibold">{selectedClient.picAssigned || 'Dimas (Creative Lead)'}</strong>
-                    </span>
-                    <span className="text-xs font-inter text-zinc-600 bg-white border border-zinc-200 px-3 py-1.5 rounded-lg shadow-2xs">
-                      Faktur: <strong>{selectedClient.invoiceNumber}</strong>
-                    </span>
-                    <span className="text-xs font-inter px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <span>{selectedClient.package}</span>
-                    </span>
-                  </div>
-                </div>
-
-                {/* GATED ACCESS / ONBOARDING STATUS BANNER (If Demo / Belum Verifikasi DP) */}
-                {accountType === 'demo' && (
-                  <div className="bg-amber-50/70 border border-amber-200/90 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 rounded-xl bg-amber-100 text-amber-700 shrink-0 mt-0.5">
-                        <Lock className="w-4 h-4" />
+              <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+                {/* LEFT 9 COLUMNS: BANNERS, QUOTA, NEXT DROP, REVIEW QUEUE, KPI */}
+                <div className="xl:col-span-9 space-y-5">
+                  {/* Gated Onboarding Banner (Demo Mode) */}
+                  {accountType === 'demo' && (
+                    <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                          <Lock className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-bold text-amber-950">
+                            Status Onboarding: Menunggu Verifikasi DP 50% ({selectedClient.dpAmount})
+                          </h3>
+                          <p className="text-xs text-amber-800/90 mt-0.5 leading-relaxed">
+                            Brief Anda sudah kami terima. Fitur Kalender &amp; Feed serta Progres Desain &amp; Aset terbuka otomatis setelah DP diverifikasi Admin.
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-sm font-semibold text-amber-950">
-                          Status Onboarding: Menunggu Verifikasi DP 50% ({selectedClient.dpAmount})
-                        </h3>
-                        <p className="text-xs text-amber-800/90 mt-0.5 leading-relaxed">
-                          Brief Anda sudah kami terima. Fitur Kalender Konten & Progres Studio akan terbuka otomatis setelah pembayaran DP diverifikasi oleh tim kami.
-                        </p>
+                      <div className="flex flex-wrap items-center gap-2 shrink-0">
+                        <a
+                          href={`https://wa.me/6281234567890?text=${encodeURIComponent(
+                            `Halo Tim Cermin Kreatif! 👋\nSaya *${selectedClient.name}* dari brand *${selectedClient.business}* (${selectedClient.instagram}).\n\n📄 No. Faktur: ${selectedClient.invoiceNumber}\n💳 DP 50%: ${selectedClient.dpAmount}\n\nSaya ingin mengonfirmasi pembayaran DP agar portal kerja & kalender segera dibuka. Terima kasih!`
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          <span>Konfirmasi DP via WA</span>
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => setShowLockedModal(true)}
+                          className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold transition cursor-pointer shadow-sm"
+                        >
+                          Lihat Cara Aktivasi
+                        </button>
                       </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 shrink-0">
-                      <a
-                        href={`https://wa.me/6281234567890?text=${encodeURIComponent(
-                          `Halo Tim Cermin Kreatif! 👋\nSaya *${selectedClient.name}* dari brand *${selectedClient.business}* (${selectedClient.instagram}).\n\n📄 No. Faktur: ${selectedClient.invoiceNumber}\n💳 DP 50%: ${selectedClient.dpAmount}\n\nSaya ingin mengonfirmasi pembayaran DP agar portal kerja & kalender segera dibuka. Terima kasih!`
-                        )}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-xs"
-                      >
-                        <MessageCircle className="w-3.5 h-3.5" />
-                        <span>Konfirmasi DP via WA</span>
-                      </a>
-                      <button
-                        type="button"
-                        onClick={() => setShowLockedModal(true)}
-                        className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold transition cursor-pointer shadow-xs"
-                      >
-                        Lihat Cara Aktivasi
-                      </button>
-                    </div>
-                  </div>
-                )}
+                  )}
 
-                {/* ACTION CENTER: KONTEN MENUNGGU PERSETUJUAN KLIEN */}
-                {activeClientContents.filter(c => c.status === 'Menunggu Review').length > 0 && (
-                  <div className="bg-gradient-to-r from-[#01A0CA]/10 via-sky-50 to-white border border-[#01A0CA]/30 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-10 h-10 rounded-xl bg-[#01A0CA] text-white flex items-center justify-center shrink-0 shadow-xs">
-                        <Sparkles className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#01A0CA]/15 text-[#01A0CA]">
+                  {/* 1. Action Center Banner */}
+                  {pendingReviews.length > 0 && (
+                    <div className="bg-gradient-to-r from-[#3B9BF8] to-[#2589F5] rounded-2xl p-4 sm:p-5 text-white shadow-[0_10px_24px_rgba(59,155,248,0.28)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-3.5">
+                        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                          <Sparkles className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/20 text-white">
                             Tindakan Diperlukan
                           </span>
+                          <h3 className="text-sm font-bold text-white mt-1">
+                            Ada {pendingReviews.length} Draf Konten Menunggu Persetujuan Anda
+                          </h3>
+                          <p className="text-xs text-white/85 mt-0.5">
+                            Tinjau dan setujui draf agar tim kami bisa langsung menjadwalkan publikasi tepat waktu.
+                          </p>
                         </div>
-                        <h3 className="text-sm font-semibold text-zinc-900 mt-1">
-                          Ada {activeClientContents.filter(c => c.status === 'Menunggu Review').length} Draf Konten Menunggu Persetujuan Anda
-                        </h3>
-                        <p className="text-xs text-zinc-600 mt-0.5">
-                          Tinjau dan setujui draf agar tim kami bisa langsung menjadwalkan publikasi tepat waktu.
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedContent(pendingReviews[0])}
+                        className="bg-white hover:bg-slate-50 text-[#2563EB] text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm inline-flex items-center gap-1.5 shrink-0 self-start sm:self-center transition-colors cursor-pointer"
+                      >
+                        <span>Tinjau Sekarang</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* 2. SERAPAN KUOTA BULANAN + BREAKDOWN 4 STATUS */}
+                  <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <h2 className="text-[14.5px] font-bold text-slate-800">
+                          Serapan Kuota Bulanan &amp; Status Produksi
+                        </h2>
+                        <p className="text-[11px] text-slate-400">
+                          {selectedClient.package} • Realisasi paket bulan berjalan
                         </p>
                       </div>
+                      <span className="text-xs font-bold text-[#3B9BF8] bg-[#EFF7FF] px-3 py-1 rounded-xl self-start sm:self-auto tabular-nums">
+                        {selectedClient.reelsUsed + selectedClient.postsUsed} / {totalRetainerQuota} Slot Terpakai
+                      </span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedContent(activeClientContents.filter(c => c.status === 'Menunggu Review')[0])}
-                      className="px-4 py-2.5 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0 shadow-xs"
-                    >
-                      <span>Tinjau Sekarang</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                )}
 
-                {/* ROW 1: NEXT DROP SPOTLIGHT + QUOTA FULFILLMENT GAUGE (CHART) */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                  
-                  {/* HERO CARD: JADWAL TAYANG TERDEKAT (NEXT DROP SPOTLIGHT) */}
-                  <div className="lg:col-span-7 bg-white rounded-2xl border border-zinc-200/90 p-6 shadow-xs flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-                        <div className="flex items-center gap-2">
-                          <span className="p-1.5 rounded-lg bg-amber-50 text-amber-700 border border-amber-200">
-                            <Clock className="w-4 h-4" />
-                          </span>
-                          <div>
-                            <span className="text-[11px] font-inter uppercase text-zinc-400 font-semibold tracking-wide">
-                              JADWAL TAYANG TERDEKAT (NEXT DROP)
-                            </span>
-                            <h3 className="text-sm font-semibold text-zinc-900">
-                              Konten Berikutnya Siap Publikasi
-                            </h3>
+                    {/* Stacked Progress Bar */}
+                    <div className="space-y-2">
+                      <div className="w-full h-3 rounded-full overflow-hidden flex bg-slate-100">
+                        <div
+                          className="bg-[#3B9BF8] h-full transition-all duration-500"
+                          style={{
+                            width: `${Math.min(
+                              100,
+                              Math.round(((selectedClient.reelsUsed || 0) / Math.max(1, totalRetainerQuota)) * 100)
+                            )}%`,
+                          }}
+                        />
+                        <div
+                          className="bg-[#93C5FD] h-full transition-all duration-500"
+                          style={{
+                            width: `${Math.min(
+                              100,
+                              Math.round(((selectedClient.postsUsed || 0) / Math.max(1, totalRetainerQuota)) * 100)
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-sm bg-[#3B9BF8]" />
+                          Reels 9:16{' '}
+                          <strong className="text-slate-800">
+                            {selectedClient.reelsUsed}/{selectedClient.reelsMax}
+                          </strong>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-sm bg-[#93C5FD]" />
+                          Carousel / Feed{' '}
+                          <strong className="text-slate-800">
+                            {selectedClient.postsUsed}/{selectedClient.postsMax}
+                          </strong>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-sm bg-slate-200" />
+                          Sisa Kuota{' '}
+                          <strong className="text-slate-800">
+                            {Math.max(0, totalRetainerQuota - (selectedClient.reelsUsed + selectedClient.postsUsed))} Slot
+                          </strong>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 4 Kartu Metrik Status */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
+                      {[
+                        {
+                          label: 'Siap Tayang',
+                          value: approvedCount,
+                          sub: 'Disetujui & terjadwal',
+                          icon: CheckCircle2,
+                          color: 'text-emerald-600 bg-emerald-50',
+                        },
+                        {
+                          label: 'Perlu Review',
+                          value: pendingCount,
+                          sub: 'Menunggu approval',
+                          icon: Clock,
+                          color: 'text-amber-600 bg-amber-50',
+                        },
+                        {
+                          label: 'Dalam Revisi',
+                          value: revisionCount,
+                          sub: 'Dikerjakan ke V2',
+                          icon: AlertTriangle,
+                          color: 'text-rose-600 bg-rose-50',
+                        },
+                        {
+                          label: 'Dalam Produksi',
+                          value: inProductionCount,
+                          sub: 'Desain & editing',
+                          icon: Clapperboard,
+                          color: 'text-[#3B9BF8] bg-[#EFF7FF]',
+                        },
+                      ].map((stat) => {
+                        const Icon = stat.icon;
+                        return (
+                          <div
+                            key={stat.label}
+                            className="bg-[#F8FAFC] rounded-xl p-3.5 border border-slate-100 flex items-center justify-between gap-2"
+                          >
+                            <div>
+                              <p className="text-[11px] font-medium text-slate-500">
+                                {stat.label}
+                              </p>
+                              <p className="text-[20px] font-bold text-slate-900 leading-tight mt-0.5 tabular-nums">
+                                {stat.value}
+                              </p>
+                              <p className="text-[10px] text-slate-400 mt-0.5">
+                                {stat.sub}
+                              </p>
+                            </div>
+                            <div
+                              className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${stat.color}`}
+                            >
+                              <Icon className="w-[18px] h-[18px]" />
+                            </div>
                           </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 3. NEXT DROP SPOTLIGHT + ANTREAN DRAF MENUNGGU PERSETUJUAN */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+                    {/* Next Drop Spotlight */}
+                    <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-100 p-4 shadow-sm flex flex-col justify-between">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-[#3B9BF8] bg-[#EFF7FF] px-2.5 py-1 rounded-lg">
+                            Next Drop Spotlight
+                          </span>
+                          {nextDropContent && (
+                            <span
+                              className={`text-[10.5px] font-semibold ${
+                                nextDropContent.status === 'Disetujui'
+                                  ? 'text-emerald-600'
+                                  : 'text-amber-600'
+                              }`}
+                            >
+                              {nextDropContent.status === 'Disetujui'
+                                ? 'Siap Tayang'
+                                : 'Menunggu Review'}
+                            </span>
+                          )}
                         </div>
 
-                        {nextDropContent && (
-                          <div className={`inline-flex items-center gap-1.5 text-[11px] font-inter px-2.5 py-1 rounded-md font-medium border ${
-                            nextDropContent.status === 'Disetujui' 
-                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
-                              : 'bg-amber-50 text-amber-800 border-amber-200'
-                          }`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${
-                              nextDropContent.status === 'Disetujui' ? 'bg-emerald-500' : 'bg-amber-500'
-                            }`} />
-                            <span>{nextDropContent.status === 'Disetujui' ? 'Siap Tayang' : 'Menunggu Review'}</span>
+                        {nextDropContent ? (
+                          <>
+                            <div className="relative h-44 rounded-xl overflow-hidden bg-slate-100">
+                              <img
+                                src={nextDropContent.mediaUrl}
+                                alt={nextDropContent.title}
+                                className="w-full h-full object-cover"
+                              />
+                              <span className="absolute top-2.5 left-2.5 bg-white/95 text-[#3B9BF8] text-[10px] font-bold px-2 py-0.5 rounded-md">
+                                {nextDropContent.platforms.join(' & ')} • {nextDropContent.type}
+                              </span>
+                              <span className="absolute bottom-2.5 right-2.5 bg-slate-900/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-md">
+                                {nextDropContent.day} ({nextDropContent.weekday})
+                              </span>
+                            </div>
+
+                            <div>
+                              <h3 className="text-[14px] font-bold text-slate-900 leading-snug">
+                                {nextDropContent.title}
+                              </h3>
+                              <p className="text-[11.5px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                                {nextDropContent.caption}
+                              </p>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="py-12 text-center text-xs text-slate-400 bg-[#F8FAFC] rounded-xl">
+                            Belum ada jadwal tayang aktif.
                           </div>
                         )}
                       </div>
 
-                      {nextDropContent ? (
-                        <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-zinc-50/70 p-4 rounded-xl border border-zinc-200/80">
-                          <div className="w-16 h-20 rounded-lg bg-zinc-900 overflow-hidden shrink-0 shadow-xs relative">
-                            <img 
-                              src={nextDropContent.mediaUrl} 
-                              alt={nextDropContent.title} 
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute top-1 left-1 bg-zinc-950/80 text-white text-[9px] font-inter px-1 rounded">
-                              {nextDropContent.version}
-                            </div>
-                          </div>
-
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 text-xs font-inter text-zinc-500">
-                              <span className="font-semibold text-zinc-900">{nextDropContent.day} ({nextDropContent.weekday})</span>
-                              <span>•</span>
-                              <span>Jam 18.00 WIB</span>
-                              <span>•</span>
-                              <span className="text-zinc-700">{nextDropContent.platforms.join(' & ')}</span>
-                            </div>
-                            <h4 className="text-sm font-semibold text-zinc-900 mt-1 truncate">
-                              {nextDropContent.title}
-                            </h4>
-                            <p className="text-xs text-zinc-500 line-clamp-1 mt-1 font-light">
-                              {nextDropContent.caption}
-                            </p>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => setSelectedContent(nextDropContent)}
-                            className="px-4 py-2 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold transition cursor-pointer shadow-xs shrink-0"
-                          >
-                            Buka Preview
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="mt-4 p-6 text-center text-xs text-zinc-400 bg-zinc-50 rounded-xl">
-                          Belum ada jadwal penayangan aktif.
-                        </div>
+                      {nextDropContent && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedContent(nextDropContent)}
+                          className="mt-4 w-full bg-[#EFF7FF] hover:bg-[#3B9BF8] text-[#3B9BF8] hover:text-white text-xs font-semibold py-2.5 rounded-xl transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          Pratinjau Jadwal Tayang
+                        </button>
                       )}
                     </div>
 
-                    {/* Format Mix Ratios in Next Drop Footer */}
-                    <div className="mt-5 pt-4 border-t border-zinc-100 flex flex-wrap items-center justify-between text-xs text-zinc-600 gap-2">
-                      <span className="text-[11px] font-mono text-zinc-400">Variasi Format Akun:</span>
-                      <div className="flex items-center gap-3">
-                        <span className="inline-flex items-center gap-1 font-semibold text-[#01A0CA]">
-                          <Film className="w-3.5 h-3.5" />
-                          <span>{reelsCount} Reels 9:16</span>
-                        </span>
-                        <span className="inline-flex items-center gap-1 font-semibold text-indigo-600">
-                          <Layers className="w-3.5 h-3.5" />
-                          <span>{carouselCount} Korsel Feed</span>
-                        </span>
-                        <span className="inline-flex items-center gap-1 font-semibold text-zinc-700">
-                          <ImageIcon className="w-3.5 h-3.5" />
-                          <span>{imageCount} Single Post</span>
+                    {/* Antrean Draf Menunggu Persetujuan */}
+                    <div className="lg:col-span-7 bg-[#EFF7FF]/60 rounded-2xl border border-[#E5F1FF] p-4 flex flex-col justify-between space-y-3.5">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h2 className="text-[14px] font-bold text-slate-800">
+                            Antrean Draf Menunggu Persetujuan
+                          </h2>
+                          <p className="text-[11px] text-slate-400">
+                            Klik draf untuk menyetujui atau menulis catatan revisi
+                          </p>
+                        </div>
+                        <span className="text-[11px] font-bold bg-white text-amber-600 px-2.5 py-1 rounded-lg border border-amber-100 tabular-nums">
+                          {pendingReviews.length} Draf
                         </span>
                       </div>
+
+                      {pendingReviews.length === 0 ? (
+                        <div className="bg-white rounded-xl p-6 text-center space-y-2 border border-slate-100 my-auto">
+                          <CheckCircle2 className="w-7 h-7 text-emerald-500 mx-auto" />
+                          <p className="text-xs font-bold text-slate-800">
+                            Semua Draf Sudah Ditinjau!
+                          </p>
+                          <p className="text-[11px] text-slate-400">
+                            Tidak ada antrean persetujuan saat ini. Pantau jadwal tayang di Kalender &amp; Feed.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2.5 flex-1">
+                          {pendingReviews.map((item) => (
+                            <div
+                              key={item.id}
+                              className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center gap-3"
+                            >
+                              <img
+                                src={item.mediaUrl}
+                                alt={item.title}
+                                className="w-full sm:w-20 h-24 sm:h-16 rounded-lg object-cover shrink-0 bg-slate-100"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="text-[9.5px] font-bold bg-[#EFF7FF] text-[#3B9BF8] px-1.5 py-0.5 rounded">
+                                    {item.type}
+                                  </span>
+                                  <span className="text-[9.5px] font-semibold bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded">
+                                    {item.version}
+                                  </span>
+                                </div>
+                                <h3 className="text-xs font-bold text-slate-900 mt-1 truncate">
+                                  {item.title}
+                                </h3>
+                                <p className="text-[10.5px] text-slate-400 mt-0.5">
+                                  Target Tayang: {item.day} ({item.weekday})
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setSelectedContent(item)}
+                                className="bg-[#3B9BF8] hover:bg-[#2589F5] text-white text-[11px] font-semibold px-3.5 py-2 rounded-xl shrink-0 transition-colors cursor-pointer"
+                              >
+                                Tinjau &amp; Approve
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  {/* CHART: SERAPAN KUOTA KONTEN BULANAN (SVG PROGRESS GAUGE) */}
-                  <div className="lg:col-span-5 bg-white rounded-2xl border border-zinc-200/90 p-6 shadow-xs flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+                  {/* 4. REAL CLIENT KPI TARGETS (FROM MYSQL) */}
+                  <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-[#EFF7FF] text-[#3B9BF8] flex items-center justify-center">
+                          <Target className="w-4 h-4" />
+                        </div>
                         <div>
-                          <span className="text-[11px] font-mono uppercase text-[#01A0CA] font-bold tracking-wide">
-                            SERAPAN KUOTA BULANAN
-                          </span>
-                          <h3 className="text-sm font-semibold text-zinc-900">
-                            Realisasi Paket ({totalRetainerQuota} Konten)
-                          </h3>
-                        </div>
-                        <span className="text-base font-bold font-mono text-[#01A0CA]">
-                          {percentageFulfillment}% Tuntas
-                        </span>
-                      </div>
-
-                      {/* Stacked Progress Bar */}
-                      <div className="mt-5 space-y-2">
-                        <div className="w-full bg-zinc-100 h-3 rounded-full overflow-hidden flex shadow-inner">
-                          <div 
-                            style={{ width: `${(approvedCount / totalRetainerQuota) * 100}%` }}
-                            className="bg-emerald-500 h-full transition-all duration-500" 
-                            title={`Disetujui: ${approvedCount}`}
-                          />
-                          <div 
-                            style={{ width: `${(pendingCount / totalRetainerQuota) * 100}%` }}
-                            className="bg-amber-400 h-full transition-all duration-500" 
-                            title={`Menunggu Review: ${pendingCount}`}
-                          />
-                          <div 
-                            style={{ width: `${(inProductionCount / totalRetainerQuota) * 100}%` }}
-                            className="bg-[#01A0CA] h-full transition-all duration-500" 
-                            title={`Produksi & Edit: ${inProductionCount}`}
-                          />
-                        </div>
-
-                        {/* Visual Breakdown Legend */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
-                          <div className="p-2.5 rounded-lg bg-emerald-50/70 border border-emerald-100">
-                            <span className="text-[10px] font-mono text-emerald-800 uppercase block font-semibold">Siap Tayang</span>
-                            <span className="text-base font-bold text-emerald-900 font-mono">{approvedCount}</span>
-                            <span className="text-[10px] text-emerald-700 block mt-0.5">Final Terkunci</span>
-                          </div>
-
-                          <div className="p-2.5 rounded-lg bg-amber-50/70 border border-amber-100">
-                            <span className="text-[10px] font-mono text-amber-800 uppercase block font-semibold">Perlu Review</span>
-                            <span className="text-base font-bold text-amber-900 font-mono">{pendingCount}</span>
-                            <span className="text-[10px] text-amber-700 block mt-0.5">Menunggu Klien</span>
-                          </div>
-
-                          <div className="p-2.5 rounded-lg bg-rose-50/70 border border-rose-100">
-                            <span className="text-[10px] font-mono text-rose-800 uppercase block font-semibold">Dalam Revisi</span>
-                            <span className="text-base font-bold text-rose-900 font-mono">
-                              {activeClientContents.filter(c => c.stage === 'revision').length}
-                            </span>
-                            <span className="text-[10px] text-rose-700 block mt-0.5">Sedang Diperbaiki</span>
-                          </div>
-
-                          <div className="p-2.5 rounded-lg bg-sky-50/70 border border-[#01A0CA]/20">
-                            <span className="text-[10px] font-mono text-[#01A0CA] uppercase block font-semibold">Dapur Studio</span>
-                            <span className="text-base font-bold text-[#01A0CA] font-mono">{inProductionCount}</span>
-                            <span className="text-[10px] text-sky-700 block mt-0.5">Shoot &amp; Edit</span>
-                          </div>
+                          <h2 className="text-sm font-bold text-slate-900">
+                            Target KPI Brand ({selectedClient.business})
+                          </h2>
+                          <p className="text-[11px] text-slate-400">
+                            Indikator performa akun &amp; capaian periode berjalan yang disepakati bersama agensi.
+                          </p>
                         </div>
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => handleTabClick('strategy')}
+                        className="text-xs font-semibold text-[#3B9BF8] hover:underline cursor-pointer"
+                      >
+                        Lihat Pilar Konten →
+                      </button>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
-                      <span>Sisa kuota bulan berjalan: <strong className="text-zinc-900">{totalRetainerQuota - approvedCount} Konten</strong></span>
-                      <span className="text-[11px] font-mono text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">SLA Tepat Waktu 100%</span>
-                    </div>
+                    {activeKpis.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {activeKpis.map((kpi, idx) => {
+                          const curNum = parseFloat(kpi.current.replace(/[^\d.-]/g, '')) || 0;
+                          const tgtNum = parseFloat(kpi.target.replace(/[^\d.-]/g, '')) || 0;
+                          const pct =
+                            tgtNum > 0 ? Math.min(100, Math.round((curNum / tgtNum) * 100)) : 0;
+
+                          return (
+                            <div
+                              key={idx}
+                              className="p-4 rounded-xl bg-[#F8FAFC] border border-slate-100 space-y-2.5"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-xs font-bold text-slate-800 truncate">
+                                  {kpi.label}
+                                </span>
+                                <span className="text-[10.5px] font-bold text-[#3B9BF8] bg-[#EFF7FF] px-2 py-0.5 rounded-md tabular-nums">
+                                  {pct}%
+                                </span>
+                              </div>
+                              <div className="flex items-baseline gap-1.5">
+                                <span className="text-lg font-bold text-slate-900 tabular-nums">
+                                  {kpi.current}
+                                </span>
+                                <span className="text-xs text-slate-400">
+                                  / {kpi.target} {kpi.unit}
+                                </span>
+                              </div>
+                              <div className="w-full h-1.5 rounded-full bg-slate-200/70 overflow-hidden">
+                                <div
+                                  className="h-full bg-[#3B9BF8] rounded-full transition-all"
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="p-5 text-center text-xs text-slate-400 bg-[#F8FAFC] rounded-xl">
+                        Target KPI periode ini belum ditambahkan oleh Admin Agensi.
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* ROW 2: ACTION RADAR (KONTEN MENUNGGU PERSETUJUAN KLIEN) */}
-                <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-xs">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-5 pb-3 border-b border-zinc-100">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-amber-600" />
-                      <h2 className="text-sm sm:text-base font-semibold text-zinc-900">
-                        Perlu Tindakan Anda: Antrean Draf Menunggu Persetujuan
-                      </h2>
-                    </div>
-                    <span className="text-xs font-mono text-amber-700 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md font-bold">
-                      {pendingReviews.length} Draf Belum Ditinjau
-                    </span>
-                  </div>
+                {/* RIGHT 3 COLUMNS: MINI KALENDER + HASIL DESAIN & ASET + TIM DEDIKASI ANDA */}
+                <div className="xl:col-span-3 space-y-5">
+                  {/* Mini Calendar Jadwal Tayang */}
+                  {(() => {
+                    const monthNames = [
+                      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+                    ];
+                    const y = miniCalDate.getFullYear();
+                    const m = miniCalDate.getMonth();
+                    const mKey = `${y}-${String(m + 1).padStart(2, '0')}`;
+                    const dInM = new Date(y, m + 1, 0).getDate();
+                    const prevM = new Date(y, m, 0).getDate();
+                    const startW = new Date(y, m, 1).getDay();
+                    const miniCells: { day: number; month: 'prev' | 'curr' | 'next' }[] = [];
+                    for (let i = startW - 1; i >= 0; i--) {
+                      miniCells.push({ day: prevM - i, month: 'prev' });
+                    }
+                    for (let d = 1; d <= dInM; d++) {
+                      miniCells.push({ day: d, month: 'curr' });
+                    }
+                    let nx = 1;
+                    while (miniCells.length < 35) {
+                      miniCells.push({ day: nx++, month: 'next' });
+                    }
 
-                  {pendingReviews.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                      {pendingReviews.map(item => (
-                        <div 
-                          key={item.id}
-                          onClick={() => setSelectedContent(item)}
-                          className="p-4 rounded-xl border border-zinc-200/90 bg-zinc-50/50 hover:bg-white hover:border-[#01A0CA]/40 transition flex items-center justify-between gap-3 cursor-pointer shadow-2xs group"
-                        >
-                          <div className="flex items-center gap-3.5 min-w-0">
-                            <div className="w-12 h-14 rounded-lg bg-zinc-900 overflow-hidden shrink-0 shadow-2xs relative">
-                              <img src={item.mediaUrl} alt={item.title} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition" />
-                              <div className="absolute bottom-0 inset-x-0 bg-zinc-950/80 text-[8px] text-zinc-300 text-center font-mono py-0.5">
-                                {item.version}
-                              </div>
-                            </div>
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap text-xs font-inter text-zinc-500">
-                                <span className="font-semibold text-zinc-800">{item.day} ({item.weekday})</span>
-                                <span>•</span>
-                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#01A0CA]/10 text-[#01A0CA] font-bold font-mono">{item.type}</span>
-                              </div>
-                              <h3 className="text-sm font-semibold text-zinc-900 mt-1 truncate group-hover:text-[#01A0CA] transition-colors">{item.title}</h3>
-                              <p className="text-[11px] text-zinc-500 line-clamp-1 mt-0.5 font-light">{item.caption}</p>
+                    const dayItems = activeClientContents.filter(
+                      (c) =>
+                        c.dayNumber === selectedMiniDay &&
+                        (!c.date || c.date.slice(0, 7) === mKey)
+                    );
+
+                    return (
+                      <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm space-y-3.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5">
+                            <h3 className="text-[13.5px] font-bold text-slate-800">
+                              {monthNames[m]} {y}
+                            </h3>
+                            <div className="flex items-center gap-0.5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMiniCalDate(new Date(y, m - 1, 1));
+                                  setSelectedMiniDay(1);
+                                }}
+                                className="w-5 h-5 rounded-md bg-[#F4F6F9] hover:bg-[#EFF7FF] text-slate-500 hover:text-[#3B9BF8] flex items-center justify-center cursor-pointer"
+                                aria-label="Bulan sebelumnya"
+                              >
+                                <ChevronLeft className="w-3 h-3" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMiniCalDate(new Date(y, m + 1, 1));
+                                  setSelectedMiniDay(1);
+                                }}
+                                className="w-5 h-5 rounded-md bg-[#F4F6F9] hover:bg-[#EFF7FF] text-slate-500 hover:text-[#3B9BF8] flex items-center justify-center cursor-pointer"
+                                aria-label="Bulan berikutnya"
+                              >
+                                <ChevronRight className="w-3 h-3" />
+                              </button>
                             </div>
                           </div>
-
-                          <button className="px-3.5 py-1.5 rounded-lg bg-[#01A0CA] hover:bg-[#008db3] text-white font-semibold text-xs transition shadow-xs shrink-0 cursor-pointer">
-                            Review
+                          <button
+                            type="button"
+                            onClick={() => handleTabClick('calendar')}
+                            className="text-[11px] font-semibold text-[#3B9BF8] hover:underline cursor-pointer shrink-0"
+                          >
+                            Buka Feed →
                           </button>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-8 text-center text-zinc-500 text-xs font-inter bg-zinc-50/50 rounded-xl border border-dashed border-zinc-200 flex flex-col items-center justify-center gap-1.5">
-                      <CheckCircle2 className="w-6 h-6 text-emerald-600" />
-                      <p className="font-medium text-zinc-800">Semua draf terkini telah ditinjau!</p>
-                      <p className="text-zinc-400 font-light">Tidak ada konten yang tertahan. Tim produksi Cermin bekerja sesuai jadwal.</p>
-                    </div>
-                  )}
-                </div>
 
-                {/* ROW 3: DEDICATED TEAM & BRAND ASSET VAULT */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  
-                  {/* Account Team Card */}
-                  <div className="p-5 bg-white border border-zinc-200 rounded-2xl shadow-xs flex items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-inter uppercase text-zinc-400 font-semibold tracking-wider block">
-                        TIM DEDIKASI AKUN ANDA
-                      </span>
-                      <h4 className="text-sm font-semibold text-zinc-900">
-                        {selectedClient.picAssigned || 'Dimas (Creative Director)'}
-                      </h4>
-                      <p className="text-xs text-zinc-500 font-light">
-                        Penanggung jawab brief, konsep naskah, dan pengawasan kualitas visual studio.
-                      </p>
-                    </div>
+                        <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-medium text-slate-400">
+                          {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map((d) => (
+                            <div key={d}>{d}</div>
+                          ))}
+                        </div>
 
+                        <div className="grid grid-cols-7 gap-y-1 text-center text-[11px]">
+                          {miniCells.slice(0, 35).map((cell, i) => {
+                            const isCurr = cell.month === 'curr';
+                            const hasContent =
+                              isCurr &&
+                              activeClientContents.some(
+                                (c) =>
+                                  c.dayNumber === cell.day &&
+                                  (!c.date || c.date.slice(0, 7) === mKey)
+                              );
+                            const isSel = isCurr && cell.day === selectedMiniDay;
+                            return (
+                              <button
+                                key={i}
+                                type="button"
+                                disabled={!isCurr}
+                                onClick={() => isCurr && setSelectedMiniDay(cell.day)}
+                                className={`h-7 rounded-lg flex flex-col items-center justify-center relative tabular-nums transition-colors ${
+                                  !isCurr
+                                    ? 'text-slate-300'
+                                    : isSel
+                                    ? 'bg-[#3B9BF8] text-white font-bold cursor-pointer'
+                                    : hasContent
+                                    ? 'bg-[#EFF7FF] text-[#2563EB] font-semibold cursor-pointer'
+                                    : 'text-slate-700 hover:bg-slate-50 cursor-pointer'
+                                }`}
+                              >
+                                {cell.day}
+                                {hasContent && !isSel && (
+                                  <span className="w-1 h-1 rounded-full bg-[#3B9BF8] absolute bottom-0.5" />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Dynamic Agenda Preview for Selected Day */}
+                        <div className="pt-3 border-t border-slate-100 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-slate-700">
+                              Jadwal Tgl {selectedMiniDay} {monthNames[m].slice(0, 3)}
+                            </span>
+                            <span className="text-[10px] font-semibold text-[#3B9BF8] bg-[#EFF7FF] px-2 py-0.5 rounded-md tabular-nums">
+                              {dayItems.length} konten
+                            </span>
+                          </div>
+
+                          {dayItems.length === 0 ? (
+                            <p className="text-[11px] text-slate-400 py-2 text-center bg-[#F8FAFC] rounded-xl">
+                              Tidak ada jadwal tayang di tanggal ini.
+                            </p>
+                          ) : (
+                            <div className="space-y-1.5 max-h-44 overflow-y-auto">
+                              {dayItems.map((item) => (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  onClick={() => setSelectedContent(item)}
+                                  className="w-full text-left p-2.5 rounded-xl bg-[#F8FAFC] hover:bg-[#EFF7FF] border border-slate-100 hover:border-[#3B9BF8]/40 transition space-y-1 cursor-pointer"
+                                >
+                                  <div className="flex items-center justify-between gap-1.5">
+                                    <span
+                                      className={`text-[9.5px] font-semibold px-1.5 py-0.5 rounded-md ${
+                                        item.status === 'Disetujui'
+                                          ? 'bg-emerald-50 text-emerald-700'
+                                          : item.status === 'Perlu Revisi'
+                                          ? 'bg-rose-50 text-rose-700'
+                                          : 'bg-amber-50 text-amber-700'
+                                      }`}
+                                    >
+                                      {item.status}
+                                    </span>
+                                    <span className="text-[9.5px] text-[#3B9BF8] font-semibold">
+                                      Review →
+                                    </span>
+                                  </div>
+                                  <p className="text-[11.5px] font-bold text-slate-800 line-clamp-1">
+                                    {item.title}
+                                  </p>
+                                  <p className="text-[10px] text-slate-400 truncate">
+                                    {item.type} • {item.platforms.join(', ')}
+                                  </p>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Kartu Link Hasil Desain & Aset */}
+                  <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm space-y-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-10 h-10 rounded-xl bg-[#EFF7FF] text-[#3B9BF8] flex items-center justify-center shrink-0">
+                        <FolderOpen className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-[13px] font-bold text-slate-900 truncate">
+                          Link Hasil Desain &amp; Aset
+                        </h3>
+                        <p className="text-[10.5px] text-slate-400 truncate">
+                          Drive, Figma &amp; Canva ({clientStudioTasks.length} Task)
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                      Akses seluruh file desain feed, template Canva, dan aset konten final yang dikirim tim kreatif.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (accountType === 'demo') {
+                          setShowLockedModal(true);
+                        } else {
+                          handleTabClick('production');
+                        }
+                      }}
+                      className={`w-full py-2 rounded-xl text-xs font-semibold inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                        accountType === 'official'
+                          ? 'bg-[#EFF7FF] hover:bg-[#3B9BF8] text-[#3B9BF8] hover:text-white'
+                          : 'bg-slate-100 text-slate-400'
+                      }`}
+                    >
+                      {accountType === 'official' ? (
+                        <>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          <span>Buka Daftar Link Aset</span>
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="w-3.5 h-3.5" />
+                          <span>Terkunci (Mode Demo)</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Kartu Tim Dedikasi Anda (Exact Reference Layout) */}
+                  <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm space-y-3">
+                    <h3 className="text-[13px] font-bold text-slate-900">
+                      Tim Dedikasi Anda
+                    </h3>
+                    <div className="flex items-center gap-3">
+                      <div className="w-11 h-11 rounded-xl bg-[#EFF7FF] text-[#3B9BF8] font-bold text-sm flex items-center justify-center shrink-0">
+                        {(selectedClient.picAssigned || 'CK').slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-slate-900 truncate">
+                          {selectedClient.picAssigned || 'Tim Creative Cermin'}
+                        </p>
+                        <p className="text-[10.5px] text-slate-400 truncate">
+                          Dedicated Creative Lead
+                        </p>
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 mt-0.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          Online • Siap Koordinasi
+                        </span>
+                      </div>
+                    </div>
                     <a
                       href={`https://wa.me/6281234567890?text=${encodeURIComponent(
-                        `Halo ${selectedClient.picAssigned || 'Tim Cermin Kreatif'}, saya ${selectedClient.name} dari ${selectedClient.business}. Saya ingin koordinasi jadwal konten.`
+                        `Halo ${selectedClient.picAssigned || 'Tim Cermin Kreatif'}, saya ${selectedClient.name} dari ${selectedClient.business}. Ada yang ingin saya diskusikan terkait konten bulan ini.`
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium flex items-center gap-1.5 transition shrink-0 shadow-xs"
+                      className="w-full bg-[#3B9BF8] hover:bg-[#2589F5] text-white text-xs font-semibold py-2 rounded-xl inline-flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                     >
                       <MessageCircle className="w-3.5 h-3.5" />
-                      <span>Chat WhatsApp</span>
-                    </a>
-                  </div>
-
-                  {/* Google Drive Vault Card */}
-                  <div className="p-5 bg-white border border-zinc-200 rounded-2xl shadow-xs flex items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-inter uppercase text-zinc-400 font-semibold tracking-wider block">
-                        ARSIP MASTER BERKAS 4K
-                      </span>
-                      <h4 className="text-sm font-semibold text-zinc-900">
-                        Google Drive Vault: {selectedClient.business}
-                      </h4>
-                      <p className="text-xs text-zinc-500 font-light">
-                        Penyimpanan cloud resolusi tinggi untuk mentahan footage, render final, dan aset logo.
-                      </p>
-                    </div>
-
-                    <a
-                      href="https://drive.google.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3.5 py-2 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-zinc-700 text-xs font-medium flex items-center gap-1.5 transition shrink-0 shadow-2xs"
-                    >
-                      <span>Buka Drive</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Hubungi via WhatsApp</span>
                     </a>
                   </div>
                 </div>
-
               </div>
             )}
 
             {/* ========================================================
-                TAB 2: CALENDAR & FEED SIMULATOR
+                TAB 2: PROGRES KONTEN (READ-ONLY PIPELINE TRACKER)
+            ======================================================== */}
+            {activeTab === 'tracker' && (() => {
+              const filteredTracker = activeClientContents.filter((c) => {
+                if (trackerStageFilter === 'all') return true;
+                if (trackerStageFilter === 'producing') return c.stage === 'script' || c.stage === 'production';
+                return c.stage === trackerStageFilter;
+              });
+
+              const steps = [
+                { key: 'producing', label: 'Naskah & Desain' },
+                { key: 'review', label: 'Review Anda' },
+                { key: 'scheduled', label: 'Siap Tayang' },
+                { key: 'published', label: 'Sudah Tayang' },
+              ];
+
+              const getStepIndex = (stage: ContentItem['stage']) => {
+                if (stage === 'script' || stage === 'production' || stage === 'revision') return 0;
+                if (stage === 'review') return 1;
+                if (stage === 'scheduled') return 2;
+                return 3;
+              };
+
+              return (
+                <div className="space-y-5">
+                  <div className="flex flex-wrap items-center gap-2 bg-white border border-slate-100 p-3.5 rounded-2xl shadow-sm">
+                    {[
+                      { id: 'all', label: `Semua (${activeClientContents.length})` },
+                      {
+                        id: 'producing',
+                        label: `Dikerjakan (${activeClientContents.filter((c) => c.stage === 'script' || c.stage === 'production').length})`,
+                      },
+                      {
+                        id: 'review',
+                        label: `Butuh Review (${activeClientContents.filter((c) => c.stage === 'review').length})`,
+                      },
+                      {
+                        id: 'revision',
+                        label: `Revisi (${activeClientContents.filter((c) => c.stage === 'revision').length})`,
+                      },
+                      {
+                        id: 'scheduled',
+                        label: `Siap Tayang (${activeClientContents.filter((c) => c.stage === 'scheduled').length})`,
+                      },
+                      {
+                        id: 'published',
+                        label: `Sudah Tayang (${activeClientContents.filter((c) => c.stage === 'published').length})`,
+                      },
+                    ].map((pill) => (
+                      <button
+                        key={pill.id}
+                        type="button"
+                        onClick={() => setTrackerStageFilter(pill.id as any)}
+                        className={`text-xs font-semibold px-3 py-1.5 rounded-xl transition cursor-pointer ${
+                          trackerStageFilter === pill.id
+                            ? 'bg-[#3B9BF8] text-white shadow-sm'
+                            : 'bg-[#F4F6F9] text-slate-600 hover:bg-[#EFF7FF] hover:text-[#3B9BF8]'
+                        }`}
+                      >
+                        {pill.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {filteredTracker.length === 0 ? (
+                    <div className="bg-white border border-slate-100 rounded-2xl p-10 text-center text-xs text-slate-400 shadow-sm">
+                      Belum ada konten pada tahap ini.
+                    </div>
+                  ) : (
+                    <div className="space-y-3.5">
+                      {filteredTracker.map((item) => {
+                        const currentIdx = getStepIndex(item.stage);
+                        return (
+                          <div
+                            key={item.id}
+                            className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                          >
+                            <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                              <img
+                                src={item.mediaUrl}
+                                alt={item.title}
+                                className="w-14 h-16 rounded-xl object-cover bg-slate-100 shrink-0"
+                              />
+                              <div className="min-w-0 flex-1 space-y-2">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-md bg-[#EFF7FF] text-[#3B9BF8]">
+                                    {item.type}
+                                  </span>
+                                  {item.pillar && (
+                                    <span className="text-[10.5px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+                                      {item.pillar}
+                                    </span>
+                                  )}
+                                  <span className="text-[11px] text-slate-400">
+                                    Target: {item.day} ({item.weekday})
+                                  </span>
+                                </div>
+
+                                <h3 className="text-sm font-bold text-slate-900 truncate">
+                                  {item.title}
+                                </h3>
+
+                                {/* 4-Step Visual Progress Tracker */}
+                                <div className="flex flex-wrap items-center gap-2 pt-1">
+                                  {steps.map((st, idx) => {
+                                    const done = idx <= currentIdx;
+                                    const isRevision = idx === 0 && item.stage === 'revision';
+                                    return (
+                                      <React.Fragment key={st.key}>
+                                        <span
+                                          className={`text-[10.5px] font-semibold px-2.5 py-1 rounded-lg ${
+                                            isRevision
+                                              ? 'bg-rose-50 text-rose-600 border border-rose-200'
+                                              : st.key === 'published' && done
+                                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                              : done
+                                              ? 'bg-[#EFF7FF] text-[#3B9BF8]'
+                                              : 'bg-slate-50 text-slate-400'
+                                          }`}
+                                        >
+                                          {isRevision ? 'Perlu Revisi' : st.label}
+                                        </span>
+                                        {idx < steps.length - 1 && (
+                                          <span className="text-slate-300 text-xs">→</span>
+                                        )}
+                                      </React.Fragment>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2 shrink-0">
+                              {item.driveRawUrl && (
+                                <a
+                                  href={item.driveRawUrl.startsWith('http') ? item.driveRawUrl : `https://${item.driveRawUrl}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-3 py-2 rounded-xl bg-[#F4F6F9] hover:bg-[#EFF7FF] text-slate-700 hover:text-[#3B9BF8] text-xs font-semibold inline-flex items-center gap-1.5 transition"
+                                >
+                                  <span>Draf Desain</span>
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                </a>
+                              )}
+                              {item.stage === 'published' && item.publishedUrl && (
+                                <a
+                                  href={item.publishedUrl.startsWith('http') ? item.publishedUrl : `https://${item.publishedUrl}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold inline-flex items-center gap-1.5 transition shadow-sm"
+                                >
+                                  <span>Postingan Live</span>
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                </a>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => setSelectedContent(item)}
+                                className="px-4 py-2 rounded-xl bg-[#3B9BF8] hover:bg-[#2589F5] text-white text-xs font-semibold transition cursor-pointer shadow-sm"
+                              >
+                                {item.stage === 'review' ? 'Tinjau & Approve' : 'Detail Konten'}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* ========================================================
+                TAB 3: CALENDAR & FEED SIMULATOR
             ======================================================== */}
             {activeTab === 'calendar' && (
-              <div className="space-y-6">
-                <div className="pb-2 border-b border-zinc-200">
-                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900">
-                    Kalender Distribusi & Feed Simulator
-                  </h1>
-                  <p className="text-xs text-zinc-500 font-light mt-1">
-                    Matriks tanggal penayangan bulanan dan simulasi tampilan visual feed Instagram serta thumbnail TikTok.
-                  </p>
-                </div>
-                <CalendarView onSelectItem={(item) => setSelectedContent(item)} />
-              </div>
+              <CalendarView onSelectItem={(item) => setSelectedContent(item)} />
             )}
 
             {/* ========================================================
-                TAB 3: DESIGN & ASSET PRODUCTION
+                TAB 3: PROGRES DESAIN & ASET (MULTI-LINK DELIVERABLES)
             ======================================================== */}
             {activeTab === 'production' && (
-              <div className="space-y-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-2 border-b border-zinc-200">
-                  <div>
-                    <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900">
-                      Progres Desain Grafis &amp; Aset Brand
-                    </h1>
-                    <p className="text-xs text-zinc-500 font-light mt-1">
-                      Pantau pengerjaan aset desain, template feed, dan editing konten beserta link hasil (Google Drive / Figma / Canva).
+              <div className="space-y-5">
+                {clientStudioTasks.length === 0 ? (
+                  <div className="bg-white border border-slate-100 rounded-2xl p-10 text-center shadow-sm space-y-2">
+                    <FolderOpen className="w-8 h-8 text-[#3B9BF8] mx-auto" />
+                    <p className="text-sm font-bold text-slate-800">
+                      Belum ada task desain &amp; aset saat ini
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      Tautan hasil desain (Drive, Figma, Canva) akan muncul otomatis di sini setelah ditambahkan tim agensi.
                     </p>
                   </div>
-                  <a
-                    href="https://drive.google.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-4 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-medium flex items-center gap-1.5 transition shadow-sm"
-                  >
-                    <span>Buka Folder Master Aset</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                </div>
+                ) : (
+                  <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm divide-y divide-slate-100">
+                    {clientStudioTasks.map((task) => {
+                      const links =
+                        task.assetLinks && task.assetLinks.length > 0
+                          ? task.assetLinks
+                          : task.rawFolder
+                          ? [{ label: 'Link Hasil', url: task.rawFolder }]
+                          : [];
 
-                <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm divide-y divide-zinc-100">
-                  {clientStudioTasks.map((task) => (
-                    <div key={task.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="space-y-1.5">
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-sm font-semibold text-zinc-900">{task.title}</span>
-                          <span className="text-[10px] font-inter px-2 py-0.5 rounded bg-zinc-100 text-zinc-600 font-medium">
-                            {task.phase}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="w-44 bg-zinc-100 h-2 rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full ${task.progress === 100 ? 'bg-emerald-600' : 'bg-[#3B9BF8]'}`}
-                              style={{ width: `${task.progress}%` }}
-                            />
+                      return (
+                        <div
+                          key={task.id}
+                          className="p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+                        >
+                          <div className="space-y-2 min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-sm font-bold text-slate-900">
+                                {task.title}
+                              </span>
+                              <span className="text-[10.5px] px-2.5 py-0.5 rounded-lg bg-[#EFF7FF] text-[#3B9BF8] font-semibold">
+                                {task.phase}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="w-48 bg-slate-100 h-2 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full transition-all ${
+                                    task.progress === 100
+                                      ? 'bg-emerald-500'
+                                      : 'bg-[#3B9BF8]'
+                                  }`}
+                                  style={{ width: `${task.progress}%` }}
+                                />
+                              </div>
+                              <span className="text-xs text-slate-600 font-semibold tabular-nums">
+                                {task.progress}% Selesai
+                              </span>
+                            </div>
                           </div>
-                          <span className="text-xs font-inter text-zinc-600 font-medium">{task.progress}% Selesai</span>
-                        </div>
-                      </div>
 
-                      <div className="flex flex-wrap items-center gap-2.5">
-                        <span className="text-xs text-zinc-500 font-light">PIC: <strong className="text-zinc-800">{task.shooter}</strong></span>
-                        <span className={`text-xs px-2.5 py-1 rounded-md font-inter ${
-                          task.status === 'Selesai' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                          task.status === 'Sedang Berjalan' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                          'bg-zinc-100 text-zinc-600'
-                        }`}>
-                          {task.status}
-                        </span>
-                        {(() => {
-                          const links =
-                            task.assetLinks && task.assetLinks.length > 0
-                              ? task.assetLinks
-                              : task.rawFolder
-                              ? [{ label: 'Link Hasil', url: task.rawFolder }]
-                              : [];
-                          return links.map((link, idx) => (
-                            <a
-                              key={`${task.id}-client-link-${idx}`}
-                              href={link.url.startsWith('http') ? link.url : `https://${link.url}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-3 py-1.5 rounded-lg bg-[#EFF7FF] hover:bg-[#3B9BF8] text-[#3B9BF8] hover:text-white text-xs font-semibold flex items-center gap-1.5 transition"
+                          <div className="flex flex-wrap items-center gap-2.5">
+                            <span className="text-xs text-slate-500">
+                              PIC:{' '}
+                              <strong className="text-slate-800">
+                                {task.shooter}
+                              </strong>
+                            </span>
+                            <span
+                              className={`text-[11px] px-2.5 py-1 rounded-lg font-semibold border ${
+                                task.status === 'Selesai'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                  : task.status === 'Sedang Berjalan'
+                                  ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                  : 'bg-slate-100 text-slate-600 border-slate-200'
+                              }`}
                             >
-                              <span>Buka {link.label || 'Link Hasil'}</span>
-                              <ExternalLink className="w-3 h-3" />
-                            </a>
-                          ));
-                        })()}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                              {task.status}
+                            </span>
+
+                            {links.map((link, idx) => (
+                              <a
+                                key={`${task.id}-client-link-${idx}`}
+                                href={
+                                  link.url.startsWith('http')
+                                    ? link.url
+                                    : `https://${link.url}`
+                                }
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-3 py-1.5 rounded-xl bg-[#EFF7FF] hover:bg-[#3B9BF8] text-[#3B9BF8] hover:text-white text-xs font-semibold flex items-center gap-1.5 transition"
+                              >
+                                <span>Buka {link.label || 'Link Hasil'}</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
             {/* ========================================================
-                TAB 4: STRATEGY & HOOK (INTERACTIVE BRAND STRATEGY CONSOLE)
+                TAB 4: PILAR & KPI BRAND (TERHUBUNG NYATA KE MYSQL)
             ======================================================== */}
             {activeTab === 'strategy' && (
-              <div className="space-y-8">
-                
-                {/* Header */}
-                <div className="pb-3 border-b border-zinc-200">
-                  <div className="flex items-center gap-2 text-xs font-inter text-zinc-500 mb-1">
-                    <Compass className="w-4 h-4 text-zinc-800" />
-                    <span>KONSOL STRATEGI & FORMULA HOOK AKUN</span>
+              <div className="space-y-6">
+                {!hasCustomPillars && (
+                  <div className="bg-[#EFF7FF] border border-[#DCEEFF] rounded-2xl px-4 py-3 text-xs text-slate-600 flex items-center justify-between gap-2">
+                    <span>
+                      Menampilkan <strong>Template Pilar Default</strong>. Daftar pilar &amp; KPI khusus brand Anda akan muncul otomatis setelah diatur oleh Admin di modul Klien &amp; Kuota.
+                    </span>
                   </div>
-                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900">
-                    Arah Kompas Konten: {selectedClient.business}
-                  </h1>
-                  <p className="text-xs text-zinc-500 font-light mt-1">
-                    {strategyConfig.tagline}. Klik salah satu pilar di bawah untuk memfilter konten nyata dan mengusulkan ide topik baru.
-                  </p>
-                </div>
+                )}
 
-                {/* 3 INTERACTIVE PILLAR CARDS (FILTER CONTROLS) */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  {strategyConfig.pillars.map((pillar, idx) => {
-                    const isSelected = activePillarIndex === idx;
+                {/* PILLAR CARDS */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {activePillars.map((pillar, idx) => {
+                    const isSelected = safePillarIndex === idx;
+                    const countInPillar = getPillarContents(pillar.title, idx).length;
+
                     return (
-                      <div 
+                      <button
                         key={idx}
+                        type="button"
                         onClick={() => setActivePillarIndex(idx)}
-                        className={`p-6 rounded-2xl border transition-all cursor-pointer relative shadow-xs flex flex-col justify-between ${
-                          isSelected 
-                            ? 'bg-gradient-to-br from-[#01A0CA] to-[#008db3] text-white border-[#01A0CA] shadow-md ring-2 ring-[#01A0CA]/20' 
-                            : 'bg-white text-zinc-900 border-zinc-200 hover:border-[#01A0CA]/40'
+                        className={`p-5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                          isSelected
+                            ? 'bg-[#3B9BF8] text-white border-[#3B9BF8] shadow-[0_10px_24px_rgba(59,155,248,0.28)]'
+                            : 'bg-white text-slate-900 border-slate-100 hover:border-[#3B9BF8]/40 shadow-sm'
                         }`}
                       >
                         <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <span className={`text-[10px] font-inter uppercase font-bold px-2 py-0.5 rounded ${
-                              isSelected ? 'bg-white/20 text-white' : 'bg-zinc-100 text-zinc-700'
-                            }`}>
+                          <div className="flex items-center justify-between gap-2 mb-2.5">
+                            <span
+                              className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md ${
+                                isSelected
+                                  ? 'bg-white/20 text-white'
+                                  : 'bg-[#EFF7FF] text-[#3B9BF8]'
+                              }`}
+                            >
                               Pilar {idx + 1} ({pillar.ratio})
                             </span>
-                            <span className={`text-xs font-inter font-medium ${isSelected ? 'text-zinc-300' : 'text-zinc-500'}`}>
-                              Target: {pillar.targetCount} Video
+                            <span
+                              className={`text-[11px] font-semibold tabular-nums ${
+                                isSelected ? 'text-white/90' : 'text-slate-500'
+                              }`}
+                            >
+                              {countInPillar}/{pillar.targetCount} Konten
                             </span>
                           </div>
 
-                          <h3 className="text-base font-semibold leading-snug">
+                          <h3 className="text-[15px] font-bold leading-snug">
                             {pillar.title}
                           </h3>
-
-                          <p className={`text-xs mt-2.5 font-light leading-relaxed ${isSelected ? 'text-zinc-300' : 'text-zinc-600'}`}>
+                          <p
+                            className={`text-xs mt-2 leading-relaxed ${
+                              isSelected ? 'text-white/85' : 'text-slate-500'
+                            }`}
+                          >
                             {pillar.description}
                           </p>
                         </div>
 
-                        {/* Interactive Selection Footer */}
-                        <div className={`mt-5 pt-3 border-t flex items-center justify-between text-xs ${
-                          isSelected ? 'border-white/20 text-amber-300 font-medium' : 'border-zinc-100 text-zinc-400'
-                        }`}>
-                          <span>{isSelected ? '● Pilar Sedang Aktif' : 'Klik untuk filter konten'}</span>
+                        <div
+                          className={`mt-4 pt-3 border-t flex items-center justify-between text-xs font-semibold ${
+                            isSelected
+                              ? 'border-white/20 text-white'
+                              : 'border-slate-100 text-[#3B9BF8]'
+                          }`}
+                        >
+                          <span>
+                            {isSelected ? '● Pilar Sedang Aktif' : 'Filter konten pilar ini'}
+                          </span>
                           <ChevronRight className="w-4 h-4" />
                         </div>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
 
-                {/* FILTERED LIVE CONTENTS UNDER SELECTED PILLAR */}
-                <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-xs space-y-4">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-3 border-b border-zinc-100">
-                    <div>
-                      <span className="text-[11px] font-inter uppercase text-zinc-400 font-semibold tracking-wide">
-                        KONTEN TERIKAT DI BAWAH PILAR "{currentPillar.title.toUpperCase()}"
+                {/* FILTERED CONTENTS UNDER SELECTED PILLAR */}
+                {currentPillar && (
+                  <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm space-y-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-3 border-b border-slate-100">
+                      <div>
+                        <span className="text-[10.5px] uppercase text-[#3B9BF8] font-bold tracking-wider">
+                          KONTEN DI PILAR &ldquo;{currentPillar.title}&rdquo;
+                        </span>
+                        <h3 className="text-sm font-bold text-slate-900">
+                          Realisasi Produksi ({pillarFilteredContents.length} Konten)
+                        </h3>
+                      </div>
+                      <span className="text-xs text-[#3B9BF8] bg-[#EFF7FF] px-3 py-1 rounded-lg font-semibold">
+                        Target {currentPillar.targetCount} Konten / Bulan
                       </span>
-                      <h3 className="text-sm font-semibold text-zinc-900">
-                        Realisasi Produksi ({pillarFilteredContents.length} Konten Terdaftar)
-                      </h3>
                     </div>
-                    <span className="text-xs font-inter text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-md font-medium">
-                      Target {currentPillar.targetCount} Video Bulanan
-                    </span>
-                  </div>
 
-                  {pillarFilteredContents.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                      {pillarFilteredContents.map(item => (
-                        <div
-                          key={item.id}
-                          onClick={() => setSelectedContent(item)}
-                          className="p-3.5 rounded-xl border border-zinc-200 bg-zinc-50/40 hover:bg-white hover:border-zinc-300 transition flex items-center gap-3 cursor-pointer shadow-2xs group"
-                        >
-                          <div className="w-12 h-14 rounded-lg bg-zinc-900 overflow-hidden shrink-0 shadow-2xs">
-                            <img src={item.mediaUrl} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition" />
+                    {pillarFilteredContents.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                        {pillarFilteredContents.map((item) => (
+                          <div
+                            key={item.id}
+                            onClick={() => setSelectedContent(item)}
+                            className="p-3.5 rounded-xl border border-slate-100 bg-[#F8FAFC] hover:bg-white hover:border-[#3B9BF8]/40 transition flex items-center gap-3 cursor-pointer group"
+                          >
+                            <div className="w-12 h-14 rounded-xl bg-slate-200 overflow-hidden shrink-0">
+                              <img
+                                src={item.mediaUrl}
+                                alt={item.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition"
+                              />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <span className="text-[10.5px] text-slate-500 font-medium block">
+                                {item.day} ({item.weekday})
+                              </span>
+                              <h4 className="text-xs font-bold text-slate-900 truncate mt-0.5">
+                                {item.title}
+                              </h4>
+                              <span
+                                className={`text-[10px] px-2 py-0.5 rounded-md mt-1 inline-block font-semibold ${
+                                  item.status === 'Disetujui'
+                                    ? 'bg-emerald-50 text-emerald-700'
+                                    : 'bg-amber-50 text-amber-700'
+                                }`}
+                              >
+                                {item.status}
+                              </span>
+                            </div>
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <span className="text-[10px] font-inter text-zinc-500 font-medium block">{item.day} ({item.weekday})</span>
-                            <h4 className="text-xs font-semibold text-zinc-900 truncate mt-0.5">{item.title}</h4>
-                            <span className={`text-[10px] font-inter px-1.5 py-0.2 rounded mt-1 inline-block ${
-                              item.status === 'Disetujui' ? 'bg-emerald-50 text-emerald-700 font-medium' : 'bg-amber-50 text-amber-700 font-medium'
-                            }`}>
-                              {item.status}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-6 text-center text-xs text-zinc-400 bg-zinc-50 rounded-xl">
-                      Belum ada video yang dimasukkan ke pilar ini bulan ini.
-                    </div>
-                  )}
-
-                  {/* Hook Formula Angle Samples */}
-                  <div className="mt-4 pt-4 border-t border-zinc-100 bg-zinc-50/80 p-4 rounded-xl">
-                    <span className="text-[11px] font-inter uppercase text-zinc-500 font-semibold block mb-2">
-                      Formula Hook yang Disepakati untuk Pilar Ini:
-                    </span>
-                    <ul className="space-y-1.5 text-xs text-zinc-700 font-light">
-                      {currentPillar.hookExamples.map((hook, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <span className="text-zinc-400 font-mono text-[10px] mt-0.5">#{i+1}</span>
-                          <span>"{hook}"</span>
-                        </li>
-                      ))}
-                    </ul>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-6 text-center text-xs text-slate-400 bg-[#F8FAFC] rounded-xl">
+                        Belum ada konten yang ditandai ke pilar ini bulan ini.
+                      </div>
+                    )}
                   </div>
-                </div>
+                )}
 
-                {/* INTERACTIVE TOPIC PROPOSAL FORM */}
-                <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-xs space-y-4">
-                  <div className="flex items-center gap-2 pb-2 border-b border-zinc-100">
-                    <Lightbulb className="w-4 h-4 text-amber-500" />
+                {/* TOPIC PROPOSAL FORM (PERSISTS TO MYSQL) */}
+                <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm space-y-3.5">
+                  <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100">
+                    <div className="w-8 h-8 rounded-xl bg-[#EFF7FF] text-[#3B9BF8] flex items-center justify-center">
+                      <Lightbulb className="w-4 h-4" />
+                    </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-zinc-900">
-                        Usulkan Ide Topik Spontan untuk Pilar "{currentPillar.title}"
+                      <h3 className="text-sm font-bold text-slate-900">
+                        Usulkan Ide Topik untuk Pilar &ldquo;{currentPillar?.title}&rdquo;
                       </h3>
-                      <p className="text-xs text-zinc-500 font-light">
-                        Punya ide tren baru atau pesan khusus? Usulkan di sini agar langsung masuk ke daftar naskah tim Cermin.
+                      <p className="text-xs text-slate-500">
+                        Ide Anda langsung masuk ke daftar pengajuan konten tim kreatif Cermin.
                       </p>
                     </div>
                   </div>
 
-                  {topicSubmittedSuccess && (
-                    <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center gap-2 animate-in fade-in">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>Ide topik berhasil dikirimkan ke tim kreatif Cermin Kreatif! Terima kasih atas masukannya.</span>
-                    </div>
-                  )}
-
-                  <form onSubmit={handleTopicSubmit} className="flex flex-col sm:flex-row gap-2.5">
+                  <form
+                    onSubmit={handleTopicSubmit}
+                    className="flex flex-col sm:flex-row gap-2.5"
+                  >
                     <input
                       type="text"
                       required
                       value={proposedTopic}
                       onChange={(e) => setProposedTopic(e.target.value)}
-                      placeholder={`Misal: Ide video tentang... (untuk pilar ${currentPillar.title})`}
-                      className="flex-1 bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2.5 text-xs text-zinc-900 focus:outline-none focus:border-zinc-500 focus:bg-white transition"
+                      placeholder={`Misal: Ide konten promo / edukasi untuk pilar ${currentPillar?.title}...`}
+                      className="flex-1 bg-[#F8FAFC] border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#3B9BF8] focus:ring-2 focus:ring-[#3B9BF8]/25 focus:bg-white transition"
                     />
                     <button
                       type="submit"
-                      className="px-5 py-2.5 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer shadow-xs shrink-0"
+                      className="px-5 py-2.5 rounded-xl bg-[#3B9BF8] hover:bg-[#2589F5] text-white text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer shadow-sm shrink-0"
                     >
                       <Send className="w-3.5 h-3.5" />
                       <span>Kirim Usulan Topik</span>
                     </button>
                   </form>
-
-                  {/* List of Submitted Topics */}
-                  {submittedTopics.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-zinc-100">
-                      <span className="text-[11px] font-inter text-zinc-400 uppercase font-semibold block mb-2">
-                        Usulan Topik yang Dikirimkan Klien:
-                      </span>
-                      <div className="space-y-1.5">
-                        {submittedTopics.map((top, idx) => (
-                          <div key={idx} className="p-2.5 rounded-lg bg-zinc-50 border border-zinc-200 text-xs text-zinc-800 flex items-center justify-between">
-                            <span>"{top}"</span>
-                            <span className="text-[10px] font-inter px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-medium">
-                              Masuk Antrean Tim Riset
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
 
-                {/* BRAND VOICE & DO'S / DON'TS POCKET GUIDE */}
-                <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-xs space-y-4">
-                  <div className="flex items-center gap-2 pb-2 border-b border-zinc-100">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                    <div>
-                      <h3 className="text-sm font-semibold text-zinc-900">
-                        Karakter Suara Brand & Batasan Produksi (Do's & Don'ts)
+                {/* BRIEF & TARGET AUDIENS BRAND */}
+                <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-[#F8FAFC] border border-slate-100 space-y-1.5">
+                    <span className="text-[10.5px] font-bold uppercase text-[#3B9BF8] block">
+                      Brief &amp; Tujuan Brand
+                    </span>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {selectedClient.briefNotes || 'Belum ada catatan brief khusus.'}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-[#F8FAFC] border border-slate-100 space-y-1.5">
+                    <span className="text-[10.5px] font-bold uppercase text-[#3B9BF8] block">
+                      Target Audiens Utama
+                    </span>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {selectedClient.targetAudience ||
+                        'Audiens sesuai segmen paket retainer aktif.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ========================================================
+                TAB 5: PROFIL & AKUN KLIEN
+            ======================================================== */}
+            {activeTab === 'profile' && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-[#3B9BF8] text-white font-bold text-base flex items-center justify-center shrink-0">
+                      {(authUser?.name || selectedClient.name || 'CK')
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-bold text-slate-900 truncate">
+                        {authUser?.name || selectedClient.name}
                       </h3>
-                      <p className="text-xs text-zinc-500 font-light">
-                        Pedoman resmi yang dipegang teguh tim penulis naskah dan videografer Cermin.
+                      <p className="text-xs text-slate-400 truncate">
+                        {authUser?.email || selectedClient.email}
+                      </p>
+                      <span className="inline-block mt-1 text-[10px] font-semibold bg-[#EFF7FF] text-[#3B9BF8] px-2 py-0.5 rounded-md">
+                        Brand Owner • {selectedClient.business}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Instagram</span>
+                      <span className="font-semibold text-slate-800">
+                        {selectedClient.instagram}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">PIC Agensi</span>
+                      <span className="font-semibold text-slate-800">
+                        {selectedClient.picAssigned}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Status Portal</span>
+                      <span className="font-semibold text-[#3B9BF8]">
+                        {accountType === 'official' ? 'Aktif Resmi' : 'Menunggu Verifikasi DP'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <Link
+                    href={route('profile.edit')}
+                    className="w-full py-2.5 px-4 rounded-xl bg-[#EFF7FF] hover:bg-[#3B9BF8] text-[#3B9BF8] hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition"
+                  >
+                    <UserCheck className="w-3.5 h-3.5" />
+                    <span>Kelola Keamanan &amp; Kata Sandi</span>
+                  </Link>
+                </div>
+
+                <div className="lg:col-span-2 bg-white border border-slate-100 rounded-2xl p-5 shadow-sm space-y-4">
+                  <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
+                    <div className="w-8 h-8 rounded-xl bg-[#EFF7FF] text-[#3B9BF8] flex items-center justify-center">
+                      <Receipt className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-slate-900">
+                        Informasi Retainer &amp; Faktur
+                      </h3>
+                      <p className="text-[11px] text-slate-400">
+                        Detail paket berlangganan dan alokasi produksi bulanan Anda.
                       </p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
-                    
-                    {/* DO LIST */}
-                    <div className="p-4 rounded-xl bg-emerald-50/40 border border-emerald-100 space-y-2">
-                      <span className="text-xs font-semibold text-emerald-950 flex items-center gap-1.5">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                        <span>Wajib Diterapkan (Do):</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+                    <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-slate-100">
+                      <span className="text-[10.5px] text-slate-400 block">Paket Aktif</span>
+                      <span className="text-sm font-bold text-slate-900 mt-0.5 block">
+                        {selectedClient.package}
                       </span>
-                      <ul className="space-y-2 text-xs text-emerald-900 font-light">
-                        {strategyConfig.toneOfVoice.doList.map((item, i) => (
-                          <li key={i} className="flex items-start gap-2">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
                     </div>
-
-                    {/* DONT LIST */}
-                    <div className="p-4 rounded-xl bg-rose-50/40 border border-rose-100 space-y-2">
-                      <span className="text-xs font-semibold text-rose-950 flex items-center gap-1.5">
-                        <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                        <span>Pantangan Mutlak (Don't):</span>
+                    <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-slate-100">
+                      <span className="text-[10.5px] text-slate-400 block">Nomor Faktur</span>
+                      <span className="text-sm font-bold text-slate-900 mt-0.5 block">
+                        {selectedClient.invoiceNumber}
                       </span>
-                      <ul className="space-y-2 text-xs text-rose-900 font-light">
-                        {strategyConfig.toneOfVoice.dontList.map((item, i) => (
-                          <li key={i} className="flex items-start gap-2">
-                            <X className="w-3.5 h-3.5 text-rose-600 shrink-0 mt-0.5" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
                     </div>
-
+                    <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-slate-100">
+                      <span className="text-[10.5px] text-slate-400 block">Nilai Kontrak Bulanan</span>
+                      <span className="text-sm font-bold text-[#3B9BF8] mt-0.5 block">
+                        {selectedClient.totalValue}
+                      </span>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-slate-100">
+                      <span className="text-[10.5px] text-slate-400 block">DP 50%</span>
+                      <span className="text-sm font-bold text-slate-900 mt-0.5 block">
+                        {selectedClient.dpAmount}
+                      </span>
+                    </div>
                   </div>
                 </div>
-
               </div>
             )}
-
           </div>
         </main>
       </div>
 
+      {/* Global Airy-Blue Toast Feedback (Matching Admin Dashboard) */}
+      {notification && (
+        <div className="fixed bottom-5 right-5 z-50 bg-white border border-[#3B9BF8]/30 text-slate-800 text-xs font-semibold px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-2">
+          <span className="w-6 h-6 rounded-lg bg-[#EFF7FF] text-[#3B9BF8] flex items-center justify-center shrink-0">
+            ✓
+          </span>
+          <span>{notification}</span>
+        </div>
+      )}
+
       {/* Modals */}
       {selectedContent && (
         <ReviewModal
-          item={selectedContent}
+          item={
+            activeClientContents.find((c) => c.id === selectedContent.id) ||
+            selectedContent
+          }
+          role="client"
           onClose={() => setSelectedContent(null)}
         />
       )}
 
       {showRequestModal && (
-        <ClientRequestModal
-          onClose={() => setShowRequestModal(false)}
-        />
+        <ClientRequestModal onClose={() => setShowRequestModal(false)} />
       )}
 
       {showLockedModal && (
-        <LockedFeatureModal
-          onClose={() => setShowLockedModal(false)}
-        />
+        <LockedFeatureModal onClose={() => setShowLockedModal(false)} />
       )}
     </div>
   );
+}
+
+function ClapperboardPlaceholder(props: { className?: string }) {
+  return <BarChart3 {...props} />;
 }

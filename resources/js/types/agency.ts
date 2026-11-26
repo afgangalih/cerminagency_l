@@ -2,7 +2,7 @@ export type UserRole = 'admin' | 'client' | 'team_member';
 
 export type PlatformType = 'instagram' | 'tiktok' | 'youtube_shorts' | 'omnichannel';
 
-export type ContentStage = 'script' | 'production' | 'review' | 'revision' | 'scheduled';
+export type ContentStage = 'script' | 'production' | 'review' | 'revision' | 'scheduled' | 'published';
 
 export type BallInCourt = 'client' | 'agency';
 
@@ -38,13 +38,15 @@ export interface ContentItem {
   pillar?: string;
   platforms: PlatformType[]; // Support multi-platform (IG, TikTok, etc.)
   stage: ContentStage;
-  status: 'Draf Naskah' | 'Sedang Edit' | 'Menunggu Review' | 'Perlu Revisi' | 'Disetujui' | 'Request Masuk';
+  status: 'Draf Naskah' | 'Sedang Edit' | 'Menunggu Review' | 'Perlu Revisi' | 'Disetujui' | 'Sudah Tayang' | 'Request Masuk';
   statusColor?: string;
   ballInCourt: BallInCourt;
   version: string; // 'V1' | 'V2 (Draf Revisi)' | 'Final Approved'
   caption: string;
   mediaUrl: string;
   driveRawUrl?: string;
+  publishedUrl?: string;
+  publishedAt?: string | null;
   hashtags?: string[];
   scriptHook?: string;
   revisionCount: number; // Max 2 rounds (Anti-Scope Creep SLA)

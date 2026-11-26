@@ -1,67 +1,127 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ContentItem, PlatformType } from '@/types';
 import { useAgency } from '@/context/AgencyContext';
-import { 
-  Calendar, Grid3X3, Film, ChevronRight, Filter, Play, 
-  Heart, Eye, MessageCircle 
+import {
+  Calendar,
+  Grid3X3,
+  Film,
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  MessageCircle,
+  Play,
 } from 'lucide-react';
 
 interface CalendarViewProps {
   onSelectItem: (item: ContentItem) => void;
 }
 
+const MONTH_NAMES = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+];
+
 export function CalendarView({ onSelectItem }: CalendarViewProps) {
   const { activeClientContents, selectedClient } = useAgency();
 
-  // View state
   const [viewMode, setViewMode] = useState<'calendar' | 'instagram' | 'tiktok'>('calendar');
   const [platformFilter, setPlatformFilter] = useState<PlatformType | 'all'>('all');
-  const [activeDate, setActiveDate] = useState<number>(12);
 
-  const daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
-
-  // Filter content
-  const filteredContents = activeClientContents.filter(item => {
-    if (platformFilter === 'all') return true;
-    return item.platforms.includes(platformFilter);
+  // Auto-detect initial month from first scheduled content or current date
+  const [calDate, setCalDate] = useState<Date>(() => {
+    const firstDate = activeClientContents[0]?.date;
+    if (firstDate && /^\d{4}-\d{2}/.test(firstDate)) {
+      const [y, m] = firstDate.split('-').map(Number);
+      return new Date(y, m - 1, 1);
+    }
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
   });
+  const [activeDate, setActiveDate] = useState<number>(
+    activeClientContents[0]?.dayNumber || new Date().getDate()
+  );
+
+  const year = calDate.getFullYear();
+  const month = calDate.getMonth();
+  const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
+  const monthLabel = `${MONTH_NAMES[month]} ${year}`;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const prevMonthDays = new Date(year, month, 0).getDate();
+  const startWeekday = new Date(year, month, 1).getDay();
+
+  const cells: { day: number; type: 'prev' | 'curr' | 'next' }[] = [];
+  for (let i = startWeekday - 1; i >= 0; i--) {
+    cells.push({ day: prevMonthDays - i, type: 'prev' });
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    cells.push({ day: d, type: 'curr' });
+  }
+  let nextD = 1;
+  while (cells.length < 42) {
+    cells.push({ day: nextD++, type: 'next' });
+  }
+
+  const filteredContents = useMemo(() => {
+    return activeClientContents.filter((item) => {
+      if (platformFilter === 'all') return true;
+      return item.platforms.includes(platformFilter);
+    });
+  }, [activeClientContents, platformFilter]);
+
+  const monthContents = useMemo(() => {
+    return filteredContents.filter((c) => {
+      if (!c.date) return true;
+      return c.date.slice(0, 7) === monthKey;
+    });
+  }, [filteredContents, monthKey]);
+
+  const selectedDayItems = monthContents.filter((c) => c.dayNumber === activeDate);
+
+  const getStatusBadgeStyle = (status: ContentItem['status']) => {
+    if (status === 'Disetujui') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    if (status === 'Perlu Revisi') return 'bg-rose-50 text-rose-700 border-rose-200';
+    if (status === 'Menunggu Review') return 'bg-amber-50 text-amber-700 border-amber-200';
+    return 'bg-[#EFF7FF] text-[#3B9BF8] border-[#DCEEFF]';
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Top Controls: Switcher & Platform Filter */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-zinc-50 border border-zinc-200 p-4 rounded-2xl">
-        {/* View Mode Toggle */}
-        <div className="inline-flex rounded-xl p-1 bg-white border border-zinc-200 shadow-sm">
+    <div className="space-y-5">
+      {/* Top Controls: View Mode Switcher & Platform Filter */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 bg-white border border-slate-100 p-4 rounded-2xl shadow-sm">
+        <div className="inline-flex flex-wrap rounded-xl p-1 bg-[#F4F6F9]">
           <button
+            type="button"
             onClick={() => setViewMode('calendar')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
               viewMode === 'calendar'
-                ? 'bg-[#01A0CA] text-white shadow-sm'
-                : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
+                ? 'bg-[#3B9BF8] text-white shadow-sm'
+                : 'text-slate-600 hover:text-[#3B9BF8]'
             }`}
           >
             <Calendar className="w-3.5 h-3.5" />
             <span>Kalender Distribusi</span>
           </button>
           <button
+            type="button"
             onClick={() => setViewMode('instagram')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
               viewMode === 'instagram'
-                ? 'bg-[#01A0CA] text-white shadow-sm'
-                : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
+                ? 'bg-[#3B9BF8] text-white shadow-sm'
+                : 'text-slate-600 hover:text-[#3B9BF8]'
             }`}
           >
             <Grid3X3 className="w-3.5 h-3.5" />
             <span>Simulasi Feed IG 3x3</span>
           </button>
           <button
+            type="button"
             onClick={() => setViewMode('tiktok')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
               viewMode === 'tiktok'
-                ? 'bg-[#01A0CA] text-white shadow-sm'
-                : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
+                ? 'bg-[#3B9BF8] text-white shadow-sm'
+                : 'text-slate-600 hover:text-[#3B9BF8]'
             }`}
           >
             <Film className="w-3.5 h-3.5" />
@@ -69,160 +129,282 @@ export function CalendarView({ onSelectItem }: CalendarViewProps) {
           </button>
         </div>
 
-        {/* Platform Filter Buttons */}
-        <div className="flex items-center gap-1.5 text-xs">
-          <span className="text-zinc-400 font-mono text-[11px] mr-1 hidden sm:inline">Filter:</span>
-          {(['all', 'instagram', 'tiktok', 'youtube_shorts'] as const).map(p => (
+        <div className="flex flex-wrap items-center gap-1.5 text-xs">
+          <span className="text-slate-400 text-[11px] mr-1 hidden sm:inline font-medium">
+            Platform:
+          </span>
+          {(['all', 'instagram', 'tiktok', 'youtube_shorts'] as const).map((p) => (
             <button
               key={p}
+              type="button"
               onClick={() => setPlatformFilter(p)}
-              className={`px-2.5 py-1 rounded-md text-[11px] font-semibold border transition cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-[11px] font-semibold transition cursor-pointer ${
                 platformFilter === p
-                  ? 'bg-[#01A0CA] text-white border-[#01A0CA] shadow-2xs'
-                  : 'bg-white text-zinc-600 border-zinc-200 hover:border-[#01A0CA]/40'
+                  ? 'bg-[#3B9BF8] text-white shadow-sm'
+                  : 'bg-[#F4F6F9] text-slate-600 hover:bg-[#EFF7FF] hover:text-[#3B9BF8]'
               }`}
             >
-              {p === 'all' ? 'Semua' : p === 'instagram' ? 'Instagram' : p === 'tiktok' ? 'TikTok' : 'YT Shorts'}
+              {p === 'all'
+                ? 'Semua'
+                : p === 'instagram'
+                ? 'Instagram'
+                : p === 'tiktok'
+                ? 'TikTok'
+                : 'YT Shorts'}
             </button>
           ))}
         </div>
       </div>
 
-      {/* VIEW 1: MONTHLY CALENDAR GRID */}
+      {/* VIEW 1: MONTHLY CALENDAR MATRIX */}
       {viewMode === 'calendar' && (
-        <div className="bg-white border border-zinc-200 rounded-2xl p-5 sm:p-6 shadow-sm">
-          <div className="flex justify-between items-center mb-5 pb-3 border-b border-zinc-100">
-            <div>
-              <h3 className="font-semibold text-sm text-zinc-900">Jadwal Penayangan {selectedClient.business}</h3>
-              <p className="text-xs text-zinc-400 font-light mt-0.5">Bulan Oktober 2026 • Klik tanggal untuk review draf</p>
-            </div>
-            <div className="flex items-center gap-3 text-[11px] font-inter text-zinc-500">
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> Disetujui</span>
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500"></span> Review</span>
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500"></span> Revisi</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-7 gap-2 mb-2 text-center text-[11px] font-inter text-zinc-400 uppercase">
-            <div>Sen</div><div>Sel</div><div>Rab</div><div>Kam</div><div>Jum</div><div>Sab</div><div>Min</div>
-          </div>
-
-          <div className="grid grid-cols-7 gap-2">
-            <div className="h-24 bg-zinc-50/50 rounded-xl border border-transparent"></div>
-            <div className="h-24 bg-zinc-50/50 rounded-xl border border-transparent"></div>
-            <div className="h-24 bg-zinc-50/50 rounded-xl border border-transparent"></div>
-
-            {daysInMonth.map((day) => {
-              const matchedItem = filteredContents.find(c => c.dayNumber === day);
-              const isSelected = activeDate === day;
-
-              return (
-                <div
-                  key={day}
-                  onClick={() => {
-                    setActiveDate(day);
-                    if (matchedItem) onSelectItem(matchedItem);
-                  }}
-                  className={`h-24 p-2 rounded-xl border transition cursor-pointer flex flex-col justify-between ${
-                    matchedItem
-                      ? 'bg-white border-zinc-300 hover:border-zinc-500 hover:shadow-md'
-                      : 'bg-zinc-50/70 border-zinc-200/80 hover:border-zinc-300'
-                  } ${isSelected ? 'ring-2 ring-[#3B9BF8]' : ''}`}
-                >
-                  <div className="flex justify-between items-start">
-                    <span className={`text-xs font-inter font-medium ${matchedItem ? 'text-zinc-900 font-semibold' : 'text-zinc-400'}`}>
-                      {day}
-                    </span>
-                    {matchedItem && (
-                      <span className={`w-2 h-2 rounded-full ${
-                        matchedItem.status === 'Disetujui' ? 'bg-emerald-500' :
-                        matchedItem.status === 'Perlu Revisi' ? 'bg-rose-500' :
-                        'bg-amber-500'
-                      }`} />
-                    )}
-                  </div>
-
-                  {matchedItem ? (
-                    <div>
-                      <div className="text-[10px] text-zinc-900 font-medium truncate leading-tight">
-                        {matchedItem.title}
-                      </div>
-                      <div className="flex items-center gap-1 mt-1">
-                        <span className="text-[9px] font-inter text-zinc-500 uppercase truncate">
-                          {matchedItem.platforms.join(' • ')}
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    <span className="text-[9px] text-zinc-300 font-inter">-</span>
-                  )}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+          <div className="xl:col-span-9 bg-white border border-slate-100 rounded-2xl p-5 shadow-sm space-y-4">
+            <div className="flex flex-wrap justify-between items-center gap-3 pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <h3 className="font-bold text-[15px] text-slate-900 min-w-[130px]">
+                  {monthLabel}
+                </h3>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCalDate(new Date(year, month - 1, 1));
+                      setActiveDate(1);
+                    }}
+                    className="w-8 h-8 rounded-xl bg-[#F4F6F9] hover:bg-[#EFF7FF] text-slate-600 hover:text-[#3B9BF8] flex items-center justify-center transition cursor-pointer"
+                    aria-label="Bulan sebelumnya"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCalDate(new Date(year, month + 1, 1));
+                      setActiveDate(1);
+                    }}
+                    className="w-8 h-8 rounded-xl bg-[#F4F6F9] hover:bg-[#EFF7FF] text-slate-600 hover:text-[#3B9BF8] flex items-center justify-center transition cursor-pointer"
+                    aria-label="Bulan berikutnya"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
                 </div>
-              );
-            })}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 text-[11px] font-medium text-slate-500">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  Disetujui
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  Review
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-rose-500" />
+                  Revisi
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#3B9BF8]" />
+                  Produksi
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-7 gap-2 text-center text-[11px] font-semibold text-slate-400">
+              {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map((d) => (
+                <div key={d}>{d}</div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+              {cells.map((cell, idx) => {
+                const isCurr = cell.type === 'curr';
+                const dayItems = isCurr
+                  ? monthContents.filter((c) => c.dayNumber === cell.day)
+                  : [];
+                const isSelected = isCurr && cell.day === activeDate;
+
+                return (
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      if (!isCurr) return;
+                      setActiveDate(cell.day);
+                      if (dayItems.length === 1) {
+                        onSelectItem(dayItems[0]);
+                      }
+                    }}
+                    className={`min-h-[84px] rounded-xl p-1.5 border transition-all ${
+                      !isCurr
+                        ? 'bg-slate-50/60 border-slate-100/60 text-slate-300'
+                        : isSelected
+                        ? 'bg-[#F5FAFF] border-[#3B9BF8] ring-2 ring-[#3B9BF8]/15 cursor-pointer'
+                        : 'bg-white border-slate-100 hover:border-sky-200 cursor-pointer'
+                    }`}
+                  >
+                    <span
+                      className={`text-[11px] font-semibold w-6 h-6 rounded-lg flex items-center justify-center tabular-nums mb-1 ${
+                        isSelected
+                          ? 'bg-[#3B9BF8] text-white'
+                          : isCurr
+                          ? 'text-slate-700'
+                          : 'text-slate-300'
+                      }`}
+                    >
+                      {cell.day}
+                    </span>
+
+                    <div className="space-y-1">
+                      {dayItems.slice(0, 2).map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveDate(cell.day);
+                            onSelectItem(item);
+                          }}
+                          className={`w-full text-left text-[9.5px] font-semibold px-1.5 py-0.5 rounded-md border truncate cursor-pointer ${getStatusBadgeStyle(
+                            item.status
+                          )}`}
+                        >
+                          {item.title}
+                        </button>
+                      ))}
+                      {dayItems.length > 2 && (
+                        <span className="block text-[9px] text-[#3B9BF8] font-semibold px-1">
+                          +{dayItems.length - 2} lagi
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right Day Detail Panel */}
+          <div className="xl:col-span-3 bg-white border border-slate-100 rounded-2xl p-4 shadow-sm space-y-3.5">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <h4 className="text-[13.5px] font-bold text-slate-900">
+                  Jadwal Tanggal {activeDate}
+                </h4>
+                <p className="text-[11px] text-slate-400">{monthLabel}</p>
+              </div>
+              <span className="text-[11px] font-semibold bg-[#EFF7FF] text-[#3B9BF8] px-2.5 py-1 rounded-lg tabular-nums">
+                {selectedDayItems.length} konten
+              </span>
+            </div>
+
+            {selectedDayItems.length === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-400">
+                Belum ada konten dijadwalkan pada tanggal {activeDate} {MONTH_NAMES[month]}.
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {selectedDayItems.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => onSelectItem(item)}
+                    className="w-full text-left p-3 rounded-xl bg-[#F8FAFC] hover:bg-[#EFF7FF] border border-slate-100 hover:border-[#3B9BF8]/40 transition space-y-1.5 cursor-pointer"
+                  >
+                    <span
+                      className={`inline-block text-[9.5px] font-semibold px-2 py-0.5 rounded-md border ${getStatusBadgeStyle(
+                        item.status
+                      )}`}
+                    >
+                      {item.status}
+                    </span>
+                    <p className="text-xs font-bold text-slate-900 line-clamp-2">
+                      {item.title}
+                    </p>
+                    <p className="text-[10.5px] text-slate-500">
+                      {item.type} • {item.platforms.join(', ')}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {/* VIEW 2: INSTAGRAM FEED 3x3 SIMULATOR */}
       {viewMode === 'instagram' && (
-        <div className="max-w-md mx-auto bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
-          {/* Mock IG Profile Header */}
-          <div className="flex items-center gap-4 pb-5 border-b border-zinc-100">
-            <div className="w-16 h-16 rounded-full bg-zinc-900 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+        <div className="max-w-md mx-auto bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center gap-4 pb-5 border-b border-slate-100">
+            <div className="w-16 h-16 rounded-full bg-[#3B9BF8] text-white flex items-center justify-center font-bold text-lg shadow-sm">
               {selectedClient.business.substring(0, 2).toUpperCase()}
             </div>
             <div>
-              <h4 className="font-semibold text-sm text-zinc-900">{selectedClient.instagram}</h4>
-              <p className="text-xs text-zinc-500 font-light mt-0.5">{selectedClient.business}</p>
-              <div className="flex gap-4 mt-2 text-xs text-zinc-700 font-inter">
-                <span><strong>{filteredContents.length}</strong> posts</span>
-                <span><strong>14.2K</strong> followers</span>
-                <span><strong>480</strong> following</span>
+              <h4 className="font-bold text-sm text-slate-900">
+                {selectedClient.instagram}
+              </h4>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {selectedClient.business}
+              </p>
+              <div className="flex gap-4 mt-2 text-xs text-slate-700">
+                <span>
+                  <strong>{filteredContents.length}</strong> jadwal
+                </span>
+                <span>
+                  <strong>{selectedClient.postsMax}</strong> kuota feed
+                </span>
               </div>
             </div>
           </div>
 
-          {/* 3x3 Grid */}
           {filteredContents.length > 0 ? (
             <div className="grid grid-cols-3 gap-1.5 mt-5">
               {filteredContents.map((item) => (
                 <div
                   key={item.id}
                   onClick={() => onSelectItem(item)}
-                  className="aspect-square bg-zinc-100 rounded-lg overflow-hidden relative group cursor-pointer border border-zinc-200"
+                  className="aspect-square bg-slate-100 rounded-xl overflow-hidden relative group cursor-pointer border border-slate-100"
                 >
                   <img
                     src={item.mediaUrl}
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                   />
-                  <div className="absolute inset-0 bg-zinc-900/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3 text-white text-xs font-inter">
-                    <span className="flex items-center gap-1"><Heart className="w-3.5 h-3.5 fill-white" /> 1.2K</span>
-                    <span className="flex items-center gap-1"><MessageCircle className="w-3.5 h-3.5 fill-white" /> 48</span>
+                  <div className="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3 text-white text-xs">
+                    <span className="flex items-center gap-1">
+                      <Heart className="w-3.5 h-3.5 fill-white" /> Review
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <MessageCircle className="w-3.5 h-3.5 fill-white" />
+                    </span>
                   </div>
-                  <div className="absolute bottom-1 right-1 bg-zinc-900/80 text-white text-[9px] font-inter px-1 rounded">
+                  <div className="absolute bottom-1.5 right-1.5 bg-white/95 text-[#3B9BF8] text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow-sm">
                     {item.version}
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="py-12 text-center text-zinc-400 text-xs font-inter">
+            <div className="py-12 text-center text-slate-400 text-xs">
               Belum ada konten Instagram yang dijadwalkan.
             </div>
           )}
-          <p className="text-[11px] text-zinc-400 font-inter text-center mt-4">
-            Simulasi Grid Instagram • Klik cover untuk preview & approval
+          <p className="text-[11px] text-slate-400 text-center mt-4">
+            Simulasi Grid Instagram • Klik visual untuk review &amp; persetujuan
           </p>
         </div>
       )}
 
       {/* VIEW 3: TIKTOK FEED 9:16 SIMULATOR */}
       {viewMode === 'tiktok' && (
-        <div className="max-w-2xl mx-auto bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
-          <div className="text-center pb-4 mb-4 border-b border-zinc-100">
-            <span className="text-xs font-inter uppercase text-zinc-400">TikTok Video Showcase</span>
-            <h4 className="font-semibold text-sm text-zinc-900 mt-1">Pratinjau Thumbnail & Hook Teks 3 Detik</h4>
+        <div className="max-w-2xl mx-auto bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+          <div className="text-center pb-4 mb-4 border-b border-slate-100">
+            <span className="text-[10.5px] font-bold uppercase tracking-wider text-[#3B9BF8]">
+              TikTok &amp; Reels Showcase
+            </span>
+            <h4 className="font-bold text-sm text-slate-900 mt-1">
+              Pratinjau Thumbnail &amp; Hook Teks 3 Detik
+            </h4>
           </div>
 
           {filteredContents.length > 0 ? (
@@ -231,86 +413,42 @@ export function CalendarView({ onSelectItem }: CalendarViewProps) {
                 <div
                   key={item.id}
                   onClick={() => onSelectItem(item)}
-                  className="aspect-[9/16] bg-zinc-900 rounded-xl overflow-hidden relative group cursor-pointer shadow-sm border border-zinc-200"
+                  className="aspect-[9/16] bg-slate-900 rounded-2xl overflow-hidden relative group cursor-pointer shadow-sm border border-slate-100"
                 >
                   <img
                     src={item.mediaUrl}
                     alt={item.title}
                     className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition duration-500"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-transparent to-transparent flex flex-col justify-between p-3">
-                    <div className="flex justify-between items-center text-[10px] text-white font-inter">
-                      <span className="bg-zinc-900/80 px-1.5 py-0.5 rounded">{item.day}</span>
-                      <span className="bg-amber-500 text-zinc-950 font-bold px-1.5 py-0.5 rounded">{item.version}</span>
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent flex flex-col justify-between p-3">
+                    <div className="flex justify-between items-center text-[10px] text-white">
+                      <span className="bg-slate-900/80 px-2 py-0.5 rounded-md font-medium">
+                        {item.day}
+                      </span>
+                      <span className="bg-[#3B9BF8] text-white font-bold px-2 py-0.5 rounded-md">
+                        {item.version}
+                      </span>
                     </div>
 
                     <div>
-                      <p className="text-[11px] font-medium text-white line-clamp-2 leading-tight">
+                      <p className="text-[11px] font-semibold text-white line-clamp-2 leading-tight">
                         {item.title}
                       </p>
-                      <div className="flex items-center gap-1 text-[10px] text-zinc-300 font-inter mt-1.5">
-                        <Eye className="w-3 h-3" />
-                        <span>42.8K views</span>
-                      </div>
+                      <span className="inline-flex items-center gap-1 text-[10px] text-sky-200 mt-1.5">
+                        <Play className="w-3 h-3 fill-current" /> Klik untuk Review
+                      </span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="py-12 text-center text-zinc-400 text-xs font-inter">
-              Belum ada video TikTok yang dijadwalkan.
+            <div className="py-12 text-center text-slate-400 text-xs">
+              Belum ada video TikTok / Reels yang dijadwalkan.
             </div>
           )}
         </div>
       )}
-
-      {/* Standard Card List under Calendar for Fast Inspection */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pt-4">
-        {filteredContents.map((item) => (
-          <div
-            key={item.id}
-            onClick={() => onSelectItem(item)}
-            className="bg-white border border-zinc-200 hover:border-zinc-400 rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-lg flex flex-col"
-          >
-            <div className="h-44 bg-zinc-100 relative overflow-hidden">
-              <img
-                src={item.mediaUrl}
-                alt={item.title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-0.5 rounded-md text-[10px] font-inter text-zinc-800 font-medium shadow-sm">
-                {item.day} ({item.weekday})
-              </div>
-              <div className={`absolute top-3 right-3 text-[10px] font-medium px-2 py-0.5 rounded-md ${
-                item.status === 'Disetujui' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                item.status === 'Perlu Revisi' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
-                'bg-amber-50 text-amber-700 border border-amber-200'
-              }`}>
-                {item.status}
-              </div>
-            </div>
-
-            <div className="p-4 flex-1 flex flex-col justify-between">
-              <div>
-                <div className="text-[10px] font-inter text-zinc-400 uppercase flex items-center justify-between mb-1">
-                  <span>{item.type}</span>
-                  <span className="font-bold text-zinc-800">{item.version}</span>
-                </div>
-                <h4 className="text-sm font-semibold text-zinc-900 line-clamp-1">{item.title}</h4>
-                <p className="text-xs text-zinc-500 mt-2 line-clamp-2 font-light">
-                  "{item.caption}"
-                </p>
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
-                <span>Klik untuk review / approval</span>
-                <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

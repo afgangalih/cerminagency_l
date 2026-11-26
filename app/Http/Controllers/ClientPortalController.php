@@ -64,6 +64,16 @@ class ClientPortalController extends Controller
             'feedback_text' => 'Konten disetujui resmi (1-Click Approved), siap ditayangkan.',
         ]);
 
+        AgencyNotification::create([
+            'client_id' => $content->client_id,
+            'title' => 'Konten Disetujui Klien — ' . ($content->client?->business_name ?? 'Brand'),
+            'description' => auth()->user()->name . " menyetujui \"{$content->title}\" (Siap Tayang).",
+            'category' => 'Review & Revisi',
+            'action_label' => 'Buka Kanban',
+            'action_type' => 'content_engine',
+            'is_read' => false,
+        ]);
+
         return back()->with('success', "Konten '{$content->title}' berhasil disetujui dan dijadwalkan tayang!");
     }
 
@@ -124,13 +134,17 @@ class ClientPortalController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'type' => 'required|string',
+            'pillar' => 'nullable|string|max:120',
             'platforms' => 'nullable|array',
             'date' => 'required|string',
             'caption' => 'nullable|string',
             'notes' => 'nullable|string',
         ]);
 
-        $isQuotaFull = $client->reels_used >= $client->reels_max;
+        $isReels = str_contains(strtolower($validated['type']), 'reel') || str_contains(strtolower($validated['type']), 'video') || in_array('tiktok', $validated['platforms'] ?? [], true);
+        $isQuotaFull = $isReels
+            ? ($client->reels_used >= $client->reels_max)
+            : ($client->posts_used >= $client->posts_max);
 
         $dateObj = Carbon::parse($validated['date']);
         $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
@@ -142,6 +156,7 @@ class ClientPortalController extends Controller
             'client_id' => $client->id,
             'title' => $validated['title'],
             'format_type' => $validated['type'],
+            'pillar' => $validated['pillar'] ?? null,
             'platforms' => $validated['platforms'] ?? ['instagram'],
             'stage' => 'script',
             'status' => 'Request Masuk',
@@ -165,7 +180,21 @@ class ClientPortalController extends Controller
             'feedback_text' => 'Pengajuan konten baru melalui portal. Catatan: ' . ($validated['notes'] ?? '-'),
         ]);
 
-        $client->increment('reels_used');
+        AgencyNotification::create([
+            'client_id' => $client->id,
+            'title' => "Pengajuan Konten Baru — {$client->business_name}",
+            'description' => "{$user->name} mengajukan \"{$content->title}\" ({$content->format_type}).",
+            'category' => 'Review & Revisi',
+            'action_label' => 'Buka Kanban',
+            'action_type' => 'content_engine',
+            'is_read' => false,
+        ]);
+
+        if ($isReels) {
+            $client->increment('reels_used');
+        } else {
+            $client->increment('posts_used');
+        }
 
         $msg = $isQuotaFull 
             ? "Pengajuan '{$content->title}' diterima sebagai slot add-on (kuota reguler penuh)."

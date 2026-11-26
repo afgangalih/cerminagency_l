@@ -25,6 +25,8 @@ import {
   Shield,
   Users,
   Laptop,
+  ExternalLink,
+  X,
 } from 'lucide-react';
 import {
   ClientPipeline,
@@ -78,6 +80,13 @@ const KANBAN_STAGES: {
     dot: 'bg-emerald-500',
     badge: 'bg-emerald-50 text-emerald-700',
   },
+  {
+    id: 'published',
+    label: '6. Sudah Tayang (Live)',
+    short: 'Sudah Tayang',
+    dot: 'bg-[#3B9BF8]',
+    badge: 'bg-[#EFF7FF] text-[#3B9BF8]',
+  },
 ];
 
 const STUDIO_PHASES = [
@@ -107,7 +116,7 @@ export function ContentEngineView({
   onOpenAddContent: () => void;
   onPreviewContent: (item: ContentItem) => void;
   onOpenDraftV2: (item: ContentItem) => void;
-  onMoveStage: (contentId: number, stage: ContentStage) => void;
+  onMoveStage: (contentId: number, stage: ContentStage, publishedUrl?: string) => void;
   onDeleteContent: (contentId: number) => void;
 }) {
   const [contentViewMode, setContentViewMode] = useState<
@@ -117,6 +126,8 @@ export function ContentEngineView({
     'Semua'
   );
   const [selectedTiktokIdx, setSelectedTiktokIdx] = useState(0);
+  const [publishModalItem, setPublishModalItem] = useState<ContentItem | null>(null);
+  const [publishUrlInput, setPublishUrlInput] = useState('');
 
   const brandItems = contents.filter((item) => {
     const matchBrand = item.clientId === selectedClient.id;
@@ -200,9 +211,9 @@ export function ContentEngineView({
         </div>
       </div>
 
-      {/* MODE 1: KANBAN SOP 5 TAHAP */}
+      {/* MODE 1: KANBAN SOP 6 TAHAP */}
       {contentViewMode === 'kanban' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5 items-start">
           {KANBAN_STAGES.map((stage) => {
             const stageItems = brandItems.filter((i) => i.stage === stage.id);
             return (
@@ -294,9 +305,15 @@ export function ContentEngineView({
                             ) : (
                               <select
                                 value={item.stage}
-                                onChange={(e) =>
-                                  onMoveStage(item.id, e.target.value as ContentStage)
-                                }
+                                onChange={(e) => {
+                                  const nextStage = e.target.value as ContentStage;
+                                  if (nextStage === 'published') {
+                                    setPublishUrlInput(item.publishedUrl || '');
+                                    setPublishModalItem(item);
+                                  } else {
+                                    onMoveStage(item.id, nextStage);
+                                  }
+                                }}
                                 className="flex-1 bg-[#EFF7FF] border-0 text-[#3B9BF8] text-[10px] font-semibold px-1.5 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3B9BF8]/30 cursor-pointer"
                               >
                                 {KANBAN_STAGES.map((st) => (
@@ -307,6 +324,18 @@ export function ContentEngineView({
                               </select>
                             )}
                           </div>
+
+                          {item.stage === 'published' && item.publishedUrl && (
+                            <a
+                              href={item.publishedUrl.startsWith('http') ? item.publishedUrl : `https://${item.publishedUrl}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#3B9BF8] hover:underline pt-0.5"
+                            >
+                              <ExternalLink className="w-3 h-3" />
+                              Lihat Postingan Live
+                            </a>
+                          )}
                         </div>
                       );
                     })
@@ -568,6 +597,75 @@ export function ContentEngineView({
                 </button>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+      {/* Modal Input Link Postingan Live saat Menandai Sudah Tayang */}
+      {publishModalItem && (
+        <div className="fixed inset-0 !mt-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-slate-100 w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-[#EFF7FF] text-[#3B9BF8] flex items-center justify-center">
+                  <ExternalLink className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    Tandai Sudah Tayang (Live)
+                  </h3>
+                  <p className="text-[11px] text-slate-500 truncate max-w-[260px]">
+                    {publishModalItem.title}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPublishModalItem(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                onMoveStage(publishModalItem.id, 'published', publishUrlInput.trim());
+                setPublishModalItem(null);
+                setPublishUrlInput('');
+              }}
+              className="p-6 space-y-4 text-xs"
+            >
+              <div>
+                <label className="block text-[11.5px] font-semibold text-slate-700 mb-1.5">
+                  Link Postingan Live (Instagram / TikTok)
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://www.instagram.com/reel/... (opsional)"
+                  value={publishUrlInput}
+                  onChange={(e) => setPublishUrlInput(e.target.value)}
+                  className="w-full bg-[#F8FAFC] border border-slate-200 px-3.5 py-2.5 rounded-xl text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-[#3B9BF8] focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
+                />
+                <p className="text-[10.5px] text-slate-400 mt-1.5">
+                  Tautan ini akan tampil di Client Portal sebagai bukti konten sudah tayang.
+                </p>
+              </div>
+              <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setPublishModalItem(null)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-medium cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-[#3B9BF8] hover:bg-[#2589F5] text-white font-semibold shadow-sm cursor-pointer"
+                >
+                  Konfirmasi Sudah Tayang
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
