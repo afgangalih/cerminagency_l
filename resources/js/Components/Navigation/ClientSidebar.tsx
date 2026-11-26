@@ -194,7 +194,7 @@ export function ClientSidebar({
                 >
                   <div className="flex items-center gap-2.5">
                     <Film className={`w-4 h-4 shrink-0 ${activeTab === 'production' ? 'text-[#01A0CA]' : 'text-zinc-500'}`} strokeWidth={1.75} />
-                    <span>Progres Video & Shoot</span>
+                    <span>Progres Desain &amp; Aset</span>
                   </div>
                   {isDemo && <Lock className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
                 </button>

@@ -22,6 +22,8 @@ export function BriefFormSection() {
     clientId: string;
     invoiceNumber: string;
     waUrl: string;
+    email: string;
+    name: string;
   } | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -37,7 +39,11 @@ export function BriefFormSection() {
       notes: form.notes
     });
 
-    setSubmittedData(result);
+    setSubmittedData({
+      ...result,
+      email: form.email,
+      name: form.name,
+    });
   };
 
   return (
@@ -66,26 +72,26 @@ export function BriefFormSection() {
             </div>
 
             <p className="text-xs text-zinc-600 leading-relaxed font-light max-w-md mx-auto">
-              Akun brand Anda telah terdaftar di sistem komando agensi. Silakan lanjutkan konfirmasi ke WhatsApp PIC atau masuk ke portal klien demo untuk meninjau kalender kerja.
+              Brief brand Anda telah tercatat. Langkah selanjutnya, buat akun portal Anda agar dapat memantau status verifikasi DP, kontrak, dan kesiapan produksi.
             </p>
 
             <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={() => router.visit(`/register?email=${encodeURIComponent(submittedData.email)}&name=${encodeURIComponent(submittedData.name)}`)}
+                className="px-6 py-3 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white font-semibold text-xs flex items-center justify-center gap-2 transition shadow-sm cursor-pointer"
+              >
+                <span>Lanjut Registrasi &amp; Masuk Portal</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
               <a
                 href={submittedData.waUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs flex items-center justify-center gap-2 transition shadow-sm"
               >
-                <span>Buka Chat WhatsApp PIC Agensi</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>Konfirmasi via WhatsApp PIC</span>
               </a>
-
-              <button
-                onClick={() => router.visit('/portal')}
-                className="px-6 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-medium text-xs transition"
-              >
-                Buka Portal Klien Anda
-              </button>
             </div>
           </div>
         ) : (

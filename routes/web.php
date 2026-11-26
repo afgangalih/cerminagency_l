@@ -60,6 +60,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/admin/studio-tasks', [AdminDashboardController::class, 'storeStudioTask'])->name('admin.studio-tasks.store');
     Route::patch('/admin/studio-tasks/{studioTask}', [AdminDashboardController::class, 'updateStudioTask'])->name('admin.studio-tasks.update');
     Route::delete('/admin/studio-tasks/{studioTask}', [AdminDashboardController::class, 'destroyStudioTask'])->name('admin.studio-tasks.destroy');
+
+    // Agency Notifications, Calendar Events & Client Reviews
+    Route::post('/admin/notifications/{notification}/read', [AdminDashboardController::class, 'markNotificationRead'])->name('admin.notifications.read');
+    Route::post('/admin/notifications/mark-all-read', [AdminDashboardController::class, 'markAllNotificationsRead'])->name('admin.notifications.mark-all-read');
+    Route::delete('/admin/notifications/clear-read', [AdminDashboardController::class, 'clearReadNotifications'])->name('admin.notifications.clear-read');
+    Route::post('/admin/events', [AdminDashboardController::class, 'storeEvent'])->name('admin.events.store');
+    Route::delete('/admin/events/{event}', [AdminDashboardController::class, 'destroyEvent'])->name('admin.events.destroy');
+    Route::post('/admin/reviews', [AdminDashboardController::class, 'storeReview'])->name('admin.reviews.store');
 });
 
 // ============================================================================

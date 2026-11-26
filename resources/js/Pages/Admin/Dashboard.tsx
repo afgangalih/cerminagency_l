@@ -1,18 +1,18 @@
-import { Head } from '@inertiajs/react';
-import { AgencyProvider } from '@/context/AgencyContext';
 'use client';
 
-import React, { useState } from 'react';
-import { useAgency } from '@/context/AgencyContext';
-import { ContentItem, ContentStage, ClientPipeline, PlatformType, VideoProductionTask, Invoice } from '@/types';
-import { 
-  LayoutDashboard, Kanban, Film, DollarSign, FileText, 
-  Users, Plus, Share2, Receipt, CheckCircle2, Unlock, ChevronRight, 
-  ChevronDown, ExternalLink, Menu, X, ArrowUpRight, AlertTriangle, 
-  ShieldCheck, Calendar, Grid3X3, Eye, Heart, MessageCircle, Clock,
-  Sparkles, Check, Filter, Trash2, RefreshCw, Database, Building2,
-  Copy, Search
-} from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Head, router } from '@inertiajs/react';
+import { AgencyProvider, useAgency } from '@/context/AgencyContext';
+import {
+  ContentItem,
+  ClientPipeline,
+  VideoProductionTask,
+  Invoice,
+  AgencyNotificationItem,
+  AgencyEventItem,
+  ClientReviewItem,
+  StudioTeamMember,
+} from '@/types';
 import { AddContentModal } from '@/Components/Modals/AddContentModal';
 import { AddClientModal } from '@/Components/Modals/AddClientModal';
 import { AddStudioTaskModal } from '@/Components/Modals/AddStudioTaskModal';
@@ -20,19 +20,32 @@ import { AddOnQuotaModal } from '@/Components/Modals/AddOnQuotaModal';
 import { InspectProofModal } from '@/Components/Modals/InspectProofModal';
 import { AdminRevisionModal } from '@/Components/Modals/AdminRevisionModal';
 import { ReviewModal } from '@/Components/Modals/ReviewModal';
-import { EmptyState } from '@/Components/UI/EmptyState';
 import { DashboardTwoExecutive } from '@/Components/Admin/DashboardTwoExecutive';
-import { DashboardHeader } from '@/Components/Navigation/DashboardHeader';
-import { AdminSidebar } from '@/Components/Navigation/AdminSidebar';
-import { ProfileView } from '@/Components/Views/ProfileView';
-import { AccountSettingsView } from '@/Components/Views/AccountSettingsView';
-import { RetainerPlansView } from '@/Components/Views/RetainerPlansView';
+import {
+  FinanceDPView,
+  ClientsQuotaView,
+  VaultBriefView,
+  AgencyCalendarView,
+  FeedbackReviewView,
+} from '@/Components/Admin/AgencyLevelViews';
+import {
+  ContentEngineView,
+  StudioMalangView,
+  NotificationsView,
+  AdminProfileAccountView,
+} from '@/Components/Admin/ExecutionAndSystemViews';
+import { DashboardHeader, BreadcrumbItem } from '@/Components/Navigation/DashboardHeader';
+import { AdminSidebar, AdminTabKey } from '@/Components/Navigation/AdminSidebar';
 
 interface AdminDashboardProps {
   clients?: ClientPipeline[];
   contents?: ContentItem[];
   videoTasks?: VideoProductionTask[];
   invoices?: Invoice[];
+  notifications?: AgencyNotificationItem[];
+  agencyEvents?: AgencyEventItem[];
+  clientReviews?: ClientReviewItem[];
+  studioTeam?: StudioTeamMember[];
 }
 
 export default function AdminDashboard({
@@ -40,6 +53,10 @@ export default function AdminDashboard({
   contents = [],
   videoTasks = [],
   invoices = [],
+  notifications = [],
+  agencyEvents = [],
+  clientReviews = [],
+  studioTeam = [],
 }: AdminDashboardProps) {
   return (
     <AgencyProvider
@@ -49,13 +66,58 @@ export default function AdminDashboard({
       initialInvoices={invoices}
       userRole="admin"
     >
-      <Head title="Pusat Komando Agensi - Cermin Kreatif" />
-      <AdminContent />
+      <Head title="Cermin OS — Agency Admin" />
+      <AdminContent
+        notifications={notifications}
+        agencyEvents={agencyEvents}
+        clientReviews={clientReviews}
+        studioTeam={studioTeam}
+      />
     </AgencyProvider>
   );
 }
 
-function AdminContent() {
+const TAB_TITLES: Record<AdminTabKey, string> = {
+  mission_control: 'Dashboard',
+  finance: 'Finansial & DP',
+  clients: 'Klien & Kuota',
+  brief_vault: 'Prospek & Brief Masuk',
+  agency_calendar: 'Kalender Agensi',
+  feedback_review: 'Feedback & Review',
+  content_engine: 'Content Engine',
+  production_mgmt: 'Aset & Desain',
+  notifications: 'Notifikasi',
+  profile: 'Profil & Akun',
+  account_settings: 'Profil & Akun',
+  retainer_plans: 'Klien & Kuota',
+};
+
+const TAB_SUBTITLES: Record<AdminTabKey, string> = {
+  mission_control: 'Ringkasan performa agensi, antrean review, dan jadwal eksekusi hari ini.',
+  finance: 'Verifikasi pembayaran DP 50%, status faktur, dan arus kas agensi.',
+  clients: 'Kelola daftar brand klien resmi, kuota retainer bulanan, Konten Pilar, dan KPI.',
+  brief_vault: 'Pantau calon klien yang baru mengirim brief, potensi omzet, dan follow-up sebelum DP.',
+  agency_calendar: 'Agenda meeting, jadwal syuting, dan milestone operasional agensi.',
+  feedback_review: 'Pantau umpan balik, tingkat kepuasan, dan testimoni dari setiap brand.',
+  content_engine: 'Kelola alur kerja Kanban 5 tahap, matriks kalender 1–31, dan review 2 arah.',
+  production_mgmt: 'Pantau progres pengerjaan desain dan kirim multi-link hasil ke klien.',
+  notifications: 'Pusat pemberitahuan aktivitas klien, pembayaran, dan pembaruan konten.',
+  profile: 'Pengaturan profil akun, keamanan, dan informasi tim internal agensi.',
+  account_settings: 'Pengaturan profil akun, keamanan, dan informasi tim internal agensi.',
+  retainer_plans: 'Kelola daftar brand klien, kuota retainer bulanan, dan status aktivasi portal.',
+};
+
+function AdminContent({
+  notifications,
+  agencyEvents,
+  clientReviews,
+  studioTeam,
+}: {
+  notifications: AgencyNotificationItem[];
+  agencyEvents: AgencyEventItem[];
+  clientReviews: ClientReviewItem[];
+  studioTeam: StudioTeamMember[];
+}) {
   const {
     clientPipeline,
     contentList,
@@ -63,26 +125,20 @@ function AdminContent() {
     selectedClientId,
     setSelectedClientId,
     selectedClient,
-    activeClientContents,
     moveContentStage,
     updateStudioTask,
     deleteStudioTask,
     deleteClient,
     deleteContentItem,
-    clearAllData,
-    seedSampleData,
-    triggerNotification
+    verifyPayment,
+    triggerNotification,
+    notification,
   } = useAgency();
 
-  // Navigation tab
-  const [adminTab, setAdminTab] = useState<
-    'mission_control' | 'content_engine' | 'production_mgmt' | 'finance' | 'clients' | 'brief_vault' | 'profile' | 'account_settings' | 'retainer_plans'
-  >('mission_control');
-
-  // Sub-view switcher for Content Engine (Kanban vs Calendar vs IG Feed vs TikTok Feed)
-  const [contentViewMode, setContentViewMode] = useState<'kanban' | 'calendar' | 'instagram_feed' | 'tiktok_feed'>('kanban');
-  const [platformFilter, setPlatformFilter] = useState<PlatformType | 'all'>('all');
-  const [activeDate, setActiveDate] = useState<number>(12);
+  const [adminTab, setAdminTab] = useState<AdminTabKey>('mission_control');
+  const [profileSubTab, setProfileSubTab] = useState<'profil' | 'keamanan' | 'tim'>('profil');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [globalSearch, setGlobalSearch] = useState('');
 
   // Modals
   const [showAddContentModal, setShowAddContentModal] = useState(false);
@@ -93,57 +149,75 @@ function AdminContent() {
   const [selectedRevisionContent, setSelectedRevisionContent] = useState<ContentItem | null>(null);
   const [selectedPreviewContent, setSelectedPreviewContent] = useState<ContentItem | null>(null);
   const [clientToDelete, setClientToDelete] = useState<ClientPipeline | null>(null);
-  const [contentToDelete, setContentToDelete] = useState<ContentItem | null>(null);
-  const [brandDropdownOpen, setBrandDropdownOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [clientPicFilter, setClientPicFilter] = useState<string>('ALL');
-  const [studioPhaseFilter, setStudioPhaseFilter] = useState<string>('all');
-  const [briefSearchTerm, setBriefSearchTerm] = useState<string>('');
-  const [copiedBriefId, setCopiedBriefId] = useState<string | null>(null);
 
-  const handleCopyBrief = (id: string, text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedBriefId(id);
-    triggerNotification('Ringkasan brief berhasil disalin ke clipboard!');
-    setTimeout(() => setCopiedBriefId(null), 2500);
-  };
+  const pendingInvoices = clientPipeline.filter((c) => !c.isUnlocked);
+  const stalledReviews = contentList.filter((c) => c.stage === 'review');
+  const activeTabTitle = TAB_TITLES[adminTab] || 'Dashboard';
 
-  const uniqueClientPics = Array.from(
-    new Set(clientPipeline.map((c) => c.picAssigned).filter(Boolean))
-  ) as string[];
+  // Hierarchical Text Breadcrumb Metadata matching _design-ref/CerminAgencyAdmin.tsx
+  const breadcrumbItems: BreadcrumbItem[] = useMemo(() => {
+    const items: BreadcrumbItem[] = [{ label: 'Cermin OS', nav: 'mission_control' }];
+    if (adminTab === 'mission_control') {
+      items.push({ label: 'Dashboard', nav: null });
+    } else if (
+      ['finance', 'clients', 'brief_vault', 'agency_calendar', 'feedback_review'].includes(adminTab)
+    ) {
+      items.push({ label: 'Level Agensi', nav: 'mission_control' });
+      items.push({ label: activeTabTitle, nav: null });
+    } else if (['content_engine', 'production_mgmt'].includes(adminTab)) {
+      items.push({ label: 'Eksekusi Per-Brand', nav: 'clients' });
+      if (selectedClient?.business) {
+        items.push({ label: selectedClient.business, nav: 'clients' });
+      }
+      items.push({ label: activeTabTitle, nav: null });
+    } else {
+      items.push({ label: 'Akun & Sistem', nav: 'mission_control' });
+      items.push({ label: activeTabTitle, nav: null });
+    }
+    return items;
+  }, [adminTab, activeTabTitle, selectedClient]);
 
-  const filteredClientsForTab = clientPicFilter === 'ALL'
-    ? clientPipeline
-    : clientPipeline.filter((c) => c.picAssigned === clientPicFilter);
-
-  const daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
-
-  // Filtered contents for current client
-  const filteredContents = activeClientContents.filter(item => {
-    if (platformFilter === 'all') return true;
-    return item.platforms.includes(platformFilter);
-  });
-
-  // One-Click WhatsApp Dispatcher (Zero Paid API)
+  // One-Click WhatsApp Dispatcher
   const handlePingClient = (client: ClientPipeline, item: ContentItem) => {
     const text = encodeURIComponent(
       `Halo Kak ${client.name} dari ${client.business}!\n\n` +
-      `Tim Cermin Kreatif telah mengunggah draf konten terbaru: "${item.title}".\n` +
-      `Format: ${item.type} | Jadwal Tayang: ${item.day} (${item.weekday})\n\n` +
-      `Mohon luangkan 1 menit untuk meninjau dan memberikan persetujuan melalui Portal Klien agar antrean publikasi tetap tepat waktu. Terima kasih banyak!`
+        `Tim Cermin Kreatif telah mengunggah draf konten terbaru: "${item.title}".\n` +
+        `Format: ${item.type} | Jadwal Tayang: ${item.day} (${item.weekday})\n\n` +
+        `Mohon luangkan 1 menit untuk meninjau dan memberikan persetujuan melalui Portal Klien agar antrean publikasi tetap tepat waktu. Terima kasih!`
     );
     window.open(`https://wa.me/6281234567890?text=${text}`, '_blank');
     triggerNotification(`Pesan WhatsApp tindak lanjut untuk ${client.business} siap dikirim!`);
   };
 
-  // Executive KPIs
-  const totalMRR = clientPipeline.reduce((acc, c) => acc + (parseInt(c.totalValue.replace(/\D/g, ''), 10) || 0), 0);
-  const pendingInvoices = clientPipeline.filter(c => !c.isUnlocked);
-  const stalledReviews = contentList.filter(c => c.stage === 'review');
+  const handleCopyBrief = (cl: ClientPipeline) => {
+    const summary = `Brief ${cl.business} (${cl.instagram})\nPIC: ${cl.name} (${cl.email})\nPaket: ${cl.package}\nTarget & Problem: ${cl.briefNotes}`;
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(summary).catch(() => {});
+    }
+    triggerNotification(`Ringkasan brief ${cl.business} disalin ke clipboard!`);
+  };
+
+  const handleNotificationAction = (notif: AgencyNotificationItem) => {
+    router.post(`/admin/notifications/${notif.id}/read`, {}, { preserveScroll: true });
+    if (notif.clientId) {
+      setSelectedClientId(notif.clientId);
+    }
+    if (notif.actionType === 'finance' || notif.actionType === 'inspect') {
+      setAdminTab('finance');
+    } else if (notif.actionType === 'content_engine' || notif.actionType === 'kanban') {
+      setAdminTab('content_engine');
+    } else if (notif.actionType === 'brief_vault') {
+      setAdminTab('brief_vault');
+    } else if (notif.actionType === 'clients') {
+      setAdminTab('clients');
+    } else {
+      setAdminTab('mission_control');
+    }
+  };
 
   return (
-    <div className="h-screen w-full flex flex-col md:flex-row overflow-hidden bg-zinc-50 text-zinc-900 font-sans antialiased">
-      {/* Efferd AppShell-2 Modern Admin Sidebar */}
+    <div className="min-h-screen bg-[#FFFFFF] text-[#1E293B] font-sans antialiased flex">
+      {/* Structured Sidebar matching Reference */}
       <AdminSidebar
         adminTab={adminTab}
         setAdminTab={setAdminTab}
@@ -159,1236 +233,211 @@ function AdminContent() {
         pendingInvoices={pendingInvoices}
         onOpenAddClient={() => setShowAddClientModal(true)}
         onOpenAddContent={() => setShowAddContentModal(true)}
-        onClearAllData={clearAllData}
-        onSeedSampleData={seedSampleData}
-        onOpenSupport={() => {
-          const btn = document.querySelector('button[aria-label="Buka dukungan Cermin Kreatif"]') as HTMLButtonElement;
-          if (btn) btn.click();
-        }}
       />
 
-      {/* ========================================================
-          MAIN WORKSPACE CANVAS (Full Precision Layout)
-      ======================================================== */}
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 bg-[#FCFDFF]">
         <DashboardHeader
           role="admin"
-          activeTabTitle={
-            adminTab === 'mission_control' ? 'Pusat Kendali' :
-            adminTab === 'content_engine' ? 'SOP Konten' :
-            adminTab === 'production_mgmt' ? 'Studio Ops' :
-            adminTab === 'finance' ? 'Verifikasi DP & Faktur' :
-            adminTab === 'clients' ? 'Direktori Klien' :
-            adminTab === 'brief_vault' ? 'Arsip Brief Masuk' :
-            adminTab === 'profile' ? 'Profil Akun Studio' :
-            adminTab === 'account_settings' ? 'Pengaturan Akun & Studio' :
-            'Paket Retainer & Skema Kontrak'
+          activeTabTitle={activeTabTitle}
+          breadcrumbItems={breadcrumbItems}
+          onNavigateBreadcrumb={(tab) => setAdminTab(tab)}
+          globalSearch={globalSearch}
+          setGlobalSearch={setGlobalSearch}
+          notifications={notifications}
+          onMarkAllNotifRead={() =>
+            router.post('/admin/notifications/mark-all-read', {}, { preserveScroll: true })
           }
-          selectedClient={selectedClient}
-          clientPipeline={clientPipeline}
-          selectedClientId={selectedClientId}
-          setSelectedClientId={setSelectedClientId}
-          onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
-          onOpenSupportWidget={() => {
-            const btn = document.querySelector('button[aria-label="Buka dukungan Cermin Kreatif"]') as HTMLButtonElement;
-            if (btn) btn.click();
+          onNotificationAction={handleNotificationAction}
+          onOpenNotificationsPage={() => setAdminTab('notifications')}
+          onOpenProfileTab={(subtab) => {
+            setProfileSubTab(subtab);
+            setAdminTab('profile');
           }}
-          onOpenAddClient={() => setShowAddClientModal(true)}
-          onNavigateTab={(tab) => setAdminTab(tab)}
+          isNotificationsActive={adminTab === 'notifications'}
+          isProfileActive={adminTab === 'profile' || adminTab === 'account_settings'}
+          selectedClient={selectedClient}
+          onToggleMobileMenu={() => setMobileMenuOpen(true)}
         />
-        <main className="flex-1 w-full min-w-0 p-6 sm:p-8 xl:p-10 overflow-y-auto">
-          <div className="w-full max-w-7xl mx-auto space-y-8">
 
-          {/* ========================================================
-              TAB 1: MISSION CONTROL
-          ======================================================== */}
+        <main className="flex-1 px-5 lg:px-7 py-6">
+          <div className="mb-6">
+            <h1 className="text-[22px] sm:text-[24px] font-bold text-[#1E293B] tracking-tight leading-snug">
+              {activeTabTitle}
+            </h1>
+            <p className="text-xs text-slate-500 mt-1">
+              {TAB_SUBTITLES[adminTab] || ''}
+            </p>
+          </div>
           {adminTab === 'mission_control' && (
-            <div className="space-y-6">
-              {clientPipeline.length === 0 ? (
-                <EmptyState
-                  icon={Building2}
-                  title="Belum Ada Klien Terdaftar"
-                  description="Mulai operasional agensi Cermin Kreatif dengan mendaftarkan brand klien pertama, atau muat data sampel untuk simulasi fitur."
-                  actionLabel="+ Daftarkan Klien Pertama"
-                  onAction={() => setShowAddClientModal(true)}
-                  secondaryLabel="Muat Data Sampel"
-                  onSecondaryAction={seedSampleData}
-                />
-              ) : (
-                <DashboardTwoExecutive
-                  clients={clientPipeline}
-                  contents={contentList}
-                  stalledReviews={stalledReviews}
-                  onPingClient={handlePingClient}
-                  onOpenAddClient={() => setShowAddClientModal(true)}
-                  onOpenAddContent={() => setShowAddContentModal(true)}
-                  onInspectProof={(client) => setSelectedProofClient(client)}
-                  onSelectClient={(id) => setSelectedClientId(id)}
-                />
-              )}
-            </div>
+            <DashboardTwoExecutive
+              clients={clientPipeline}
+              contents={contentList}
+              stalledReviews={stalledReviews}
+              videoTasks={videoTasks}
+              agencyEvents={agencyEvents}
+              notifications={notifications}
+              onPingClient={handlePingClient}
+              onInspectProof={(client) => setSelectedProofClient(client)}
+              onSelectClient={(id) => setSelectedClientId(id)}
+              onNavigateTab={(tab) => setAdminTab(tab)}
+              onOpenAddClient={() => setShowAddClientModal(true)}
+              onOpenAddContent={() => setShowAddContentModal(true)}
+            />
           )}
 
-          {/* ========================================================
-          TAB 2: CONTENT ENGINE (MULTI-VIEW)
-          ======================================================== */}
-          {adminTab === 'content_engine' && (
-            <div className="space-y-6">
-              {/* Header with View Switchers & Action Buttons */}
-              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 pb-2 border-b border-zinc-200">
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900">
-                    Produksi Konten — {selectedClient.business || 'Pilih Klien'}
-                  </h1>
-                  <p className="text-xs text-zinc-500 font-light mt-1">
-                    Gunakan Kanban SOP 5 tahap, Matriks Kalender 1–31, atau Simulator Feed untuk mengontrol produksi.
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2.5">
-                  {/* Multi-view Switcher with Brand Styling */}
-                  <div className="inline-flex rounded-xl p-1 bg-white border border-zinc-200 shadow-2xs">
-                    <button
-                      onClick={() => setContentViewMode('kanban')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
-                        contentViewMode === 'kanban' 
-                          ? 'bg-[#01A0CA] text-white shadow-xs' 
-                          : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
-                      }`}
-                    >
-                      <Kanban className="w-3.5 h-3.5" />
-                      <span>Kanban SOP</span>
-                    </button>
-
-                    <button
-                      onClick={() => setContentViewMode('calendar')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
-                        contentViewMode === 'calendar' 
-                          ? 'bg-[#01A0CA] text-white shadow-xs' 
-                          : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
-                      }`}
-                    >
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>Kalender 1–31</span>
-                    </button>
-
-                    <button
-                      onClick={() => setContentViewMode('instagram_feed')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
-                        contentViewMode === 'instagram_feed' 
-                          ? 'bg-[#01A0CA] text-white shadow-xs' 
-                          : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
-                      }`}
-                    >
-                      <Grid3X3 className="w-3.5 h-3.5" />
-                      <span>Feed IG 3x3</span>
-                    </button>
-
-                    <button
-                      onClick={() => setContentViewMode('tiktok_feed')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
-                        contentViewMode === 'tiktok_feed' 
-                          ? 'bg-[#01A0CA] text-white shadow-xs' 
-                          : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-50'
-                      }`}
-                    >
-                      <Film className="w-3.5 h-3.5" />
-                      <span>TikTok 9:16</span>
-                    </button>
-                  </div>
-
-                  {/* Add Content Button */}
-                  <button
-                    onClick={() => setShowAddContentModal(true)}
-                    className="px-3.5 py-2 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white font-semibold text-xs flex items-center gap-1.5 transition shadow-xs cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Jadwalkan Konten</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Platform Filter Controls */}
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-zinc-400 font-mono text-[11px] flex items-center gap-1">
-                  <Filter className="w-3 h-3 text-[#01A0CA]" /> Filter:
-                </span>
-                <button
-                  onClick={() => setPlatformFilter('all')}
-                  className={`px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer ${
-                    platformFilter === 'all'
-                      ? 'bg-[#01A0CA] text-white shadow-2xs'
-                      : 'bg-white border border-zinc-200 text-zinc-600 hover:border-[#01A0CA]/30'
-                  }`}
-                >
-                  Semua
-                </button>
-                <button
-                  onClick={() => setPlatformFilter('instagram')}
-                  className={`px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer ${
-                    platformFilter === 'instagram'
-                      ? 'bg-[#01A0CA] text-white shadow-2xs'
-                      : 'bg-white border border-zinc-200 text-zinc-600 hover:border-[#01A0CA]/30'
-                  }`}
-                >
-                  Instagram
-                </button>
-                <button
-                  onClick={() => setPlatformFilter('tiktok')}
-                  className={`px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer ${
-                    platformFilter === 'tiktok'
-                      ? 'bg-[#01A0CA] text-white shadow-2xs'
-                      : 'bg-white border border-zinc-200 text-zinc-600 hover:border-[#01A0CA]/30'
-                  }`}
-                >
-                  TikTok
-                </button>
-              </div>
-
-              {/* Empty Check */}
-              {clientPipeline.length === 0 ? (
-                <EmptyState
-                  icon={Building2}
-                  title="Belum Ada Brand Klien"
-                  description="Daftarkan klien terlebih dahulu untuk mengatur kalender produksi dan pipeline konten."
-                  actionLabel="+ Daftarkan Klien"
-                  onAction={() => setShowAddClientModal(true)}
-                />
-              ) : filteredContents.length === 0 ? (
-                <EmptyState
-                  icon={Calendar}
-                  title={`Belum Ada Konten untuk ${selectedClient.business}`}
-                  description="Buat konsep konten pertama untuk brand ini. Tentukan naskah, format platform, dan tanggal jadwal penayangan."
-                  actionLabel="+ Jadwalkan Konten Pertama"
-                  onAction={() => setShowAddContentModal(true)}
-                />
-              ) : (
-                <>
-                  {/* SUB-VIEW 1: KANBAN 5 STAGE */}
-                  {contentViewMode === 'kanban' && (
-                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 overflow-x-auto pb-4">
-                      {[
-                        { key: 'script', label: '1. Riset & Naskah', count: filteredContents.filter(c => c.stage === 'script').length, badge: 'bg-sky-50 text-sky-700 border border-sky-200/60' },
-                        { key: 'production', label: '2. Produksi & Edit', count: filteredContents.filter(c => c.stage === 'production').length, badge: 'bg-indigo-50 text-indigo-700 border border-indigo-200/60' },
-                        { key: 'review', label: '3. Menunggu Review', count: filteredContents.filter(c => c.stage === 'review').length, badge: 'bg-amber-50 text-amber-700 border border-amber-200/60' },
-                        { key: 'revision', label: '4. Perlu Revisi', count: filteredContents.filter(c => c.stage === 'revision').length, badge: 'bg-rose-50 text-rose-700 border border-rose-200/60' },
-                        { key: 'scheduled', label: '5. Siap Tayang', count: filteredContents.filter(c => c.stage === 'scheduled').length, badge: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' }
-                      ].map(column => {
-                        const itemsInCol = filteredContents.filter(c => c.stage === column.key);
-                        return (
-                          <div key={column.key} className="bg-white border border-zinc-200 rounded-2xl p-4 shadow-2xs flex flex-col min-w-[240px]">
-                            <div className="flex items-center justify-between pb-3 mb-3 border-b border-zinc-100">
-                              <span className="text-xs font-semibold text-zinc-900">{column.label}</span>
-                              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${column.badge}`}>
-                                {column.count}
-                              </span>
-                            </div>
-
-                            <div className="space-y-3 flex-1">
-                              {itemsInCol.map(item => (
-                                <div
-                                  key={item.id}
-                                  className="p-3.5 rounded-xl border border-zinc-200/90 bg-zinc-50/50 hover:bg-white hover:border-[#01A0CA]/40 transition shadow-2xs space-y-2.5 group"
-                                >
-                                  <div className="flex justify-between items-start gap-1">
-                                    <span className="text-[10px] font-mono font-medium text-zinc-500">
-                                      {item.day} ({item.weekday})
-                                    </span>
-                                    <div className="flex items-center gap-1">
-                                      <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-[#01A0CA]/10 text-[#01A0CA] font-bold">
-                                        {item.version}
-                                      </span>
-                                      <button
-                                        onClick={() => deleteContentItem(item.id)}
-                                        className="opacity-0 group-hover:opacity-100 p-0.5 text-zinc-400 hover:text-rose-600 transition"
-                                        title="Hapus konten"
-                                      >
-                                        <Trash2 className="w-3 h-3" />
-                                      </button>
-                                    </div>
-                                  </div>
-
-                                  <h4 className="text-xs font-semibold text-zinc-900 leading-snug line-clamp-2">
-                                    {item.title}
-                                  </h4>
-
-                                  <div className="text-[10px] font-mono text-zinc-400 uppercase">
-                                    {item.platforms.join(' • ')}
-                                  </div>
-
-                                  {/* Quick Actions */}
-                                  <div className="pt-2 border-t border-zinc-200/60 flex items-center justify-between text-[11px]">
-                                    <button
-                                      onClick={() => setSelectedPreviewContent(item)}
-                                      className="text-zinc-600 hover:text-[#01A0CA] font-medium flex items-center gap-1 cursor-pointer transition"
-                                    >
-                                      <Eye className="w-3 h-3" />
-                                      <span>Pratinjau</span>
-                                    </button>
-
-                                    {item.stage === 'revision' && (
-                                      <button
-                                        onClick={() => setSelectedRevisionContent(item)}
-                                        className="text-rose-700 hover:text-rose-800 font-semibold cursor-pointer"
-                                      >
-                                        Input Draf V2
-                                      </button>
-                                    )}
-
-                                    {item.stage !== 'revision' && (
-                                      <select
-                                        value={item.stage}
-                                        onChange={(e) => moveContentStage(item.id, e.target.value as ContentStage)}
-                                        className="text-[10px] bg-white border border-zinc-200 rounded px-1.5 py-0.5 text-zinc-700 cursor-pointer"
-                                      >
-                                        <option value="script">Pindah: Naskah</option>
-                                        <option value="production">Pindah: Edit</option>
-                                        <option value="review">Pindah: Review</option>
-                                        <option value="revision">Pindah: Revisi</option>
-                                        <option value="scheduled">Pindah: Siap Tayang</option>
-                                      </select>
-                                    )}
-                                  </div>
-                                </div>
-                              ))}
-
-                              {itemsInCol.length === 0 && (
-                                <div className="py-8 text-center text-zinc-300 text-[11px] font-inter">
-                                  Kosong
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {/* SUB-VIEW 2: CALENDAR 1-31 MATRIX */}
-                  {contentViewMode === 'calendar' && (
-                    <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-xs space-y-4">
-                      <div className="flex justify-between items-center pb-3 border-b border-zinc-100">
-                        <span className="text-xs font-inter uppercase text-zinc-400 font-semibold">
-                          Matriks Jadwal Penayangan Bulanan
-                        </span>
-                        <span className="text-xs font-inter text-zinc-700 font-medium">
-                          {filteredContents.length} Konten Dijadwalkan
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-7 gap-2">
-                        {daysInMonth.map(day => {
-                          const matchedItem = filteredContents.find(c => c.dayNumber === day);
-                          const isSelected = activeDate === day;
-
-                          return (
-                            <div
-                              key={day}
-                              onClick={() => {
-                                setActiveDate(day);
-                                if (matchedItem) setSelectedPreviewContent(matchedItem);
-                              }}
-                              className={`h-24 p-2 rounded-xl border transition cursor-pointer flex flex-col justify-between ${
-                                matchedItem
-                                  ? 'bg-white border-zinc-300 hover:border-zinc-500 hover:shadow-xs'
-                                  : 'bg-zinc-50/70 border-zinc-200/80 hover:border-zinc-300'
-                              } ${isSelected ? 'ring-2 ring-zinc-900' : ''}`}
-                            >
-                              <div className="flex justify-between items-start">
-                                <span className={`text-xs font-inter font-medium ${matchedItem ? 'text-zinc-900 font-semibold' : 'text-zinc-400'}`}>
-                                  {day}
-                                </span>
-                                {matchedItem && (
-                                  <span className={`w-2 h-2 rounded-full ${
-                                    matchedItem.status === 'Disetujui' ? 'bg-emerald-500' :
-                                    matchedItem.status === 'Perlu Revisi' ? 'bg-rose-500' :
-                                    'bg-amber-500'
-                                  }`} />
-                                )}
-                              </div>
-
-                              {matchedItem ? (
-                                <div>
-                                  <div className="text-[10px] text-zinc-900 font-medium truncate leading-tight">
-                                    {matchedItem.title}
-                                  </div>
-                                  <div className="flex items-center gap-1 mt-1">
-                                    <span className="text-[9px] font-inter text-zinc-500 uppercase truncate">
-                                      {matchedItem.platforms.join(' • ')}
-                                    </span>
-                                  </div>
-                                </div>
-                              ) : (
-                                <span className="text-[9px] text-zinc-300 font-inter">-</span>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* SUB-VIEW 3: INSTAGRAM FEED 3x3 SIMULATOR */}
-                  {contentViewMode === 'instagram_feed' && (
-                    <div className="max-w-md mx-auto bg-white border border-zinc-200 rounded-2xl p-6 shadow-xs">
-                      <div className="flex items-center gap-4 pb-5 border-b border-zinc-100">
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#01A0CA] to-sky-500 text-white flex items-center justify-center font-bold text-base shadow-xs ring-2 ring-[#01A0CA]/20">
-                          {selectedClient.business.substring(0, 2).toUpperCase()}
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-sm text-zinc-900">{selectedClient.instagram}</h4>
-                          <p className="text-xs text-zinc-500 font-light mt-0.5">{selectedClient.business}</p>
-                          <div className="flex gap-3 mt-1.5 text-xs text-zinc-700 font-inter">
-                            <span><strong>{filteredContents.length}</strong> posts</span>
-                            <span><strong>14.2K</strong> followers</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-1.5 mt-5">
-                        {filteredContents.map(item => (
-                          <div
-                            key={item.id}
-                            onClick={() => setSelectedPreviewContent(item)}
-                            className="aspect-square bg-zinc-100 rounded-lg overflow-hidden relative group cursor-pointer border border-zinc-200"
-                          >
-                            <img
-                              src={item.mediaUrl}
-                              alt={item.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                            />
-                            <div className="absolute inset-0 bg-zinc-900/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 text-white text-xs font-inter">
-                              <span className="flex items-center gap-1"><Heart className="w-3.5 h-3.5 fill-white" /> 1.2K</span>
-                            </div>
-                            <div className="absolute bottom-1 right-1 bg-zinc-900/80 text-white text-[9px] font-inter px-1 rounded">
-                              {item.version}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <p className="text-[11px] text-zinc-400 font-inter text-center mt-4">
-                        Simulasi Grid Instagram • Klik cover untuk preview & audit draf
-                      </p>
-                    </div>
-                  )}
-
-                  {/* SUB-VIEW 4: TIKTOK 9:16 VERTICAL SIMULATOR */}
-                  {contentViewMode === 'tiktok_feed' && (
-                    <div className="max-w-3xl mx-auto bg-white border border-zinc-200 rounded-2xl p-6 shadow-xs">
-                      <div className="text-center pb-4 mb-4 border-b border-zinc-100">
-                        <span className="text-xs font-inter uppercase text-zinc-400">TikTok Studio Showcase</span>
-                        <h4 className="font-semibold text-sm text-zinc-900 mt-1">Pratinjau Thumbnail 9:16 & Hook 3 Detik</h4>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {filteredContents.map(item => (
-                          <div
-                            key={item.id}
-                            onClick={() => setSelectedPreviewContent(item)}
-                            className="aspect-9/16 bg-zinc-900 rounded-2xl overflow-hidden relative group cursor-pointer border border-zinc-200 shadow-xs"
-                          >
-                            <img
-                              src={item.mediaUrl}
-                              alt={item.title}
-                              className="w-full h-full object-cover opacity-85 group-hover:opacity-95 group-hover:scale-105 transition duration-300"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-transparent to-transparent flex flex-col justify-end p-4 text-white">
-                              <span className="text-[10px] font-inter text-zinc-300 uppercase">{item.day} • {item.version}</span>
-                              <h5 className="font-semibold text-xs leading-snug line-clamp-2 mt-1">{item.title}</h5>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-
-          {/* ========================================================
-              TAB 3: STUDIO OPS (MALANG)
-          ======================================================== */}
-          {adminTab === 'production_mgmt' && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-2 border-b border-zinc-200">
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900">
-                    Operasional Studio Malang & Syuting Fisik
-                  </h1>
-                  <p className="text-xs text-zinc-500 font-light mt-1">
-                    Atur tahapan syuting fisik di studio Malang, penanggung jawab kamera, dan perbarui progres pengerjaan tim.
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setShowAddStudioTaskModal(true)}
-                    className="px-3.5 py-2 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Tambah Task Studio</span>
-                  </button>
-
-                  <a
-                    href="https://drive.google.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3.5 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-medium flex items-center gap-1.5 shadow-2xs transition"
-                  >
-                    <span>Google Drive 4K Master</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              </div>
-
-              {/* Studio Operational Executive KPIs */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-[#01A0CA]/10 text-[#01A0CA] flex items-center justify-center shrink-0">
-                    <Film className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-inter text-zinc-400 uppercase tracking-wider font-semibold">Total Task</div>
-                    <div className="text-xl font-bold text-zinc-900 font-inter">{videoTasks.length}</div>
-                    <div className="text-[10px] text-zinc-500">Syuting & Pascaproduksi</div>
-                  </div>
-                </div>
-
-                <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center shrink-0">
-                    <Clock className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-inter text-zinc-400 uppercase tracking-wider font-semibold">Sedang Berjalan</div>
-                    <div className="text-xl font-bold text-amber-700 font-inter">
-                      {videoTasks.filter(t => t.status === 'Sedang Berjalan').length}
-                    </div>
-                    <div className="text-[10px] text-zinc-500">Proses Take / Editing</div>
-                  </div>
-                </div>
-
-                <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-inter text-zinc-400 uppercase tracking-wider font-semibold">Selesai / QC Lolos</div>
-                    <div className="text-xl font-bold text-emerald-700 font-inter">
-                      {videoTasks.filter(t => t.status === 'Selesai').length}
-                    </div>
-                    <div className="text-[10px] text-zinc-500">Master 4K Siap</div>
-                  </div>
-                </div>
-
-                <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center shrink-0">
-                    <Building2 className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-inter text-zinc-400 uppercase tracking-wider font-semibold">Brand di Studio</div>
-                    <div className="text-xl font-bold text-indigo-700 font-inter">
-                      {new Set(videoTasks.map(t => t.clientId)).size}
-                    </div>
-                    <div className="text-[10px] text-zinc-500">Klien Aktif Produksi</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Studio Phase Filters */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                <span className="text-xs font-semibold text-zinc-500 flex items-center gap-1.5 shrink-0">
-                  <Filter className="w-3.5 h-3.5 text-[#01A0CA]" />
-                  Tahapan:
-                </span>
-                {[
-                  { key: 'all', label: `Semua (${videoTasks.length})` },
-                  { key: 'Riset & Naskah', label: 'Riset & Naskah' },
-                  { key: 'Produksi & Shoot', label: 'Produksi & Shoot' },
-                  { key: 'Penyuntingan & Desain', label: 'Penyuntingan & Desain' },
-                  { key: 'Quality Control', label: 'Quality Control' },
-                ].map(phase => (
-                  <button
-                    key={phase.key}
-                    onClick={() => setStudioPhaseFilter(phase.key)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer shrink-0 ${
-                      studioPhaseFilter === phase.key
-                        ? 'bg-[#01A0CA] text-white font-semibold shadow-xs'
-                        : 'bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
-                    }`}
-                  >
-                    {phase.label}
-                  </button>
-                ))}
-              </div>
-
-              {videoTasks.length === 0 ? (
-                <EmptyState
-                  icon={Film}
-                  title="Belum Ada Task Produksi Studio"
-                  description="Catat jadwal syuting fisik, tim DOP penanggung jawab kamera, dan folder penyimpanan master 4K."
-                  actionLabel="+ Tambah Task Studio Pertama"
-                  onAction={() => setShowAddStudioTaskModal(true)}
-                />
-              ) : videoTasks.filter(t => studioPhaseFilter === 'all' || t.phase === studioPhaseFilter).length === 0 ? (
-                <EmptyState
-                  icon={Film}
-                  title="Tidak Ada Task di Tahapan Ini"
-                  description={`Belum ada task produksi studio untuk tahapan "${studioPhaseFilter}".`}
-                  actionLabel="Lihat Semua Tahapan"
-                  onAction={() => setStudioPhaseFilter('all')}
-                />
-              ) : (
-                <div className="bg-white border border-zinc-200/90 rounded-2xl overflow-hidden shadow-xs divide-y divide-zinc-100">
-                  {videoTasks
-                    .filter(t => studioPhaseFilter === 'all' || t.phase === studioPhaseFilter)
-                    .map(task => {
-                      const client = clientPipeline.find(c => c.id === task.clientId) || selectedClient;
-                      
-                      const getPhaseStyle = (ph: string) => {
-                        if (ph.includes('Riset')) return 'bg-indigo-50 text-indigo-700 border-indigo-200';
-                        if (ph.includes('Produksi') || ph.includes('Shoot')) return 'bg-sky-50 text-[#01A0CA] border-sky-200';
-                        if (ph.includes('Penyuntingan') || ph.includes('Desain')) return 'bg-amber-50 text-amber-700 border-amber-200';
-                        if (ph.includes('Quality') || ph.includes('QC')) return 'bg-purple-50 text-purple-700 border-purple-200';
-                        return 'bg-zinc-100 text-zinc-700 border-zinc-200';
-                      };
-
-                      const getStatusStyle = (st: string) => {
-                        if (st === 'Selesai') return 'bg-emerald-50 text-emerald-700 border-emerald-300';
-                        if (st === 'Sedang Berjalan') return 'bg-amber-50 text-amber-700 border-amber-300';
-                        return 'bg-zinc-50 text-zinc-700 border-zinc-200';
-                      };
-
-                      return (
-                        <div key={task.id} className="p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 hover:bg-zinc-50/50 transition">
-                          <div className="space-y-2 min-w-0 flex-1">
-                            <div className="flex items-center gap-2.5 flex-wrap">
-                              <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-[#01A0CA]/10 text-[#01A0CA] border border-[#01A0CA]/20">
-                                {client.business}
-                              </span>
-                              <span className="text-sm font-semibold text-zinc-900">{task.title}</span>
-                              <span className={`text-[10px] font-inter font-medium px-2 py-0.5 rounded-full border ${getPhaseStyle(task.phase)}`}>
-                                {task.phase}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center gap-4 text-xs text-zinc-500 font-light flex-wrap">
-                              <span className="flex items-center gap-1.5">
-                                <span className="text-zinc-400">Shooter / DOP:</span>
-                                <strong className="text-zinc-800 font-medium">{task.shooter}</strong>
-                              </span>
-                              <span className="text-zinc-300">•</span>
-                              <span className="flex items-center gap-1.5">
-                                <span className="text-zinc-400">Penyimpanan Master:</span>
-                                <span className="font-mono text-zinc-700 bg-zinc-100 px-1.5 py-0.5 rounded text-[11px]">{task.rawFolder}</span>
-                              </span>
-                            </div>
-
-                            {/* Visual Progress Bar */}
-                            <div className="w-full max-w-md pt-1">
-                              <div className="flex justify-between items-center text-[11px] font-inter mb-1">
-                                <span className="text-zinc-400">Progres Studio</span>
-                                <span className="font-semibold text-[#01A0CA]">{task.progress}%</span>
-                              </div>
-                              <div className="w-full h-1.5 bg-zinc-100 rounded-full overflow-hidden">
-                                <div
-                                  className="h-full rounded-full bg-gradient-to-r from-[#01A0CA] to-sky-400 transition-all duration-300"
-                                  style={{ width: `${task.progress}%` }}
-                                />
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-3 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-zinc-100">
-                            {/* Slider Range */}
-                            <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200/80 px-3 py-1.5 rounded-xl">
-                              <span className="text-xs font-inter text-zinc-700 font-semibold min-w-8 text-right">{task.progress}%</span>
-                              <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={task.progress}
-                                onChange={(e) => updateStudioTask(task.id, parseInt(e.target.value, 10), task.status)}
-                                className="w-24 sm:w-28 accent-[#01A0CA] cursor-pointer"
-                              />
-                            </div>
-
-                            {/* Status Dropdown */}
-                            <select
-                              value={task.status}
-                              onChange={(e) => updateStudioTask(task.id, task.progress, e.target.value as any)}
-                              className={`border rounded-xl px-3 py-1.5 text-xs font-medium cursor-pointer transition focus:outline-none focus:ring-2 focus:ring-[#01A0CA]/20 ${getStatusStyle(task.status)}`}
-                            >
-                              <option value="Dalam Antrean">Dalam Antrean</option>
-                              <option value="Sedang Berjalan">Sedang Berjalan</option>
-                              <option value="Selesai">Selesai</option>
-                            </select>
-
-                            {/* Delete Button */}
-                            <button
-                              onClick={() => deleteStudioTask(task.id)}
-                              className="p-2 rounded-xl text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
-                              title="Hapus task studio"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ========================================================
-              TAB 4: FINANSIAL & VERIFIKASI DP
-          ======================================================== */}
           {adminTab === 'finance' && (
-            <div className="space-y-6">
-              <div className="pb-2 border-b border-zinc-200">
-                <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900">
-                  Birokrasi Finansial & Verifikasi Pembayaran
-                </h1>
-                <p className="text-xs text-zinc-500 font-light mt-1">
-                  Verifikasi Termin 1 (DP 50%) untuk membuka fitur kalender dan Termin 2 sebelum penyerahan master file 4K.
-                </p>
-              </div>
-
-              {clientPipeline.length === 0 ? (
-                <EmptyState
-                  icon={Receipt}
-                  title="Belum Ada Kontrak atau Faktur Aktif"
-                  description="Daftarkan brand klien untuk menerbitkan faktur proforma dan memverifikasi pembayaran DP 50%."
-                  actionLabel="+ Tambah Klien & Faktur"
-                  onAction={() => setShowAddClientModal(true)}
-                />
-              ) : (
-                <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-xs">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 font-inter uppercase text-[10px]">
-                        <tr>
-                          <th className="py-3 px-4">Brand & Faktur</th>
-                          <th className="py-3 px-4">Nilai Kontrak & DP</th>
-                          <th className="py-3 px-4">Status Termin</th>
-                          <th className="py-3 px-4">Bukti Slip</th>
-                          <th className="py-3 px-4 text-right">Aksi Admin</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-zinc-100">
-                        {clientPipeline.map(client => (
-                          <tr key={client.id} className="hover:bg-zinc-50/50 transition">
-                            <td className="py-4 px-4">
-                              <div className="font-semibold text-zinc-900 text-sm">{client.business}</div>
-                              <div className="text-[11px] text-zinc-400 font-inter mt-0.5">{client.invoiceNumber}</div>
-                            </td>
-
-                            <td className="py-4 px-4">
-                              <div className="font-semibold text-zinc-900">Total: {client.totalValue}</div>
-                              <div className="text-[11px] text-emerald-700 font-inter font-medium mt-0.5">DP: {client.dpAmount}</div>
-                            </td>
-
-                            <td className="py-4 px-4">
-                              <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-inter border ${
-                                client.isUnlocked 
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                                  : 'bg-amber-50 text-amber-700 border-amber-200'
-                              }`}>
-                                {client.status}
-                              </span>
-                              <div className="text-[10px] text-zinc-500 mt-0.5">{client.paymentTerm}</div>
-                            </td>
-
-                            <td className="py-4 px-4">
-                              {client.transferProof ? (
-                                <button
-                                  onClick={() => setSelectedProofClient(client)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-[11px] font-medium transition cursor-pointer"
-                                >
-                                  <Receipt className="w-3.5 h-3.5" />
-                                  <span>Lihat Slip Transfer</span>
-                                </button>
-                              ) : (
-                                <span className="text-[11px] text-zinc-400 italic">Belum unggah</span>
-                              )}
-                            </td>
-
-                            <td className="py-4 px-4 text-right">
-                              {client.isUnlocked ? (
-                                <span className="text-emerald-700 font-inter text-xs inline-flex items-center gap-1 font-semibold">
-                                  <CheckCircle2 className="w-3.5 h-3.5" /> Terverifikasi
-                                </span>
-                              ) : (
-                                <button
-                                  onClick={() => setSelectedProofClient(client)}
-                                  className="px-3.5 py-1.5 rounded-lg bg-[#01A0CA] hover:bg-[#008db3] text-white font-semibold text-xs inline-flex items-center gap-1.5 transition shadow-xs cursor-pointer"
-                                >
-                                  <Unlock className="w-3.5 h-3.5 text-white" />
-                                  <span>Buka Akses</span>
-                                </button>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </div>
+            <FinanceDPView
+              clients={clientPipeline}
+              globalSearch={globalSearch}
+              onInspectProof={(cl) => setSelectedProofClient(cl)}
+              onVerifyPayment={(id) => verifyPayment(id)}
+            />
           )}
 
-          {/* ========================================================
-              TAB 5: DAFTAR KLIEN & KUOTA (+SLOT)
-          ======================================================== */}
           {adminTab === 'clients' && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-2 border-b border-zinc-200">
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900">
-                    Kesehatan Akun & Kontrol Kuota Retainer
-                  </h1>
-                  <p className="text-xs text-zinc-500 font-light mt-1">
-                    Kontrol kuota video bulanan, tambahkan brand baru, atau lakukan upsell slot tambahan (+Add-on video).
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setShowAddClientModal(true)}
-                    className="px-4 py-2.5 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white font-semibold text-xs flex items-center gap-1.5 transition shadow-sm cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Tambah Klien Baru</span>
-                  </button>
-
-                  {selectedClient.id && (
-                    <button
-                      onClick={() => setShowAddOnModal(true)}
-                      className="px-3.5 py-2.5 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 font-medium text-xs flex items-center gap-1.5 transition shadow-2xs cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>+Slot Add-on ({selectedClient.business})</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* PIC Fast Filter Pills */}
-              {uniqueClientPics.length > 1 && (
-                <div className="flex items-center gap-1.5 p-1 bg-zinc-100/80 rounded-xl w-fit border border-zinc-200/60">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 px-2">PIC:</span>
-                  <button
-                    onClick={() => setClientPicFilter('ALL')}
-                    className={`px-3 py-1 rounded-lg text-xs font-medium transition cursor-pointer ${
-                      clientPicFilter === 'ALL'
-                        ? 'bg-white text-zinc-950 font-semibold shadow-2xs'
-                        : 'text-zinc-600 hover:text-zinc-950'
-                    }`}
-                  >
-                    Semua ({clientPipeline.length})
-                  </button>
-                  {uniqueClientPics.map((pic) => {
-                    const shortName = pic.split(' ')[0];
-                    const count = clientPipeline.filter((c) => c.picAssigned === pic).length;
-                    return (
-                      <button
-                        key={pic}
-                        onClick={() => setClientPicFilter(pic)}
-                        className={`px-3 py-1 rounded-lg text-xs font-medium transition cursor-pointer ${
-                          clientPicFilter === pic
-                            ? 'bg-white text-zinc-950 font-semibold shadow-2xs'
-                            : 'text-zinc-600 hover:text-zinc-950'
-                        }`}
-                      >
-                        {shortName} ({count})
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {filteredClientsForTab.length === 0 ? (
-                <EmptyState
-                  icon={Users}
-                  title="Belum Ada Klien untuk Filter Ini"
-                  description="Tidak ditemukan klien untuk filter PIC terpilih. Ubah filter ke 'Semua' atau daftarkan klien baru."
-                  actionLabel="+ Tambah Klien Sekarang"
-                  onAction={() => setShowAddClientModal(true)}
-                />
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  {filteredClientsForTab.map(cl => (
-                    <div key={cl.id} className="p-6 rounded-2xl bg-white border border-zinc-200 shadow-xs space-y-4 relative group">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-semibold text-base text-zinc-900">{cl.business}</h3>
-                          <span className="text-xs text-zinc-500 font-inter block mt-0.5">{cl.name} • {cl.instagram}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className={`text-[10px] font-inter px-2 py-0.5 rounded ${
-                            cl.isUnlocked 
-                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                              : 'bg-amber-50 text-amber-700 border border-amber-200'
-                          }`}>
-                            {cl.isUnlocked ? 'Aktif' : 'Pending DP'}
-                          </span>
-                          <button
-                            onClick={() => setClientToDelete(cl)}
-                            className="p-1 rounded text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
-                            title="Hapus klien"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="bg-zinc-50 p-3.5 rounded-xl border border-zinc-200/80 space-y-2.5 text-xs">
-                        <div className="flex justify-between">
-                          <span className="text-zinc-500">Paket:</span>
-                          <span className="text-zinc-900 font-medium">{cl.package}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-zinc-500">Kuota Video Terpakai:</span>
-                          <span className="font-inter font-bold text-zinc-900">{cl.reelsUsed} / {cl.reelsMax} Konten</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-zinc-500">Nilai Kontrak:</span>
-                          <span className="text-emerald-700 font-inter font-bold">{cl.totalValue}</span>
-                        </div>
-                        <div className="flex justify-between items-center pt-1 border-t border-zinc-200/60">
-                          <span className="text-zinc-500">PIC Penanggung Jawab:</span>
-                          <span className="text-zinc-900 font-semibold font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-zinc-200/70">
-                            {cl.picAssigned || 'Studio Lead'}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-2 pt-1">
-                        <button
-                          onClick={() => {
-                            setSelectedClientId(cl.id);
-                            setAdminTab('content_engine');
-                          }}
-                          className="flex-1 py-2 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold transition cursor-pointer shadow-xs"
-                        >
-                          Buka Konten Brand Ini
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedClientId(cl.id);
-                            setShowAddOnModal(true);
-                          }}
-                          className="px-3.5 py-2 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-zinc-700 text-xs font-medium transition cursor-pointer"
-                        >
-                          +Slot
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <ClientsQuotaView
+              clients={clientPipeline}
+              contents={contentList}
+              globalSearch={globalSearch}
+              onOpenAddClient={() => setShowAddClientModal(true)}
+              onOpenAddOn={(clientId) => {
+                setSelectedClientId(clientId);
+                setShowAddOnModal(true);
+              }}
+              onDeleteClient={(cl) => setClientToDelete(cl)}
+              onJumpToBrand={(clientId) => {
+                setSelectedClientId(clientId);
+                setAdminTab('content_engine');
+              }}
+            />
           )}
 
-          {/* ========================================================
-              TAB 6: VAULT BRIEF & NASKAH BRAND
-          ======================================================== */}
           {adminTab === 'brief_vault' && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-2 border-b border-zinc-200">
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900">
-                    Vault Brief & Dokumen Onboarding
-                  </h1>
-                  <p className="text-xs text-zinc-500 font-light mt-1">
-                    Arsip kesepakatan awal brand, target audiens, dan problem statement klien untuk referensi tim kreatif.
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => setShowAddClientModal(true)}
-                  className="px-3.5 py-2 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Klien & Brief</span>
-                </button>
-              </div>
-
-              {/* Brief Executive KPIs */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-[#01A0CA]/10 text-[#01A0CA] flex items-center justify-center shrink-0">
-                    <FileText className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-inter text-zinc-400 uppercase tracking-wider font-semibold">Total Dokumen Brief</div>
-                    <div className="text-xl font-bold text-zinc-900 font-inter">{clientPipeline.length} Brief</div>
-                    <div className="text-[10px] text-zinc-500">Arsip Brand Onboarding</div>
-                  </div>
-                </div>
-
-                <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0">
-                    <ShieldCheck className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-inter text-zinc-400 uppercase tracking-wider font-semibold">Produksi Aktif (DP Lunas)</div>
-                    <div className="text-xl font-bold text-emerald-700 font-inter">
-                      {clientPipeline.filter(c => c.isUnlocked).length} Brand
-                    </div>
-                    <div className="text-[10px] text-zinc-500">Akses Kalender Terbuka</div>
-                  </div>
-                </div>
-
-                <div className="bg-white border border-zinc-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center shrink-0">
-                    <Sparkles className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-inter text-zinc-400 uppercase tracking-wider font-semibold">Alokasi Konten Aktif</div>
-                    <div className="text-xl font-bold text-indigo-700 font-inter">
-                      {clientPipeline.reduce((acc, c) => acc + ((c.reelsMax || 0) + (c.postsMax || 0)), 0)} Konten
-                    </div>
-                    <div className="text-[10px] text-zinc-500">Kapasitas Bulanan Klien</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Search & Filter Bar */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 border border-zinc-200/90 rounded-2xl shadow-xs">
-                <div className="relative flex-1">
-                  <Search className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    placeholder="Cari nama brand, PIC, email, atau problem statement..."
-                    value={briefSearchTerm}
-                    onChange={(e) => setBriefSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-8 py-2 bg-zinc-50/70 border border-zinc-200 rounded-xl text-xs text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#01A0CA]/20 focus:border-[#01A0CA] transition"
-                  />
-                  {briefSearchTerm && (
-                    <button
-                      onClick={() => setBriefSearchTerm('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 text-xs cursor-pointer"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-
-                {uniqueClientPics.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-zinc-500 font-medium shrink-0">Filter PIC:</span>
-                    <select
-                      value={clientPicFilter}
-                      onChange={(e) => setClientPicFilter(e.target.value)}
-                      className="bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2 text-xs font-medium text-zinc-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#01A0CA]/20"
-                    >
-                      <option value="ALL">Semua PIC ({clientPipeline.length})</option>
-                      {uniqueClientPics.map((pic) => (
-                        <option key={pic} value={pic}>PIC: {pic}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-              </div>
-
-              {clientPipeline.length === 0 ? (
-                <EmptyState
-                  icon={FileText}
-                  title="Belum Ada Dokumen Brief"
-                  description="Brief klien baru yang masuk dari form landing page atau ditambah manual akan diarsipkan di sini."
-                  actionLabel="+ Tambah Klien & Brief"
-                  onAction={() => setShowAddClientModal(true)}
-                />
-              ) : clientPipeline.filter(cl => {
-                  const matchesSearch = 
-                    cl.business.toLowerCase().includes(briefSearchTerm.toLowerCase()) ||
-                    cl.name.toLowerCase().includes(briefSearchTerm.toLowerCase()) ||
-                    cl.email.toLowerCase().includes(briefSearchTerm.toLowerCase()) ||
-                    (cl.briefNotes && cl.briefNotes.toLowerCase().includes(briefSearchTerm.toLowerCase())) ||
-                    cl.id.toLowerCase().includes(briefSearchTerm.toLowerCase());
-                  const matchesPic = clientPicFilter === 'ALL' || cl.picAssigned === clientPicFilter;
-                  return matchesSearch && matchesPic;
-                }).length === 0 ? (
-                <EmptyState
-                  icon={FileText}
-                  title="Tidak Ada Dokumen Brief yang Cocok"
-                  description={
-                    briefSearchTerm
-                      ? `Tidak ditemukan brief untuk kata kunci "${briefSearchTerm}".`
-                      : "Brief klien baru yang masuk dari form landing page atau ditambah manual akan diarsipkan di sini."
-                  }
-                  actionLabel={briefSearchTerm ? "Reset Pencarian" : "+ Tambah Klien & Brief"}
-                  onAction={() => {
-                    if (briefSearchTerm) {
-                      setBriefSearchTerm('');
-                    } else {
-                      setShowAddClientModal(true);
-                    }
-                  }}
-                />
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {clientPipeline
-                    .filter(cl => {
-                      const matchesSearch = 
-                        cl.business.toLowerCase().includes(briefSearchTerm.toLowerCase()) ||
-                        cl.name.toLowerCase().includes(briefSearchTerm.toLowerCase()) ||
-                        cl.email.toLowerCase().includes(briefSearchTerm.toLowerCase()) ||
-                        (cl.briefNotes && cl.briefNotes.toLowerCase().includes(briefSearchTerm.toLowerCase())) ||
-                        cl.id.toLowerCase().includes(briefSearchTerm.toLowerCase());
-                      const matchesPic = clientPicFilter === 'ALL' || cl.picAssigned === clientPicFilter;
-                      return matchesSearch && matchesPic;
-                    })
-                    .map(cl => (
-                      <div key={cl.id} className="p-6 rounded-2xl bg-white border border-zinc-200/90 shadow-xs hover:border-[#01A0CA]/40 transition space-y-4 flex flex-col justify-between">
-                        <div className="space-y-4">
-                          {/* Brand Header */}
-                          <div className="flex justify-between items-start gap-3">
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#01A0CA] to-sky-400 text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
-                                {cl.business.substring(0, 2).toUpperCase()}
-                              </div>
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <h3 className="font-semibold text-base text-zinc-900 leading-tight truncate">{cl.business}</h3>
-                                  {cl.isUnlocked && (
-                                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Klien Aktif" />
-                                  )}
-                                </div>
-                                <p className="text-xs text-zinc-500 font-inter mt-0.5 truncate">
-                                  PIC: <span className="text-zinc-800 font-medium">{cl.name}</span> • {cl.email}
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="flex flex-col items-end gap-1 shrink-0">
-                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#01A0CA]/10 text-[#01A0CA] border border-[#01A0CA]/20 font-bold">
-                                {cl.id}
-                              </span>
-                              <span className={`text-[10px] font-inter font-medium px-2 py-0.5 rounded-full border ${
-                                cl.isUnlocked 
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                                  : 'bg-amber-50 text-amber-700 border-amber-200'
-                              }`}>
-                                {cl.isUnlocked ? 'Aktif (DP Lunas)' : 'Menunggu DP'}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Package & Quota summary */}
-                          <div className="flex items-center justify-between text-xs bg-zinc-50 border border-zinc-200/70 p-2.5 rounded-xl">
-                            <div className="flex items-center gap-1.5 text-zinc-700">
-                              <span className="text-zinc-400 font-inter">Paket:</span>
-                              <span className="font-semibold text-zinc-900">{cl.package}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5 text-zinc-700">
-                              <span className="text-zinc-400 font-inter">Kuota:</span>
-                              <span className="font-mono font-bold text-[#01A0CA]">{((cl.reelsUsed || 0) + (cl.postsUsed || 0))}/{((cl.reelsMax || 0) + (cl.postsMax || 0))}</span>
-                              <span className="text-zinc-400 text-[10px]">Konten</span>
-                            </div>
-                          </div>
-
-                          {/* Brief Quote Box */}
-                          <div className="p-4 rounded-xl bg-sky-50/40 border-l-4 border-[#01A0CA] border-y border-r border-sky-100/60 text-xs text-zinc-800 leading-relaxed space-y-1">
-                            <div className="flex items-center gap-1.5 text-[10px] font-inter uppercase tracking-wider font-semibold text-[#01A0CA]">
-                              <Sparkles className="w-3 h-3" />
-                              <span>Target Audiens & Problem Statement:</span>
-                            </div>
-                            <p className="italic text-zinc-700 font-normal">
-                              "{cl.briefNotes || 'Belum ada catatan khusus.'}"
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Footer Actions */}
-                        <div className="pt-3 border-t border-zinc-100 flex items-center justify-between gap-2">
-                          <button
-                            onClick={() => handleCopyBrief(cl.id, `Brief ${cl.business}:\nPIC: ${cl.name} (${cl.email})\nPaket: ${cl.package}\nTarget/Problem: ${cl.briefNotes}`)}
-                            className={`px-3 py-1.5 rounded-xl border text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${
-                              copiedBriefId === cl.id
-                                ? 'border-emerald-300 bg-emerald-50 text-emerald-700 font-semibold'
-                                : 'border-zinc-200 hover:bg-zinc-50 text-zinc-700'
-                            }`}
-                          >
-                            {copiedBriefId === cl.id ? (
-                              <>
-                                <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                <span>Tersalin!</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy className="w-3.5 h-3.5 text-zinc-500" />
-                                <span>Salin Brief</span>
-                              </>
-                            )}
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              setSelectedClientId(cl.id);
-                              setAdminTab('content_engine');
-                            }}
-                            className="px-3.5 py-1.5 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold flex items-center gap-1 shadow-xs transition cursor-pointer"
-                          >
-                            <span>Kelola Naskah di Kanban</span>
-                            <ChevronRight className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              )}
-            </div>
+            <VaultBriefView
+              clients={clientPipeline}
+              globalSearch={globalSearch}
+              onCopyBrief={handleCopyBrief}
+              onJumpToKanban={(clientId) => {
+                setSelectedClientId(clientId);
+                setAdminTab('content_engine');
+              }}
+              onJumpToFinance={() => setAdminTab('finance')}
+            />
           )}
 
-          {/* ========================================================
-              FULL PAGE VIEW: PROFIL AKUN STUDIO
-          ======================================================== */}
-          {adminTab === 'profile' && (
-            <ProfileView onBack={() => setAdminTab('mission_control')} />
+          {adminTab === 'agency_calendar' && (
+            <AgencyCalendarView
+              clients={clientPipeline}
+              contents={contentList}
+              agencyEvents={agencyEvents}
+              onJumpToContentEngine={(clientId) => {
+                setSelectedClientId(clientId);
+                setAdminTab('content_engine');
+              }}
+            />
           )}
 
-          {/* ========================================================
-              FULL PAGE VIEW: PENGATURAN AKUN & STUDIO
-          ======================================================== */}
-          {adminTab === 'account_settings' && (
-            <AccountSettingsView onBack={() => setAdminTab('mission_control')} />
+          {adminTab === 'feedback_review' && (
+            <FeedbackReviewView
+              clients={clientPipeline}
+              contents={contentList}
+              clientReviews={clientReviews}
+              globalSearch={globalSearch}
+            />
           )}
 
-          {/* ========================================================
-              FULL PAGE VIEW: PAKET RETAINER & SKEMA KONTRAK
-          ======================================================== */}
-          {adminTab === 'retainer_plans' && (
-            <RetainerPlansView onBack={() => setAdminTab('mission_control')} />
+          {adminTab === 'content_engine' && (
+            <ContentEngineView
+              selectedClient={selectedClient}
+              contents={contentList}
+              onOpenAddContent={() => setShowAddContentModal(true)}
+              onPreviewContent={(item) => setSelectedPreviewContent(item)}
+              onOpenDraftV2={(item) => setSelectedRevisionContent(item)}
+              onMoveStage={(id, stage) => moveContentStage(id, stage)}
+              onDeleteContent={(id) => deleteContentItem(id)}
+            />
           )}
-        </div>
-      </main>
+
+          {adminTab === 'production_mgmt' && (
+            <StudioMalangView
+              clients={clientPipeline}
+              selectedClient={selectedClient}
+              videoTasks={videoTasks}
+              onOpenAddTask={() => setShowAddStudioTaskModal(true)}
+              onUpdateTask={(id, progress, status) => updateStudioTask(id, progress, status)}
+              onDeleteTask={(id) => deleteStudioTask(id)}
+              onJumpToKanban={(clientId) => {
+                setSelectedClientId(clientId);
+                setAdminTab('content_engine');
+              }}
+              onCopyRawLink={(url) => {
+                if (navigator.clipboard?.writeText) {
+                  navigator.clipboard.writeText(url || 'https://drive.google.com').catch(() => {});
+                }
+                triggerNotification('Link folder Raw 4K disalin ke clipboard!');
+              }}
+            />
+          )}
+
+          {adminTab === 'notifications' && (
+            <NotificationsView
+              notifications={notifications}
+              onMarkAllRead={() =>
+                router.post('/admin/notifications/mark-all-read', {}, { preserveScroll: true })
+              }
+              onClearRead={() =>
+                router.delete('/admin/notifications/clear-read', { preserveScroll: true })
+              }
+              onNotificationAction={handleNotificationAction}
+            />
+          )}
+
+          {(adminTab === 'profile' || adminTab === 'account_settings') && (
+            <AdminProfileAccountView
+              initialSubTab={profileSubTab}
+              studioTeam={studioTeam}
+              onToast={(msg) => triggerNotification(msg)}
+            />
+          )}
+        </main>
       </div>
+
+      {/* Toast Feedback */}
+      {notification && (
+        <div className="fixed bottom-5 right-5 z-50 bg-white border border-[#3B9BF8]/30 text-slate-800 text-xs font-semibold px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-2">
+          <span className="w-6 h-6 rounded-lg bg-[#EFF7FF] text-[#3B9BF8] flex items-center justify-center shrink-0">
+            ✓
+          </span>
+          <span>{notification}</span>
+        </div>
+      )}
 
       {/* Delete Client Confirmation Modal */}
       {clientToDelete && (
-        <div className="fixed inset-0 z-50 bg-zinc-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white border border-zinc-200 w-full max-w-md rounded-2xl shadow-2xl p-6 relative animate-in fade-in zoom-in-95">
-            <h3 className="text-base font-semibold text-zinc-900">Hapus Klien {clientToDelete.business}?</h3>
-            <p className="text-xs text-zinc-500 font-light mt-2 leading-relaxed">
-              Tindakan ini akan menghapus data klien beserta seluruh jadwal konten dan task studio yang terkait dari penyimpanan lokal.
+        <div className="fixed inset-0 !mt-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-100 w-full max-w-md rounded-2xl shadow-2xl p-6 relative animate-in fade-in zoom-in-95">
+            <h3 className="text-base font-bold text-slate-900">
+              Hapus Klien {clientToDelete.business}?
+            </h3>
+            <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+              Tindakan ini akan menghapus data klien beserta seluruh jadwal konten dan task studio yang terkait dari database MySQL.
             </p>
             <div className="pt-5 flex justify-end gap-2.5">
               <button
+                type="button"
                 onClick={() => setClientToDelete(null)}
-                className="px-4 py-2 rounded-xl border border-zinc-200 text-xs text-zinc-700 font-medium hover:bg-zinc-50 cursor-pointer"
+                className="px-4 py-2 rounded-xl border border-slate-200 text-xs text-slate-700 font-medium hover:bg-slate-50 cursor-pointer"
               >
                 Batal
               </button>
               <button
+                type="button"
                 onClick={() => {
                   deleteClient(clientToDelete.id);
                   setClientToDelete(null);
                 }}
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-semibold cursor-pointer"
               >
                 Ya, Hapus Klien
               </button>
@@ -1397,48 +446,39 @@ function AdminContent() {
         </div>
       )}
 
-      {/* Admin Modals */}
+      {/* Existing Modals */}
       {showAddClientModal && (
-        <AddClientModal
-          onClose={() => setShowAddClientModal(false)}
-        />
+        <AddClientModal onClose={() => setShowAddClientModal(false)} />
       )}
-
       {showAddStudioTaskModal && (
-        <AddStudioTaskModal
-          onClose={() => setShowAddStudioTaskModal(false)}
-        />
+        <AddStudioTaskModal onClose={() => setShowAddStudioTaskModal(false)} />
       )}
-
       {showAddContentModal && (
-        <AddContentModal
-          onClose={() => setShowAddContentModal(false)}
-        />
+        <AddContentModal onClose={() => setShowAddContentModal(false)} />
       )}
-
       {showAddOnModal && (
-        <AddOnQuotaModal
-          onClose={() => setShowAddOnModal(false)}
-        />
+        <AddOnQuotaModal onClose={() => setShowAddOnModal(false)} />
       )}
-
       {selectedProofClient && (
         <InspectProofModal
           client={selectedProofClient}
           onClose={() => setSelectedProofClient(null)}
         />
       )}
-
       {selectedRevisionContent && (
         <AdminRevisionModal
           item={selectedRevisionContent}
           onClose={() => setSelectedRevisionContent(null)}
         />
       )}
-
       {selectedPreviewContent && (
         <ReviewModal
           item={selectedPreviewContent}
+          role="admin"
+          onOpenDraftV2={(it) => {
+            setSelectedPreviewContent(null);
+            setSelectedRevisionContent(it);
+          }}
           onClose={() => setSelectedPreviewContent(null)}
         />
       )}

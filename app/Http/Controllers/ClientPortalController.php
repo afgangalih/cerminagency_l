@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\TransformsAgencyData;
+use App\Models\AgencyNotification;
 use App\Models\Client;
 use App\Models\Content;
 use App\Models\ContentFeedback;
@@ -93,6 +94,16 @@ class ClientPortalController extends Controller
             'sender_name' => auth()->user()->name,
             'sender_role' => 'client',
             'feedback_text' => "Catatan Revisi #{$content->revision_count}: {$validated['note']}",
+        ]);
+
+        AgencyNotification::create([
+            'client_id' => $content->client_id,
+            'title' => "Permintaan Revisi Klien — " . ($content->client?->business_name ?? 'Brand'),
+            'description' => auth()->user()->name . " meminta revisi pada \"{$content->title}\": \"{$validated['note']}\"",
+            'category' => 'Review & Revisi',
+            'action_label' => 'Buka Kanban',
+            'action_type' => 'content_engine',
+            'is_read' => false,
         ]);
 
         return back()->with('success', "Catatan revisi #{$content->revision_count} berhasil dikirim ke tim kreatif agensi.");

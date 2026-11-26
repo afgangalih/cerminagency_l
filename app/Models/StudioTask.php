@@ -18,13 +18,17 @@ class StudioTask extends Model
         'progress',
         'status',
         'shooter',
+        'camera_setup',
         'raw_folder_url',
+        'asset_links',
         'shoot_date',
+        'notes',
     ];
 
     protected $casts = [
         'progress' => 'integer',
         'shoot_date' => 'date',
+        'asset_links' => 'array',
     ];
 
     public function client(): BelongsTo

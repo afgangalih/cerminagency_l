@@ -74,6 +74,7 @@ interface AgencyContextType {
     clientId: string;
     title: string;
     type: string;
+    pillar?: string;
     platforms: PlatformType[];
     date: string;
     stage: ContentStage;
@@ -168,16 +169,22 @@ export function AgencyProvider({
     return 'CK-091';
   });
 
-  const [accountType, setAccountType] = useState<'demo' | 'official'>('official');
+  const [accountType, setAccountType] = useState<'demo' | 'official'>(() => {
+    if (userRole === 'client' && initialClients && initialClients.length > 0) {
+      return initialClients[0].isUnlocked ? 'official' : 'demo';
+    }
+    return 'official';
+  });
   const [notification, setNotification] = useState<string | null>(null);
 
+  const authUser = (page.props as any)?.auth?.user;
   const [currentUser, setCurrentUser] = useState<UserProfile | null>({
-    id: 'usr-001',
-    email: 'budi@mavencoffee.id',
-    fullName: 'Budi Santoso',
+    id: authUser?.id ? String(authUser.id) : 'usr-001',
+    email: authUser?.email || 'budi@mavencoffee.id',
+    fullName: authUser?.name || 'Budi Santoso',
     role: userRole,
-    businessName: 'Maven Coffee Roasters',
-    instagramHandle: '@mavencoffee'
+    businessName: initialClients?.[0]?.business || 'Cermin Kreatif',
+    instagramHandle: initialClients?.[0]?.instagram || '@cerminkreatif'
   });
 
   // Sync props when Inertia reloads with new MySQL data
@@ -237,6 +244,13 @@ export function AgencyProvider({
   // Safe selected client fallback
   const selectedClient = clientPipeline.find(c => c.id === selectedClientId) || clientPipeline[0] || EMPTY_CLIENT_FALLBACK;
   const activeClientContents = selectedClient.id ? contentList.filter(item => item.clientId === selectedClient.id) : [];
+
+  // Keep client portal lock state strictly synced with database isUnlocked
+  useEffect(() => {
+    if (userRole === 'client' && selectedClient && selectedClient.id) {
+      setAccountType(selectedClient.isUnlocked ? 'official' : 'demo');
+    }
+  }, [userRole, selectedClient.id, selectedClient.isUnlocked]);
 
   // Reset all to clean zero state
   const clearAllData = () => {
@@ -331,6 +345,7 @@ export function AgencyProvider({
     clientId: string;
     title: string;
     type: string;
+    pillar?: string;
     platforms: PlatformType[];
     date: string;
     stage: ContentStage;
@@ -362,6 +377,7 @@ export function AgencyProvider({
       clientId: itemData.clientId,
       title: itemData.title,
       type: itemData.type,
+      pillar: itemData.pillar || '',
       platforms: itemData.platforms,
       date: itemData.date,
       stage: itemData.stage,
@@ -596,6 +612,10 @@ export function AgencyProvider({
       phase: taskData.phase,
       shooter: taskData.shooter,
       rawFolder: taskData.rawFolder,
+      assetLinks: (taskData.assetLinks || []).map((link) => ({
+        label: link.label,
+        url: link.url,
+      })),
       status: taskData.status,
       progress: taskData.progress,
     }, {

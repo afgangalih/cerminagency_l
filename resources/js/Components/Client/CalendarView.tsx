@@ -127,7 +127,7 @@ export function CalendarView({ onSelectItem }: CalendarViewProps) {
                     matchedItem
                       ? 'bg-white border-zinc-300 hover:border-zinc-500 hover:shadow-md'
                       : 'bg-zinc-50/70 border-zinc-200/80 hover:border-zinc-300'
-                  } ${isSelected ? 'ring-2 ring-zinc-900' : ''}`}
+                  } ${isSelected ? 'ring-2 ring-[#3B9BF8]' : ''}`}
                 >
                   <div className="flex justify-between items-start">
                     <span className={`text-xs font-inter font-medium ${matchedItem ? 'text-zinc-900 font-semibold' : 'text-zinc-400'}`}>

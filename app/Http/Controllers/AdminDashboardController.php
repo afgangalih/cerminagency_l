@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\TransformsAgencyData;
+use App\Models\AgencyEvent;
+use App\Models\AgencyNotification;
 use App\Models\Client;
+use App\Models\ClientReview;
 use App\Models\Content;
 use App\Models\ContentFeedback;
 use App\Models\Invoice;
@@ -41,11 +44,79 @@ class AdminDashboardController extends Controller
             ->latest()
             ->get();
 
+        $notifications = AgencyNotification::with('client')
+            ->latest()
+            ->take(30)
+            ->get()
+            ->map(fn($n) => [
+                'id' => (string) $n->id,
+                'title' => $n->title,
+                'description' => $n->description,
+                'category' => $n->category,
+                'time' => $n->created_at ? $n->created_at->diffForHumans() : 'Baru saja',
+                'group' => $n->created_at && $n->created_at->isToday() ? 'Hari Ini' : 'Sebelumnya',
+                'unread' => !$n->is_read,
+                'actionLabel' => $n->action_label,
+                'actionType' => $n->action_type,
+                'clientId' => $n->client ? $n->client->client_code : null,
+            ])->values();
+
+        $agencyEvents = AgencyEvent::with('client')
+            ->orderBy('start_date')
+            ->get()
+            ->map(fn($e) => [
+                'id' => (string) $e->id,
+                'title' => $e->title,
+                'shortTitle' => $e->short_title ?: $e->title,
+                'monthKey' => $e->start_date ? $e->start_date->format('Y-m') : now()->format('Y-m'),
+                'startDay' => $e->start_date ? (int) $e->start_date->day : 1,
+                'endDay' => $e->end_date ? (int) $e->end_date->day : 1,
+                'time' => $e->time_label,
+                'category' => $e->category,
+                'brand' => $e->brand_name,
+                'location' => $e->location,
+                'pic' => $e->pic_name,
+                'deliverable' => $e->deliverable ?? '-',
+                'image' => $e->image_url ?? 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=400&q=80',
+            ])->values();
+
+        $clientReviews = ClientReview::with('client')
+            ->latest()
+            ->get()
+            ->map(fn($r) => [
+                'id' => (string) $r->id,
+                'clientName' => $r->client_name,
+                'brand' => $r->brand_name,
+                'packageName' => $r->package_name ?? 'Retainer',
+                'rating' => (float) $r->rating,
+                'date' => $r->review_date_label ?? ($r->created_at ? $r->created_at->format('M Y') : '-'),
+                'comment' => $r->comment,
+            ])->values();
+
+        $studioTeam = User::whereIn('role', ['admin', 'creative_lead', 'editor'])
+            ->get()
+            ->map(fn($u) => [
+                'id' => (string) $u->id,
+                'name' => $u->name,
+                'email' => $u->email,
+                'role' => match ($u->role) {
+                    'admin' => 'Creative Director & Admin',
+                    'creative_lead' => 'Creative Lead',
+                    default => 'Video Editor / Studio',
+                },
+                'phone' => $u->phone_number ?? '-',
+                'avatar' => $u->avatar_url,
+            ])->values();
+
         return Inertia::render('Admin/Dashboard', [
             'clients' => $clients->map(fn($c) => $this->transformClient($c))->values(),
             'contents' => $contents->map(fn($c) => $this->transformContent($c))->values(),
             'videoTasks' => $videoTasks->map(fn($t) => $this->transformTask($t))->values(),
             'invoices' => $invoices->map(fn($i) => $this->transformInvoice($i))->values(),
+            'notifications' => $notifications,
+            'agencyEvents' => $agencyEvents,
+            'clientReviews' => $clientReviews,
+            'studioTeam' => $studioTeam,
         ]);
     }
 
@@ -117,6 +188,16 @@ class AdminDashboardController extends Controller
             'status' => ($validated['isUnlocked'] ?? false) ? 'Lunas' : 'Menunggu Verifikasi',
         ]);
 
+        AgencyNotification::create([
+            'client_id' => $client->id,
+            'title' => "Brand Baru Terdaftar — {$client->business_name}",
+            'description' => "Paket {$client->package_name} ({$client->invoice_number}) berhasil didaftarkan oleh {$client->pic_name}.",
+            'category' => 'Klien & Onboarding',
+            'action_label' => 'Lihat Klien',
+            'action_type' => 'clients',
+            'is_read' => false,
+        ]);
+
         return back()->with('success', "Klien {$client->business_name} ({$client->client_code}) berhasil didaftarkan ke MySQL!");
     }
 
@@ -133,6 +214,17 @@ class AdminDashboardController extends Controller
             'instagram_handle' => 'nullable|string|max:255',
             'pic_assigned' => 'nullable|string|max:255',
             'brief_notes' => 'nullable|string',
+            'target_audience' => 'nullable|string',
+            'content_pillars' => 'nullable|array',
+            'content_pillars.*.title' => 'required_with:content_pillars|string|max:120',
+            'content_pillars.*.ratio' => 'nullable|string|max:30',
+            'content_pillars.*.targetCount' => 'nullable|integer|min:0',
+            'content_pillars.*.description' => 'nullable|string|max:500',
+            'kpi_targets' => 'nullable|array',
+            'kpi_targets.*.label' => 'required_with:kpi_targets|string|max:120',
+            'kpi_targets.*.target' => 'nullable|string|max:60',
+            'kpi_targets.*.current' => 'nullable|string|max:60',
+            'kpi_targets.*.unit' => 'nullable|string|max:30',
         ]);
 
         $client->update($validated);
@@ -160,6 +252,7 @@ class AdminDashboardController extends Controller
             'clientId' => 'required|string',
             'title' => 'required|string|max:255',
             'type' => 'nullable|string',
+            'pillar' => 'nullable|string|max:120',
             'platforms' => 'nullable|array',
             'date' => 'required|string',
             'stage' => 'required|in:script,production,review,revision,scheduled',
@@ -193,6 +286,7 @@ class AdminDashboardController extends Controller
             'client_id' => $client->id,
             'title' => $validated['title'],
             'format_type' => $validated['type'] ?? 'Reels / Video Pendek',
+            'pillar' => $validated['pillar'] ?? null,
             'platforms' => $validated['platforms'] ?? ['instagram', 'tiktok'],
             'stage' => $validated['stage'],
             'status' => $mapping['status'],
@@ -313,6 +407,16 @@ class AdminDashboardController extends Controller
             'verified_by' => auth()->id(),
         ]);
 
+        AgencyNotification::create([
+            'client_id' => $client->id,
+            'title' => "DP 50% Diverifikasi — {$client->business_name}",
+            'description' => "Pembayaran {$client->dp_amount} ({$client->invoice_number}) telah diverifikasi. Akses Portal Klien kini terbuka penuh.",
+            'category' => 'Finansial & DP',
+            'action_label' => 'Buka Finansial',
+            'action_type' => 'finance',
+            'is_read' => false,
+        ]);
+
         return back()->with('success', "Pembayaran {$client->business_name} diverifikasi! Akses kalender & video resmi dibuka penuh.");
     }
 
@@ -341,11 +445,16 @@ class AdminDashboardController extends Controller
             'phase' => 'required|string',
             'shooter' => 'nullable|string',
             'rawFolder' => 'nullable|string',
+            'assetLinks' => 'nullable|array',
+            'assetLinks.*.label' => 'required_with:assetLinks|string|max:100',
+            'assetLinks.*.url' => 'required_with:assetLinks|string|max:1000',
             'status' => 'required|string',
             'progress' => 'required|integer|min:0|max:100',
         ]);
 
         $client = Client::where('client_code', $validated['clientId'])->orWhere('id', $validated['clientId'])->first();
+        $links = $validated['assetLinks'] ?? [];
+        $primaryUrl = $links[0]['url'] ?? ($validated['rawFolder'] ?? 'https://drive.google.com');
 
         StudioTask::create([
             'client_id' => $client ? $client->id : null,
@@ -353,8 +462,9 @@ class AdminDashboardController extends Controller
             'phase' => $validated['phase'],
             'progress' => $validated['progress'],
             'status' => $validated['status'],
-            'shooter' => $validated['shooter'] ?? 'Tim Studio',
-            'raw_folder_url' => $validated['rawFolder'] ?? 'Google Drive: /Raw-Shooting',
+            'shooter' => $validated['shooter'] ?? 'Tim Desain',
+            'raw_folder_url' => $primaryUrl,
+            'asset_links' => $links,
         ]);
 
         return back()->with('success', "Task studio '{$validated['title']}' berhasil dicatat di MySQL!");
@@ -384,5 +494,88 @@ class AdminDashboardController extends Controller
         $title = $task->title;
         $task->delete();
         return back()->with('success', "Task studio '{$title}' berhasil dihapus.");
+    }
+
+    public function markNotificationRead(string $identifier): RedirectResponse
+    {
+        $notif = AgencyNotification::findOrFail($identifier);
+        $notif->update(['is_read' => true]);
+        return back();
+    }
+
+    public function markAllNotificationsRead(): RedirectResponse
+    {
+        AgencyNotification::where('is_read', false)->update(['is_read' => true]);
+        return back()->with('success', 'Semua notifikasi ditandai sudah dibaca.');
+    }
+
+    public function clearReadNotifications(): RedirectResponse
+    {
+        AgencyNotification::where('is_read', true)->delete();
+        return back()->with('success', 'Notifikasi yang sudah dibaca dibersihkan.');
+    }
+
+    public function storeEvent(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'category' => 'required|string|max:100',
+            'brand' => 'required|string|max:255',
+            'startDate' => 'required|date',
+            'endDate' => 'nullable|date',
+            'time' => 'nullable|string|max:50',
+            'location' => 'nullable|string|max:255',
+            'pic' => 'nullable|string|max:255',
+            'deliverable' => 'nullable|string|max:255',
+        ]);
+
+        $client = Client::where('business_name', $validated['brand'])->first();
+
+        AgencyEvent::create([
+            'client_id' => $client?->id,
+            'title' => $validated['title'],
+            'short_title' => $validated['title'],
+            'category' => $validated['category'],
+            'brand_name' => $validated['brand'],
+            'start_date' => $validated['startDate'],
+            'end_date' => $validated['endDate'] ?? $validated['startDate'],
+            'time_label' => $validated['time'] ?? '10:00 WIB',
+            'location' => $validated['location'] ?? 'Studio Cermin Malang',
+            'pic_name' => $validated['pic'] ?? 'Dimas Pratama',
+            'deliverable' => $validated['deliverable'] ?? 'Produksi Konten',
+        ]);
+
+        return back()->with('success', "Jadwal '{$validated['title']}' berhasil ditambahkan ke Kalender Agensi.");
+    }
+
+    public function destroyEvent(string $identifier): RedirectResponse
+    {
+        AgencyEvent::findOrFail($identifier)->delete();
+        return back()->with('success', 'Jadwal kalender dihapus.');
+    }
+
+    public function storeReview(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'clientName' => 'required|string|max:255',
+            'brand' => 'required|string|max:255',
+            'packageName' => 'nullable|string|max:255',
+            'rating' => 'required|numeric|min:1|max:5',
+            'comment' => 'required|string',
+        ]);
+
+        $client = Client::where('business_name', $validated['brand'])->first();
+
+        ClientReview::create([
+            'client_id' => $client?->id,
+            'client_name' => $validated['clientName'],
+            'brand_name' => $validated['brand'],
+            'package_name' => $validated['packageName'] ?? $client?->package_name ?? 'Retainer',
+            'rating' => $validated['rating'],
+            'comment' => $validated['comment'],
+            'review_date_label' => now()->format('M Y'),
+        ]);
+
+        return back()->with('success', 'Review & ulasan klien berhasil disimpan.');
     }
 }

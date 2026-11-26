@@ -193,7 +193,7 @@ export function AccountSettingsView({ onBack }: AccountSettingsViewProps) {
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder="Masukkan sandi saat ini"
-                    className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition"
+                    className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
                   />
                 </div>
 
@@ -207,7 +207,7 @@ export function AccountSettingsView({ onBack }: AccountSettingsViewProps) {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Minimal 8 karakter"
-                      className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition"
+                      className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
                     />
                   </div>
 
@@ -220,7 +220,7 @@ export function AccountSettingsView({ onBack }: AccountSettingsViewProps) {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Konfirmasi sandi baru"
-                      className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition"
+                      className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
                     />
                   </div>
                 </div>
@@ -258,7 +258,7 @@ export function AccountSettingsView({ onBack }: AccountSettingsViewProps) {
                       type="text"
                       value={timezone}
                       onChange={(e) => setTimezone(e.target.value)}
-                      className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition font-mono"
+                      className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#3B9BF8]/25 transition font-mono"
                     />
                   </div>
 
@@ -269,7 +269,7 @@ export function AccountSettingsView({ onBack }: AccountSettingsViewProps) {
                     <select
                       value={slaHours}
                       onChange={(e) => setSlaHours(e.target.value)}
-                      className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition"
+                      className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
                     >
                       <option value="12 Jam Kerja">12 Jam Kerja (Fast-track Urgent)</option>
                       <option value="24 Jam Kerja">24 Jam Kerja (Standar Industri Cermin)</option>
@@ -286,7 +286,7 @@ export function AccountSettingsView({ onBack }: AccountSettingsViewProps) {
                     type="text"
                     value={operatingDays}
                     onChange={(e) => setOperatingDays(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition"
+                    className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
                   />
                 </div>
               </div>

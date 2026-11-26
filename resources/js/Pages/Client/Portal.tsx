@@ -359,7 +359,13 @@ function PortalContent() {
         setMobileMenuOpen={setMobileMenuOpen}
         accountType={accountType}
         selectedClient={selectedClient}
-        onOpenRequestModal={() => setShowRequestModal(true)}
+        onOpenRequestModal={() => {
+          if (accountType === 'demo') {
+            setShowLockedModal(true);
+            return;
+          }
+          setShowRequestModal(true);
+        }}
         onOpenSupport={() => {
           const btn = document.querySelector('button[aria-label="Buka dukungan Cermin Kreatif"]') as HTMLButtonElement;
           if (btn) btn.click();
@@ -373,7 +379,7 @@ function PortalContent() {
           activeTabTitle={
             activeTab === 'overview' ? 'Ringkasan Portal' :
             activeTab === 'calendar' ? 'Kalender & Feed Simulator' :
-            activeTab === 'production' ? 'Progres Video & Shoot' : 'Konsol Strategi & Pilar Brand'
+            activeTab === 'production' ? 'Progres Desain & Aset' : 'Konsol Strategi & Pilar Brand'
           }
           selectedClient={selectedClient}
           onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -415,6 +421,77 @@ function PortalContent() {
                     </span>
                   </div>
                 </div>
+
+                {/* GATED ACCESS / ONBOARDING STATUS BANNER (If Demo / Belum Verifikasi DP) */}
+                {accountType === 'demo' && (
+                  <div className="bg-amber-50/70 border border-amber-200/90 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-2xs">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-xl bg-amber-100 text-amber-700 shrink-0 mt-0.5">
+                        <Lock className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-amber-950">
+                          Status Onboarding: Menunggu Verifikasi DP 50% ({selectedClient.dpAmount})
+                        </h3>
+                        <p className="text-xs text-amber-800/90 mt-0.5 leading-relaxed">
+                          Brief Anda sudah kami terima. Fitur Kalender Konten & Progres Studio akan terbuka otomatis setelah pembayaran DP diverifikasi oleh tim kami.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                      <a
+                        href={`https://wa.me/6281234567890?text=${encodeURIComponent(
+                          `Halo Tim Cermin Kreatif! 👋\nSaya *${selectedClient.name}* dari brand *${selectedClient.business}* (${selectedClient.instagram}).\n\n📄 No. Faktur: ${selectedClient.invoiceNumber}\n💳 DP 50%: ${selectedClient.dpAmount}\n\nSaya ingin mengonfirmasi pembayaran DP agar portal kerja & kalender segera dibuka. Terima kasih!`
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-xs"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        <span>Konfirmasi DP via WA</span>
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => setShowLockedModal(true)}
+                        className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold transition cursor-pointer shadow-xs"
+                      >
+                        Lihat Cara Aktivasi
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ACTION CENTER: KONTEN MENUNGGU PERSETUJUAN KLIEN */}
+                {activeClientContents.filter(c => c.status === 'Menunggu Review').length > 0 && (
+                  <div className="bg-gradient-to-r from-[#01A0CA]/10 via-sky-50 to-white border border-[#01A0CA]/30 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-10 h-10 rounded-xl bg-[#01A0CA] text-white flex items-center justify-center shrink-0 shadow-xs">
+                        <Sparkles className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#01A0CA]/15 text-[#01A0CA]">
+                            Tindakan Diperlukan
+                          </span>
+                        </div>
+                        <h3 className="text-sm font-semibold text-zinc-900 mt-1">
+                          Ada {activeClientContents.filter(c => c.status === 'Menunggu Review').length} Draf Konten Menunggu Persetujuan Anda
+                        </h3>
+                        <p className="text-xs text-zinc-600 mt-0.5">
+                          Tinjau dan setujui draf agar tim kami bisa langsung menjadwalkan publikasi tepat waktu.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedContent(activeClientContents.filter(c => c.status === 'Menunggu Review')[0])}
+                      className="px-4 py-2.5 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0 shadow-xs"
+                    >
+                      <span>Tinjau Sekarang</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
 
                 {/* ROW 1: NEXT DROP SPOTLIGHT + QUOTA FULFILLMENT GAUGE (CHART) */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -553,7 +630,7 @@ function PortalContent() {
                         </div>
 
                         {/* Visual Breakdown Legend */}
-                        <div className="grid grid-cols-3 gap-2 pt-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
                           <div className="p-2.5 rounded-lg bg-emerald-50/70 border border-emerald-100">
                             <span className="text-[10px] font-mono text-emerald-800 uppercase block font-semibold">Siap Tayang</span>
                             <span className="text-base font-bold text-emerald-900 font-mono">{approvedCount}</span>
@@ -564,6 +641,14 @@ function PortalContent() {
                             <span className="text-[10px] font-mono text-amber-800 uppercase block font-semibold">Perlu Review</span>
                             <span className="text-base font-bold text-amber-900 font-mono">{pendingCount}</span>
                             <span className="text-[10px] text-amber-700 block mt-0.5">Menunggu Klien</span>
+                          </div>
+
+                          <div className="p-2.5 rounded-lg bg-rose-50/70 border border-rose-100">
+                            <span className="text-[10px] font-mono text-rose-800 uppercase block font-semibold">Dalam Revisi</span>
+                            <span className="text-base font-bold text-rose-900 font-mono">
+                              {activeClientContents.filter(c => c.stage === 'revision').length}
+                            </span>
+                            <span className="text-[10px] text-rose-700 block mt-0.5">Sedang Diperbaiki</span>
                           </div>
 
                           <div className="p-2.5 rounded-lg bg-sky-50/70 border border-[#01A0CA]/20">
@@ -714,31 +799,31 @@ function PortalContent() {
             )}
 
             {/* ========================================================
-                TAB 3: PRODUCTION STUDIO OPS
+                TAB 3: DESIGN & ASSET PRODUCTION
             ======================================================== */}
             {activeTab === 'production' && (
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-2 border-b border-zinc-200">
                   <div>
                     <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900">
-                      Pipeline Produksi Video Studio Malang
+                      Progres Desain Grafis &amp; Aset Brand
                     </h1>
                     <p className="text-xs text-zinc-500 font-light mt-1">
-                      Transparansi alur syuting dari riset naskah, pengambilan gambar kamera 4K, hingga tahap finishing.
+                      Pantau pengerjaan aset desain, template feed, dan editing konten beserta link hasil (Google Drive / Figma / Canva).
                     </p>
                   </div>
                   <a
                     href="https://drive.google.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-4 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-medium flex items-center gap-1.5 transition shadow-2xs"
+                    className="px-4 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-medium flex items-center gap-1.5 transition shadow-sm"
                   >
-                    <span>Akses Folder Mentahan 4K</span>
+                    <span>Buka Folder Master Aset</span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 </div>
 
-                <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-xs divide-y divide-zinc-100">
+                <div className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm divide-y divide-zinc-100">
                   {clientStudioTasks.map((task) => (
                     <div key={task.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="space-y-1.5">
@@ -751,7 +836,7 @@ function PortalContent() {
                         <div className="flex items-center gap-3">
                           <div className="w-44 bg-zinc-100 h-2 rounded-full overflow-hidden">
                             <div 
-                              className={`h-full ${task.progress === 100 ? 'bg-emerald-600' : 'bg-[#01A0CA]'}`}
+                              className={`h-full ${task.progress === 100 ? 'bg-emerald-600' : 'bg-[#3B9BF8]'}`}
                               style={{ width: `${task.progress}%` }}
                             />
                           </div>
@@ -759,8 +844,8 @@ function PortalContent() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-zinc-500 font-light">Penanggung Jawab: <strong className="text-zinc-800">{task.shooter}</strong></span>
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <span className="text-xs text-zinc-500 font-light">PIC: <strong className="text-zinc-800">{task.shooter}</strong></span>
                         <span className={`text-xs px-2.5 py-1 rounded-md font-inter ${
                           task.status === 'Selesai' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                           task.status === 'Sedang Berjalan' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
@@ -768,6 +853,26 @@ function PortalContent() {
                         }`}>
                           {task.status}
                         </span>
+                        {(() => {
+                          const links =
+                            task.assetLinks && task.assetLinks.length > 0
+                              ? task.assetLinks
+                              : task.rawFolder
+                              ? [{ label: 'Link Hasil', url: task.rawFolder }]
+                              : [];
+                          return links.map((link, idx) => (
+                            <a
+                              key={`${task.id}-client-link-${idx}`}
+                              href={link.url.startsWith('http') ? link.url : `https://${link.url}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-1.5 rounded-lg bg-[#EFF7FF] hover:bg-[#3B9BF8] text-[#3B9BF8] hover:text-white text-xs font-semibold flex items-center gap-1.5 transition"
+                            >
+                              <span>Buka {link.label || 'Link Hasil'}</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          ));
+                        })()}
                       </div>
                     </div>
                   ))}

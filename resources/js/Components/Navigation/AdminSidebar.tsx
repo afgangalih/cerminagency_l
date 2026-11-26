@@ -1,15 +1,38 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { 
-  LayoutDashboard, Kanban, Film, Receipt, FileText, 
-  Users, Plus, X, ChevronDown, Check
+import React from 'react';
+import { router } from '@inertiajs/react';
+import {
+  LayoutGrid,
+  Wallet,
+  Users,
+  FileText,
+  Calendar,
+  ThumbsUp,
+  Layers,
+  Clapperboard,
+  LogOut,
+  X,
 } from 'lucide-react';
 import { ClientPipeline, ContentItem, VideoProductionTask } from '@/types';
 
+export type AdminTabKey =
+  | 'mission_control'
+  | 'finance'
+  | 'clients'
+  | 'brief_vault'
+  | 'agency_calendar'
+  | 'feedback_review'
+  | 'content_engine'
+  | 'production_mgmt'
+  | 'notifications'
+  | 'profile'
+  | 'account_settings'
+  | 'retainer_plans';
+
 export interface AdminSidebarProps {
-  adminTab: 'mission_control' | 'content_engine' | 'production_mgmt' | 'finance' | 'clients' | 'brief_vault' | 'profile' | 'account_settings' | 'retainer_plans';
-  setAdminTab: (tab: 'mission_control' | 'content_engine' | 'production_mgmt' | 'finance' | 'clients' | 'brief_vault' | 'profile' | 'account_settings' | 'retainer_plans') => void;
+  adminTab: AdminTabKey;
+  setAdminTab: (tab: AdminTabKey) => void;
   mobileMenuOpen: boolean;
   setMobileMenuOpen: (open: boolean) => void;
   selectedClientId: string;
@@ -18,21 +41,13 @@ export interface AdminSidebarProps {
   clientPipeline: ClientPipeline[];
   contentList: ContentItem[];
   videoTasks: VideoProductionTask[];
-  stalledReviews: ContentItem[];
+  stalledReviews?: ContentItem[];
   pendingInvoices: ClientPipeline[];
-  onOpenAddClient: () => void;
-  onOpenAddContent: () => void;
+  onOpenAddClient?: () => void;
+  onOpenAddContent?: () => void;
   onClearAllData?: () => void;
   onSeedSampleData?: () => void;
   onOpenSupport?: () => void;
-}
-
-function getClientInitials(businessName: string = ''): string {
-  const words = businessName.trim().split(/\s+/);
-  if (words.length >= 2) {
-    return `${words[0][0]}${words[1][0]}`.toUpperCase();
-  }
-  return businessName.slice(0, 2).toUpperCase() || 'CK';
 }
 
 export function AdminSidebar({
@@ -46,388 +61,292 @@ export function AdminSidebar({
   clientPipeline = [],
   contentList,
   videoTasks,
-  stalledReviews,
   pendingInvoices,
-  onOpenAddClient,
-  onOpenAddContent,
 }: AdminSidebarProps) {
-  const [brandDropdownOpen, setBrandDropdownOpen] = useState(false);
-  const [selectedPicFilter, setSelectedPicFilter] = useState<string>('ALL');
-  const brandDropdownRef = useRef<HTMLDivElement>(null);
+  const activeBrandContentCount = contentList.filter(
+    (c) => c.clientId === selectedClientId
+  ).length;
+  const activeBrandStudioCount = videoTasks.filter(
+    (t) => t.clientId === selectedClientId
+  ).length;
+  const prospectCount = clientPipeline.filter((c) => !c.isUnlocked).length;
 
-  // Extract unique PICs from active pipeline
-  const uniquePics = Array.from(
-    new Set(clientPipeline.map((c) => c.picAssigned).filter(Boolean))
-  ) as string[];
+  const agencyNavItems: {
+    key: AdminTabKey;
+    name: string;
+    icon: React.ComponentType<{ className?: string }>;
+    badge?: number | null;
+  }[] = [
+    { key: 'mission_control', name: 'Dashboard', icon: LayoutGrid },
+    {
+      key: 'finance',
+      name: 'Finansial & DP',
+      icon: Wallet,
+      badge: pendingInvoices.length || null,
+    },
+    { key: 'clients', name: 'Klien & Kuota', icon: Users },
+    {
+      key: 'brief_vault',
+      name: 'Prospek & Brief',
+      icon: FileText,
+      badge: prospectCount || null,
+    },
+    { key: 'agency_calendar', name: 'Kalender Agensi', icon: Calendar },
+    { key: 'feedback_review', name: 'Feedback & Review', icon: ThumbsUp },
+  ];
 
-  const displayedClients = selectedPicFilter === 'ALL'
-    ? clientPipeline
-    : clientPipeline.filter((c) => c.picAssigned === selectedPicFilter);
+  const executionNavItems: {
+    key: AdminTabKey;
+    name: string;
+    icon: React.ComponentType<{ className?: string }>;
+    badge?: number | null;
+  }[] = [
+    {
+      key: 'content_engine',
+      name: 'Content Engine',
+      icon: Layers,
+      badge: activeBrandContentCount || null,
+    },
+    {
+      key: 'production_mgmt',
+      name: 'Aset & Desain',
+      icon: Clapperboard,
+      badge: activeBrandStudioCount || null,
+    },
+  ];
 
-  // Close dropdown on click outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (brandDropdownRef.current && !brandDropdownRef.current.contains(event.target as Node)) {
-        setBrandDropdownOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full bg-white px-4 py-5 select-none">
+      {/* Brand Logo */}
+      <button
+        type="button"
+        onClick={() => {
+          setAdminTab('mission_control');
+          setMobileMenuOpen(false);
+        }}
+        className="flex items-center gap-2.5 px-2 mb-5 text-left cursor-pointer"
+      >
+        <img
+          src="/images/cermin-logo.png"
+          alt="Cermin Agency"
+          className="w-8 h-8 rounded-xl object-cover shadow-sm border border-[#DCEEFF] shrink-0"
+        />
+        <div>
+          <span className="block text-[16px] font-bold tracking-tight text-slate-900 leading-none">
+            Cermin OS
+          </span>
+          <span className="block text-[10px] font-medium text-slate-400 mt-0.5">
+            Agency Admin
+          </span>
+        </div>
+      </button>
 
-  const activeClientContents = contentList.filter(c => c.clientId === selectedClientId);
+      {/* Group 1: Level Agensi (Global Scope) */}
+      <div className="space-y-1">
+        <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+          Level Agensi
+        </p>
+        {agencyNavItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = adminTab === item.key;
+          return (
+            <button
+              key={item.key}
+              type="button"
+              onClick={() => {
+                setAdminTab(item.key);
+                setMobileMenuOpen(false);
+              }}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[12.5px] font-medium transition-all cursor-pointer ${
+                isActive
+                  ? 'bg-[#3B9BF8] text-white shadow-[0_6px_16px_rgba(59,155,248,0.28)]'
+                  : 'text-slate-500 hover:bg-[#F3F8FF] hover:text-[#3B9BF8]'
+              }`}
+            >
+              <span className="flex items-center gap-2.5">
+                <Icon
+                  className={`w-4 h-4 ${
+                    isActive ? 'text-white' : 'text-slate-400'
+                  }`}
+                />
+                {item.name}
+              </span>
+              {item.badge ? (
+                <span
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md tabular-nums ${
+                    isActive
+                      ? 'bg-white/20 text-white'
+                      : 'bg-[#3B9BF8] text-white'
+                  }`}
+                >
+                  {item.badge}
+                </span>
+              ) : null}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Group 2: Workspace Brand (Per-Brand Scope) */}
+      <div className="mt-5 pt-4 border-t border-slate-100 space-y-2 flex-1">
+        <p className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          Workspace Brand
+        </p>
+
+        {/* Brand Switcher */}
+        <div className="bg-[#EFF7FF] rounded-xl p-2.5 border border-[#DCEEFF] space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-slate-500">
+              Brand Aktif
+            </span>
+            {selectedClient?.id && (
+              <span
+                className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded-md ${
+                  selectedClient.isUnlocked
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-amber-100 text-amber-700'
+                }`}
+              >
+                {selectedClient.isUnlocked ? 'Resmi' : 'Demo'}
+              </span>
+            )}
+          </div>
+          <select
+            value={selectedClientId}
+            onChange={(e) => setSelectedClientId(e.target.value)}
+            className="w-full bg-white text-[11.5px] font-bold text-slate-800 px-2.5 py-1.5 rounded-lg border-0 ring-1 ring-[#DCEEFF] focus:outline-none focus:ring-2 focus:ring-[#3B9BF8] cursor-pointer"
+          >
+            {clientPipeline.length === 0 ? (
+              <option value="">Belum ada klien</option>
+            ) : (
+              clientPipeline.map((cl) => (
+                <option key={cl.id} value={cl.id}>
+                  {cl.business}
+                </option>
+              ))
+            )}
+          </select>
+        </div>
+
+        <div className="space-y-1">
+          {executionNavItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = adminTab === item.key;
+            return (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => {
+                  setAdminTab(item.key);
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[12.5px] font-medium transition-all cursor-pointer ${
+                  isActive
+                    ? 'bg-[#3B9BF8] text-white shadow-[0_6px_16px_rgba(59,155,248,0.28)]'
+                    : 'text-slate-500 hover:bg-[#F3F8FF] hover:text-[#3B9BF8]'
+                }`}
+              >
+                <span className="flex items-center gap-2.5">
+                  <Icon
+                    className={`w-4 h-4 ${
+                      isActive ? 'text-white' : 'text-slate-400'
+                    }`}
+                  />
+                  {item.name}
+                </span>
+                {item.badge ? (
+                  <span
+                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md tabular-nums ${
+                      isActive
+                        ? 'bg-white/20 text-white'
+                        : 'bg-[#EFF7FF] text-[#3B9BF8]'
+                    }`}
+                  >
+                    {item.badge}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Promo Aset Card (Signature Wave) */}
+      <div className="mt-5 rounded-2xl overflow-hidden bg-gradient-to-b from-[#DCEEFF] via-[#B8DEFF] to-[#7CC0FF] p-3.5 text-center relative">
+        <div className="relative z-10 space-y-1">
+          <p className="text-[12px] font-bold text-slate-800 leading-snug">
+            Brankas Aset &amp; Desain
+          </p>
+          <p className="text-[10px] text-slate-600">
+            Kelola progres &amp; link hasil desain
+          </p>
+          <div className="pt-5">
+            <button
+              type="button"
+              onClick={() => {
+                setAdminTab('production_mgmt');
+                setMobileMenuOpen(false);
+              }}
+              className="w-full bg-white hover:bg-slate-50 text-slate-800 text-[11px] font-semibold py-1.5 rounded-xl shadow-sm transition-colors cursor-pointer"
+            >
+              Buka Aset &amp; Desain
+            </button>
+          </div>
+        </div>
+        <svg
+          viewBox="0 0 200 70"
+          className="absolute inset-x-0 bottom-0 w-full h-20 opacity-60 pointer-events-none"
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M0 35 Q 50 10, 100 32 T 200 28 L 200 70 L 0 70 Z"
+            fill="#60A5FA"
+          />
+          <path
+            d="M0 48 Q 60 28, 120 46 T 200 40 L 200 70 L 0 70 Z"
+            fill="#3B9BF8"
+          />
+        </svg>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => router.post('/logout')}
+        className="mt-3 flex items-center gap-2.5 px-3 py-2 rounded-xl text-[12.5px] font-medium text-slate-500 hover:bg-rose-50 hover:text-rose-500 transition-colors cursor-pointer"
+      >
+        <LogOut className="w-4 h-4" />
+        Keluar
+      </button>
+    </div>
+  );
 
   return (
     <>
-      {/* Mobile Backdrop */}
+      {/* Desktop Fixed Sidebar */}
+      <aside className="hidden lg:block w-[236px] shrink-0 border-r border-[#EEF2F6] sticky top-0 h-screen overflow-y-auto bg-white">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile Drawer Sidebar */}
       {mobileMenuOpen && (
-        <div 
-          onClick={() => setMobileMenuOpen(false)}
-          className="fixed inset-0 bg-zinc-950/40 backdrop-blur-xs z-40 md:hidden animate-in fade-in"
-        />
-      )}
-
-      <aside className={`
-        fixed inset-y-0 left-0 z-50 md:static md:h-full
-        w-64 shrink-0
-        bg-white border-r border-zinc-200/80
-        flex flex-col justify-between
-        transition-transform duration-200 ease-in-out
-        ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-      `}>
-        {/* Top: Precise h-16 Header, Client Management, Quick Action, Grouped Navigation */}
-        <div className="flex flex-col min-h-0 flex-1">
-          {/* 1. Header with Official Cermin Brand Logo */}
-          <div className="h-16 px-4 sm:px-5 border-b border-zinc-200/80 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <img
-                src="/images/cermin-logo.png"
-                alt="Cermin Kreatif"
-                className="w-8 h-8 rounded-full object-cover shrink-0 shadow-xs border border-zinc-200/80"
-              />
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-xs text-zinc-950 tracking-tight block truncate">
-                    Cermin Kreatif
-                  </span>
-                  <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-[#01A0CA]/10 text-[#01A0CA]">
-                    ADMIN
-                  </span>
-                </div>
-                <span className="text-[10px] font-mono text-zinc-400 block -mt-0.5">
-                  Studio OS • Komando
-                </span>
-              </div>
-            </div>
-
-            {/* Mobile Close Button */}
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          <div
+            className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div className="relative w-[250px] max-w-[82vw] h-full bg-white shadow-xl z-10 overflow-y-auto">
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(false)}
-              className="md:hidden p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition cursor-pointer"
-              aria-label="Tutup menu navigasi"
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 cursor-pointer"
+              aria-label="Tutup menu"
             >
-              <X className="w-4 h-4" strokeWidth={1.5} />
+              <X className="w-4 h-4" />
             </button>
-          </div>
-
-          {/* 2. Client Switcher (Top Workspace Management — Elegant & Clean) */}
-          <div className="px-3.5 pt-3.5 pb-2 shrink-0 relative" ref={brandDropdownRef}>
-            <div className="px-1 mb-1.5 flex items-center justify-between text-[10px] font-semibold tracking-wider uppercase text-zinc-400">
-              <span>Manajemen Klien</span>
-              <span className="font-mono text-[9px] text-[#01A0CA] font-medium bg-[#01A0CA]/10 px-1.5 py-0.2 rounded">
-                {clientPipeline.length} Brand
-              </span>
-            </div>
-
-            <button
-              onClick={() => setBrandDropdownOpen(!brandDropdownOpen)}
-              className="w-full bg-zinc-50/90 hover:bg-white hover:border-[#01A0CA]/40 border border-zinc-200/80 rounded-xl p-2.5 flex items-center justify-between transition cursor-pointer text-left group shadow-2xs"
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#01A0CA] to-[#008db3] text-white flex items-center justify-center font-bold text-xs tracking-tight shrink-0 shadow-xs">
-                  {getClientInitials(selectedClient?.business || 'CK')}
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 ring-2 ring-emerald-500/20" />
-                    <span className="text-xs font-semibold text-zinc-950 truncate block leading-tight">
-                      {selectedClient?.business || 'Pilih Brand'}
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-zinc-500 font-mono block truncate mt-0.5">
-                    {selectedClient?.package || 'Retainer Aktif'} • PIC: {selectedClient?.picAssigned || 'Studio Lead'}
-                  </span>
-                </div>
-              </div>
-              <ChevronDown
-                className={`w-3.5 h-3.5 text-zinc-400 group-hover:text-[#01A0CA] transition-transform duration-200 shrink-0 ${
-                  brandDropdownOpen ? 'rotate-180' : ''
-                }`}
-                strokeWidth={1.5}
-              />
-            </button>
-
-            {/* Popover Dropdown */}
-            {brandDropdownOpen && (
-              <div className="absolute top-full left-3.5 right-3.5 mt-1.5 bg-white border border-zinc-200/90 rounded-xl shadow-xl z-50 p-1.5 space-y-1 animate-in fade-in zoom-in-95">
-                <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-zinc-400 border-b border-zinc-100 flex items-center justify-between">
-                  <span>Daftar Brand Retainer</span>
-                  <span>{displayedClients.length} Brand</span>
-                </div>
-
-                {/* PIC Quick Filter Pills */}
-                {uniquePics.length > 1 && (
-                  <div className="flex items-center gap-1 px-1 py-1 overflow-x-auto border-b border-zinc-100">
-                    <button
-                      onClick={() => setSelectedPicFilter('ALL')}
-                      className={`px-2 py-0.5 rounded text-[10px] font-semibold transition cursor-pointer whitespace-nowrap ${
-                        selectedPicFilter === 'ALL'
-                          ? 'bg-[#01A0CA] text-white shadow-2xs'
-                          : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
-                      }`}
-                    >
-                      Semua ({clientPipeline.length})
-                    </button>
-                    {uniquePics.map((pic) => {
-                      const shortName = pic.split(' ')[0];
-                      const count = clientPipeline.filter((c) => c.picAssigned === pic).length;
-                      return (
-                        <button
-                          key={pic}
-                          onClick={() => setSelectedPicFilter(pic)}
-                          className={`px-2 py-0.5 rounded text-[10px] font-semibold transition cursor-pointer whitespace-nowrap ${
-                            selectedPicFilter === pic
-                              ? 'bg-[#01A0CA] text-white shadow-2xs'
-                              : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
-                          }`}
-                        >
-                          {shortName} ({count})
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-
-                <div className="max-h-56 overflow-y-auto space-y-0.5 py-1">
-                  {displayedClients.map((client) => {
-                    const isSelected = client.id === selectedClientId;
-                    return (
-                      <button
-                        key={client.id}
-                        onClick={() => {
-                          setSelectedClientId(client.id);
-                          setBrandDropdownOpen(false);
-                        }}
-                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
-                          isSelected
-                            ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold'
-                            : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div
-                            className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 ${
-                              isSelected ? 'bg-[#01A0CA] text-white' : 'bg-zinc-100 text-zinc-700'
-                            }`}
-                          >
-                            {getClientInitials(client.business)}
-                          </div>
-                          <div className="min-w-0">
-                            <span className="truncate block font-medium leading-tight">{client.business}</span>
-                            <span className="text-[10px] text-zinc-400 font-mono block truncate">
-                              {client.package} • PIC: {client.picAssigned || 'Studio Lead'}
-                            </span>
-                          </div>
-                        </div>
-                        {isSelected && <Check className="w-3.5 h-3.5 text-[#01A0CA] shrink-0 ml-1.5" strokeWidth={2} />}
-                      </button>
-                    );
-                  })}
-                  {displayedClients.length === 0 && (
-                    <div className="px-3 py-3 text-center text-xs text-zinc-400">
-                      Tidak ada brand untuk PIC ini.
-                    </div>
-                  )}
-                </div>
-                {onOpenAddClient && (
-                  <div className="pt-1 border-t border-zinc-100">
-                    <button
-                      onClick={() => {
-                        setBrandDropdownOpen(false);
-                        onOpenAddClient();
-                      }}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium text-zinc-900 hover:bg-zinc-100 flex items-center gap-1.5 transition cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5 text-zinc-600" strokeWidth={1.5} />
-                      <span>Daftarkan Brand Baru</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* 3. Quick Action */}
-          <div className="px-3.5 pb-2 shrink-0">
-            <button
-              onClick={onOpenAddContent}
-              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg border border-[#01A0CA]/30 bg-gradient-to-r from-[#01A0CA]/5 to-transparent hover:from-[#01A0CA]/15 hover:border-[#01A0CA]/50 text-zinc-800 hover:text-[#01A0CA] text-xs font-medium transition cursor-pointer shadow-2xs group"
-            >
-              <span className="flex items-center gap-2">
-                <Plus className="w-3.5 h-3.5 text-[#01A0CA] group-hover:scale-110 transition-transform" strokeWidth={2} />
-                <span className="font-semibold">Jadwalkan Konten</span>
-              </span>
-              <kbd className="text-[10px] font-mono text-[#01A0CA] bg-white px-1.5 py-0.2 rounded border border-[#01A0CA]/20">
-                +N
-              </kbd>
-            </button>
-          </div>
-
-          {/* 4. Navigation Sections */}
-          <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
-            {/* Group 1: Produksi Brand (Contextual - Dedicated Client Scope) */}
-            <div>
-              <div className="px-2 mb-1.5 flex items-center justify-between text-[10px] font-semibold tracking-wider uppercase text-zinc-400">
-                <span>Produksi Brand</span>
-                <span className="font-mono text-[9px] text-zinc-500 truncate max-w-[90px]">
-                  {selectedClient?.business || 'Klien'}
-                </span>
-              </div>
-
-              <nav className="space-y-0.5">
-                <button
-                  onClick={() => {
-                    setAdminTab('content_engine');
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer ${
-                    adminTab === 'content_engine'
-                      ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold border-l-2 border-[#01A0CA] shadow-2xs'
-                      : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Kanban className={`w-4 h-4 shrink-0 ${adminTab === 'content_engine' ? 'text-[#01A0CA]' : 'text-zinc-500'}`} strokeWidth={1.75} />
-                    <span>SOP Konten (Multi-View)</span>
-                  </div>
-                  <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-md ${adminTab === 'content_engine' ? 'bg-[#01A0CA] text-white font-bold' : 'text-zinc-400 bg-zinc-100'}`}>
-                    {activeClientContents.length}
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setAdminTab('production_mgmt');
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer ${
-                    adminTab === 'production_mgmt'
-                      ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold border-l-2 border-[#01A0CA] shadow-2xs'
-                      : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Film className={`w-4 h-4 shrink-0 ${adminTab === 'production_mgmt' ? 'text-[#01A0CA]' : 'text-zinc-500'}`} strokeWidth={1.75} />
-                    <span>Produksi & Syuting</span>
-                  </div>
-                  <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-md ${adminTab === 'production_mgmt' ? 'bg-[#01A0CA] text-white font-bold' : 'text-zinc-400 bg-zinc-100'}`}>
-                    {videoTasks.length}
-                  </span>
-                </button>
-              </nav>
-            </div>
-
-            {/* Group 2: Operasional Studio (Global Scope across all clients) */}
-            <div className="pt-1">
-              <div className="px-2 mb-1.5 text-[10px] font-semibold tracking-wider uppercase text-zinc-400">
-                Operasional Studio
-              </div>
-              <nav className="space-y-0.5">
-                <button
-                  onClick={() => {
-                    setAdminTab('mission_control');
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer ${
-                    adminTab === 'mission_control'
-                      ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold border-l-2 border-[#01A0CA] shadow-2xs'
-                      : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <LayoutDashboard className={`w-4 h-4 shrink-0 ${adminTab === 'mission_control' ? 'text-[#01A0CA]' : 'text-zinc-500'}`} strokeWidth={1.75} />
-                    <span>Pusat Kendali</span>
-                  </div>
-                  {stalledReviews.length > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-md bg-amber-500 text-white font-bold animate-pulse">
-                      {stalledReviews.length}
-                    </span>
-                  )}
-                </button>
-
-                <button
-                  onClick={() => {
-                    setAdminTab('clients');
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer ${
-                    adminTab === 'clients'
-                      ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold border-l-2 border-[#01A0CA] shadow-2xs'
-                      : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Users className={`w-4 h-4 shrink-0 ${adminTab === 'clients' ? 'text-[#01A0CA]' : 'text-zinc-500'}`} strokeWidth={1.75} />
-                    <span>Direktori Klien</span>
-                  </div>
-                  <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-md ${adminTab === 'clients' ? 'bg-[#01A0CA] text-white font-bold' : 'text-zinc-400 bg-zinc-100'}`}>
-                    {clientPipeline.length}
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setAdminTab('finance');
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer ${
-                    adminTab === 'finance'
-                      ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold border-l-2 border-[#01A0CA] shadow-2xs'
-                      : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Receipt className={`w-4 h-4 shrink-0 ${adminTab === 'finance' ? 'text-[#01A0CA]' : 'text-zinc-500'}`} strokeWidth={1.75} />
-                    <span>Verifikasi DP & Faktur</span>
-                  </div>
-                  {pendingInvoices.length > 0 && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-md bg-emerald-500 text-white font-bold">
-                      {pendingInvoices.length}
-                    </span>
-                  )}
-                </button>
-
-                <button
-                  onClick={() => {
-                    setAdminTab('brief_vault');
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition cursor-pointer ${
-                    adminTab === 'brief_vault'
-                      ? 'bg-[#01A0CA]/10 text-[#01A0CA] font-semibold border-l-2 border-[#01A0CA] shadow-2xs'
-                      : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <FileText className={`w-4 h-4 shrink-0 ${adminTab === 'brief_vault' ? 'text-[#01A0CA]' : 'text-zinc-500'}`} strokeWidth={1.75} />
-                    <span>Arsip Brief Masuk</span>
-                  </div>
-                </button>
-              </nav>
-            </div>
+            <SidebarContent />
           </div>
         </div>
-      </aside>
+      )}
     </>
   );
 }

@@ -35,6 +35,7 @@ export interface ContentItem {
   weekday: string; // 'Senin'
   title: string;
   type: string; // 'Reels / Video Pendek' | 'Instagram Carousel' | 'Single Post High-Res' | 'TikTok & Reels'
+  pillar?: string;
   platforms: PlatformType[]; // Support multi-platform (IG, TikTok, etc.)
   stage: ContentStage;
   status: 'Draf Naskah' | 'Sedang Edit' | 'Menunggu Review' | 'Perlu Revisi' | 'Disetujui' | 'Request Masuk';
@@ -48,6 +49,20 @@ export interface ContentItem {
   scriptHook?: string;
   revisionCount: number; // Max 2 rounds (Anti-Scope Creep SLA)
   feedbackHistory: FeedbackLog[];
+}
+
+export interface ContentPillarItem {
+  title: string;
+  ratio: string;
+  targetCount: number;
+  description: string;
+}
+
+export interface ClientKpiItem {
+  label: string;
+  target: string;
+  current: string;
+  unit: string;
 }
 
 export interface ClientPipeline {
@@ -68,11 +83,21 @@ export interface ClientPipeline {
   totalValue: string;
   paymentTerm: string;
   transferProof: string | null;
+  transferBank?: string;
   invoiceNumber: string;
   briefNotes: string;
+  targetAudience?: string;
+  coverUrl?: string | null;
   registeredAt: string;
   isUnlocked: boolean; // Flag DP 50% Gated Access
   picAssigned: string;
+  contentPillars?: ContentPillarItem[];
+  kpiTargets?: ClientKpiItem[];
+}
+
+export interface AssetLinkItem {
+  label: string;
+  url: string;
 }
 
 export interface VideoProductionTask {
@@ -83,7 +108,59 @@ export interface VideoProductionTask {
   progress: number; // 0 - 100
   status: 'Dalam Antrean' | 'Sedang Berjalan' | 'Selesai';
   rawFolder: string;
+  assetLinks?: AssetLinkItem[];
   shooter: string;
+  cameraSetup?: string;
+  shootDate?: string;
+  notes?: string;
+}
+
+export interface AgencyNotificationItem {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  time: string;
+  group: string;
+  unread: boolean;
+  actionLabel: string;
+  actionType: string;
+  clientId?: string | null;
+}
+
+export interface AgencyEventItem {
+  id: string;
+  title: string;
+  shortTitle: string;
+  monthKey: string;
+  startDay: number;
+  endDay: number;
+  time: string;
+  category: string;
+  brand: string;
+  location: string;
+  pic: string;
+  deliverable: string;
+  image: string;
+}
+
+export interface ClientReviewItem {
+  id: string;
+  clientName: string;
+  brand: string;
+  packageName: string;
+  rating: number;
+  date: string;
+  comment: string;
+}
+
+export interface StudioTeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  phone: string;
+  avatar?: string | null;
 }
 
 export interface Invoice {

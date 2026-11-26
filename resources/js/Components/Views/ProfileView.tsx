@@ -138,7 +138,7 @@ export function ProfileView({ onBack }: ProfileViewProps) {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition"
+                  className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
                 />
               </div>
 
@@ -151,7 +151,7 @@ export function ProfileView({ onBack }: ProfileViewProps) {
                   maxLength={3}
                   value={initials}
                   onChange={(e) => setInitials(e.target.value.toUpperCase())}
-                  className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 text-center font-bold focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition"
+                  className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 text-center font-bold focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
                 />
               </div>
             </div>
@@ -166,7 +166,7 @@ export function ProfileView({ onBack }: ProfileViewProps) {
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition"
+                  className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
                 />
               </div>
 
@@ -179,7 +179,7 @@ export function ProfileView({ onBack }: ProfileViewProps) {
                   required
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition"
+                  className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
                 />
               </div>
             </div>
@@ -194,7 +194,7 @@ export function ProfileView({ onBack }: ProfileViewProps) {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition font-mono"
+                  className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#3B9BF8]/25 transition font-mono"
                 />
               </div>
 
@@ -207,7 +207,7 @@ export function ProfileView({ onBack }: ProfileViewProps) {
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition font-mono"
+                  className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#3B9BF8]/25 transition font-mono"
                 />
                 <p className="text-[10px] text-zinc-400 mt-1">
                   Digunakan untuk notifikasi SLA dan pengiriman draf ke klien.
@@ -223,7 +223,7 @@ export function ProfileView({ onBack }: ProfileViewProps) {
                 rows={3}
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="w-full p-3.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition resize-none leading-relaxed font-light"
+                className="w-full p-3.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#3B9BF8]/25 transition resize-none leading-relaxed font-light"
               />
             </div>
 

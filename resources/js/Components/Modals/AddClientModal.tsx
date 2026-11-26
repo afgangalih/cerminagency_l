@@ -118,7 +118,7 @@ export function AddClientModal({ onClose }: AddClientModalProps) {
                 value={business}
                 onChange={(e) => setBusiness(e.target.value)}
                 placeholder="Contoh: Kopi Tuku Nusantara"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-[#3B9BF8] focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
               />
             </div>
 
@@ -132,7 +132,7 @@ export function AddClientModal({ onClose }: AddClientModalProps) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Contoh: Andi Pratama"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-[#3B9BF8] focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
               />
             </div>
           </div>
@@ -145,7 +145,7 @@ export function AddClientModal({ onClose }: AddClientModalProps) {
                 value={instagram}
                 onChange={(e) => setInstagram(e.target.value)}
                 placeholder="@kopituku"
-                className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition"
+                className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-[#3B9BF8] focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
               />
             </div>
 
@@ -156,7 +156,7 @@ export function AddClientModal({ onClose }: AddClientModalProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="andi@tuku.id"
-                className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition"
+                className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-[#3B9BF8] focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
               />
             </div>
 
@@ -167,7 +167,7 @@ export function AddClientModal({ onClose }: AddClientModalProps) {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="08123456789"
-                className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition"
+                className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-[#3B9BF8] focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
               />
             </div>
           </div>
@@ -205,7 +205,7 @@ export function AddClientModal({ onClose }: AddClientModalProps) {
               <select
                 value={picAssigned}
                 onChange={(e) => setPicAssigned(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition"
+                className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-[#3B9BF8] focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
               >
                 <option value="Dimas (Creative Lead)">Dimas (Creative Lead)</option>
                 <option value="Farhan (Video Director)">Farhan (Video Director)</option>
@@ -241,7 +241,7 @@ export function AddClientModal({ onClose }: AddClientModalProps) {
               value={briefNotes}
               onChange={(e) => setBriefNotes(e.target.value)}
               placeholder="Target audiens, fokus produk, gaya visual..."
-              className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900 transition"
+              className="w-full px-3.5 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-[#3B9BF8] focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
             />
           </div>
 

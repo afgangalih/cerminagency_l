@@ -32,11 +32,16 @@ trait TransformsAgencyData
             'totalValue' => $c->total_value ?? 'Rp 0',
             'paymentTerm' => $c->payment_term ?? '-',
             'transferProof' => $c->transfer_proof_url,
+            'transferBank' => $c->transfer_bank ?? 'Transfer Bank',
             'invoiceNumber' => $c->invoice_number ?? '-',
             'briefNotes' => $c->brief_notes ?? '',
+            'targetAudience' => $c->target_audience ?? '',
+            'coverUrl' => $c->cover_url ?? null,
             'registeredAt' => $c->created_at ? $c->created_at->format('d M Y') : '-',
             'isUnlocked' => (bool) $c->is_unlocked,
             'picAssigned' => $c->pic_assigned ?? 'Tim Creative Cermin',
+            'contentPillars' => is_array($c->content_pillars) ? $c->content_pillars : [],
+            'kpiTargets' => is_array($c->kpi_targets) ? $c->kpi_targets : [],
         ];
     }
 
@@ -62,6 +67,7 @@ trait TransformsAgencyData
             'weekday' => $c->weekday_label ?? 'Senin',
             'title' => $c->title,
             'type' => $c->format_type ?? 'Reels / Video Pendek',
+            'pillar' => $c->pillar ?? '',
             'platforms' => is_array($c->platforms) ? $c->platforms : ['instagram'],
             'stage' => $c->stage,
             'status' => $c->status,
@@ -90,6 +96,12 @@ trait TransformsAgencyData
      */
     public function transformTask(StudioTask $t): array
     {
+        $links = is_array($t->asset_links) && count($t->asset_links) > 0
+            ? $t->asset_links
+            : ($t->raw_folder_url
+                ? [['label' => 'Folder Master', 'url' => $t->raw_folder_url]]
+                : []);
+
         return [
             'id' => $t->id,
             'clientId' => $t->client ? $t->client->client_code : 'CK-091',
@@ -98,7 +110,11 @@ trait TransformsAgencyData
             'progress' => (int) $t->progress,
             'status' => $t->status,
             'rawFolder' => $t->raw_folder_url ?? '',
+            'assetLinks' => $links,
             'shooter' => $t->shooter ?? 'Tim Studio',
+            'cameraSetup' => $t->camera_setup ?? 'Figma / Drive',
+            'shootDate' => $t->shoot_date ? $t->shoot_date->format('d M Y') : 'Terjadwal',
+            'notes' => $t->notes ?? '',
         ];
     }
 

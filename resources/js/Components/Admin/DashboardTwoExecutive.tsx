@@ -1,804 +1,1133 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
-  TrendingUp,
-  TrendingDown,
-  ArrowRight,
-  CheckCircle2,
-  Check,
-  AlertCircle,
-  FileText,
-  CreditCard,
-  UserPlus,
-  Rocket,
+  Building2,
+  Wallet,
   Film,
   Clock,
-  Sparkles,
-  ArrowUpRight,
-  ExternalLink,
-  ShieldCheck,
-  Building2,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Layers,
+  MessageCircle,
   Plus,
+  MoreHorizontal,
+  CheckCircle2,
+  Camera,
+  CreditCard,
+  AlertTriangle,
 } from "lucide-react";
-import { ClientPipeline, ContentItem } from "@/types";
+import {
+  ClientPipeline,
+  ContentItem,
+  AgencyEventItem,
+  AgencyNotificationItem,
+  VideoProductionTask,
+} from "@/types";
+import { AdminTabKey } from "../Navigation/AdminSidebar";
 
 interface DashboardTwoExecutiveProps {
   clients: ClientPipeline[];
   contents: ContentItem[];
   stalledReviews: ContentItem[];
+  videoTasks?: VideoProductionTask[];
+  agencyEvents?: AgencyEventItem[];
+  notifications?: AgencyNotificationItem[];
   onPingClient: (client: ClientPipeline, item: ContentItem) => void;
-  onOpenAddClient: () => void;
-  onOpenAddContent: () => void;
   onInspectProof: (client: ClientPipeline) => void;
   onSelectClient: (clientId: string) => void;
+  onNavigateTab: (tab: AdminTabKey) => void;
+  onOpenAddClient?: () => void;
+  onOpenAddContent?: () => void;
 }
 
-/* ─── Delta Badge Component (Efferd-style) ────────────────── */
-function DeltaBadge({
-  value,
-  suffix = "%",
-  label = "",
-}: {
-  value: number;
-  suffix?: string;
-  label?: string;
-}) {
-  const isPositive = value >= 0;
-  return (
-    <div
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold tabular-nums ${
-        isPositive
-          ? "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
-          : "bg-rose-50 text-rose-700 border border-rose-200/60"
-      }`}
-    >
-      {isPositive ? (
-        <TrendingUp className="w-3 h-3 text-emerald-600" />
-      ) : (
-        <TrendingDown className="w-3 h-3 text-rose-600" />
-      )}
-      <span>
-        {isPositive ? "+" : ""}
-        {value}
-        {suffix}
-      </span>
-      {label && <span className="font-normal opacity-70 ml-0.5">{label}</span>}
-    </div>
-  );
+const formatIDR = (num: number) =>
+  `Rp ${Number(num || 0).toLocaleString("id-ID")}`;
+
+const formatShortIDR = (num: number) => {
+  if (num >= 1000000) {
+    return `Rp ${(num / 1000000).toFixed(1).replace(".0", "")} jt`;
+  }
+  return formatIDR(num);
+};
+
+const parseIDR = (str: string) =>
+  parseInt((str || "").replace(/\D/g, ""), 10) || 0;
+
+function buildSmoothSvgPath(points: { x: number; y: number }[]) {
+  if (!points.length) return "";
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`;
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[i === 0 ? i : i - 1];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[i + 2 < points.length ? i + 2 : i + 1];
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+  }
+  return d;
 }
 
-/* ─── Revenue Bar Chart (Pure React/SVG — Zero React 19 bugs) ── */
-function RevenueBarChart({ totalMRR }: { totalMRR: number }) {
-  const [activeDay, setActiveDay] = useState<number | null>(null);
+const FALLBACK_COVERS = [
+  "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80",
+];
 
-  // Daily distribution sample for current week
-  const dailyData = [
-    { day: "Sen", label: "Senin", amount: 4250000, height: 60 },
-    { day: "Sel", label: "Selasa", amount: 3500000, height: 48 },
-    { day: "Rab", label: "Rabu", amount: 6000000, height: 82 },
-    { day: "Kam", label: "Kamis", amount: 4800000, height: 68 },
-    { day: "Jum", label: "Jumat", amount: 7200000, height: 95 },
-    { day: "Sab", label: "Sabtu", amount: 5100000, height: 72 },
-    { day: "Min", label: "Minggu", amount: 2800000, height: 40 },
-  ];
-
-  return (
-    <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col justify-between">
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-zinc-100">
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold text-zinc-950">
-              Arus Kas Retainer (Mingguan)
-            </h3>
-            <DeltaBadge value={18.4} label="vs siklus lalu" />
-          </div>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Total realisasi faktur & pelunasan termin minggu ini
-          </p>
-        </div>
-        <div className="text-right">
-          <span className="text-[10px] font-inter uppercase text-zinc-400">Total Periode</span>
-          <p className="text-base font-bold font-inter text-zinc-900 leading-tight">
-            Rp {(totalMRR * 0.42).toLocaleString("id-ID")}
-          </p>
-        </div>
-      </div>
-
-      {/* Bar Chart Visualization */}
-      <div className="pt-6 pb-2">
-        <div className="h-44 w-full flex items-end justify-between gap-2 px-2">
-          {dailyData.map((item, idx) => {
-            const isHovered = activeDay === idx;
-            return (
-              <div
-                key={item.day}
-                onMouseEnter={() => setActiveDay(idx)}
-                onMouseLeave={() => setActiveDay(null)}
-                className="flex-1 flex flex-col items-center gap-2 group cursor-pointer relative"
-              >
-                {/* Floating Tooltip */}
-                {isHovered && (
-                  <div className="absolute -top-12 z-20 px-2.5 py-1 bg-zinc-950 text-white text-[11px] font-inter rounded-lg shadow-lg whitespace-nowrap animate-in fade-in zoom-in-95">
-                    {item.label}: Rp {item.amount.toLocaleString("id-ID")}
-                  </div>
-                )}
-
-                {/* The Bar */}
-                <div className="w-full max-w-[42px] bg-zinc-100 rounded-t-lg relative overflow-hidden flex items-end h-36">
-                  <div
-                    style={{ height: `${item.height}%` }}
-                    className={`w-full rounded-t-lg transition-all duration-300 ${
-                      isHovered
-                        ? "bg-[#008db3] shadow-md shadow-[#01A0CA]/20"
-                        : "bg-gradient-to-t from-[#01A0CA] to-sky-400 group-hover:from-[#008db3] group-hover:to-sky-300"
-                    }`}
-                  />
-                </div>
-
-                {/* Day Label */}
-                <span
-                  className={`text-[11px] font-medium transition-colors ${
-                    isHovered ? "text-[#01A0CA] font-bold" : "text-zinc-500"
-                  }`}
-                >
-                  {item.day}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="pt-3 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
-        <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-[#01A0CA]" />
-          Pembayaran Termin DP 50%
-        </span>
-        <span className="font-mono text-[11px]">7 Hari Terakhir</span>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Production Volume Chart (Efferd Line Chart Style) ─────── */
-function ProductionVolumeChart({ contents }: { contents: ContentItem[] }) {
-  const reelsCount = contents.filter((c) => c.type.includes("Reels") || c.platforms.includes("instagram")).length;
-  const carouselCount = contents.filter((c) => c.type.includes("Carousel")).length;
-
-  return (
-    <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col justify-between">
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-zinc-100">
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold text-zinc-950">
-              Volume Produksi Format Konten
-            </h3>
-            <DeltaBadge value={12.5} label="output" />
-          </div>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Distribusi deliverable Reels 9:16 vs Feed Carousel
-          </p>
-        </div>
-        <div className="flex items-center gap-3 text-xs">
-          <span className="flex items-center gap-1.5 font-medium text-zinc-800">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#01A0CA]" />
-            Reels 9:16 ({reelsCount})
-          </span>
-          <span className="flex items-center gap-1.5 text-zinc-500">
-            <span className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
-            Carousel ({carouselCount})
-          </span>
-        </div>
-      </div>
-
-      {/* Smooth Curved Line SVG */}
-      <div className="py-4 relative">
-        <svg viewBox="0 0 500 140" className="w-full h-36 overflow-visible">
-          <defs>
-            <linearGradient id="reelsGlow" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#01A0CA" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#01A0CA" stopOpacity="0.0" />
-            </linearGradient>
-            <linearGradient id="carouselGlow" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="#6366f1" stopOpacity="0.0" />
-            </linearGradient>
-          </defs>
-
-          {/* Grid lines */}
-          <line x1="0" y1="20" x2="500" y2="20" stroke="#f4f4f5" strokeDasharray="3 3" />
-          <line x1="0" y1="60" x2="500" y2="60" stroke="#f4f4f5" strokeDasharray="3 3" />
-          <line x1="0" y1="100" x2="500" y2="100" stroke="#f4f4f5" strokeDasharray="3 3" />
-
-          {/* Area Fills */}
-          <path
-            d="M 0 110 Q 80 85 160 50 T 320 30 T 500 15 L 500 130 L 0 130 Z"
-            fill="url(#reelsGlow)"
-          />
-          <path
-            d="M 0 120 Q 90 100 180 80 T 340 70 T 500 65 L 500 130 L 0 130 Z"
-            fill="url(#carouselGlow)"
-          />
-
-          {/* Lines */}
-          <path
-            d="M 0 110 Q 80 85 160 50 T 320 30 T 500 15"
-            fill="none"
-            stroke="#01A0CA"
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
-          <path
-            d="M 0 120 Q 90 100 180 80 T 340 70 T 500 65"
-            fill="none"
-            stroke="#6366f1"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-
-          {/* Target Milestone Dots */}
-          <circle cx="160" cy="50" r="4" fill="#01A0CA" className="animate-pulse" />
-          <circle cx="320" cy="30" r="4" fill="#01A0CA" />
-          <circle cx="500" cy="15" r="5" fill="#01A0CA" />
-        </svg>
-
-        <div className="flex justify-between text-[11px] font-inter text-zinc-400 pt-1">
-          <span>Minggu 1</span>
-          <span>Minggu 2</span>
-          <span>Minggu 3</span>
-          <span>Minggu 4 (Target Rilis)</span>
-        </div>
-      </div>
-
-      <div className="pt-3 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
-        <span>Ketepatan waktu produksi studio Malang: <strong>92% sesuai jadwal</strong></span>
-        <span className="font-inter text-emerald-700 font-medium">Alur Produksi Lancar</span>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Recent Invoices Table (Efferd Style) ─────────────────── */
-function RecentInvoicesSection({
-  clients,
-  onInspectProof,
-}: {
-  clients: ClientPipeline[];
-  onInspectProof: (client: ClientPipeline) => void;
-}) {
-  return (
-    <div className="bg-white rounded-2xl border border-zinc-200/90 shadow-[0_2px_12px_rgba(0,0,0,0.03)] overflow-hidden">
-      <div className="p-5 border-b border-zinc-100 flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-semibold text-zinc-950">
-            Faktur & Tagihan Klien Terkini
-          </h3>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Status verifikasi termin DP 50%, pelunasan, dan add-on kuota
-          </p>
-        </div>
-        <span className="text-xs font-inter text-zinc-400">
-          {clients.length} Faktur Aktif
-        </span>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-zinc-100 text-[11px] font-inter uppercase tracking-wider text-zinc-400 bg-zinc-50/50">
-              <th className="py-3 px-5 font-semibold">Brand / Klien</th>
-              <th className="py-3 px-4 font-semibold">Nomor Faktur</th>
-              <th className="py-3 px-4 font-semibold">Termin Kontrak</th>
-              <th className="py-3 px-4 font-semibold text-right">Nilai Tagihan</th>
-              <th className="py-3 px-5 font-semibold text-right">Status Akses</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-100 text-xs">
-            {clients.map((client) => {
-              const isPaid = client.isUnlocked;
-              return (
-                <tr
-                  key={client.id}
-                  onClick={() => onInspectProof(client)}
-                  className="hover:bg-zinc-50/80 transition-colors cursor-pointer group"
-                >
-                  <td className="py-3.5 px-5">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center font-bold text-[10px] text-zinc-800 shrink-0">
-                        {client.business.slice(0, 2).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-zinc-900 group-hover:text-zinc-950">
-                          {client.business}
-                        </p>
-                        <p className="text-[11px] text-zinc-400">PIC: {client.name}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3.5 px-4 font-inter text-zinc-600">
-                    {client.invoiceNumber}
-                  </td>
-                  <td className="py-3.5 px-4 text-zinc-600">
-                    {client.paymentTerm}
-                  </td>
-                  <td className="py-3.5 px-4 text-right font-inter font-semibold text-zinc-900">
-                    {client.dpAmount}
-                  </td>
-                  <td className="py-3.5 px-5 text-right">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${
-                        isPaid
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                          : "bg-amber-50 text-amber-700 border border-amber-200"
-                      }`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          isPaid ? "bg-emerald-600" : "bg-amber-600 animate-pulse"
-                        }`}
-                      />
-                      {isPaid ? "Lunas (Unlocked)" : "Perlu Verifikasi DP"}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Billing Health Card (Efferd Style) ────────────────────── */
-function BillingHealthCard({
-  clients,
-  onInspectProof,
-}: {
-  clients: ClientPipeline[];
-  onInspectProof: (client: ClientPipeline) => void;
-}) {
-  const pendingDP = clients.filter((c) => !c.isUnlocked);
-  const isHealthy = pendingDP.length === 0;
-
-  return (
-    <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col justify-between">
-      <div className="space-y-1 pb-4 border-b border-zinc-100">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-zinc-950">
-            Kesehatan Finansial (Billing Health)
-          </h3>
-          <span
-            className={`text-[10px] font-inter px-2 py-0.5 rounded-full font-bold ${
-              isHealthy
-                ? "bg-emerald-100 text-emerald-800"
-                : "bg-amber-100 text-amber-800"
-            }`}
-          >
-            {isHealthy ? "100% AMAN" : `${pendingDP.length} PENDING`}
-          </span>
-        </div>
-        <p className="text-xs text-zinc-500">
-          Monitoring syarat DP 50% sebelum shooting studio & rilis
-        </p>
-      </div>
-
-      <div className="py-6 flex flex-col items-center text-center px-4">
-        <div
-          className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-3 shadow-sm ${
-            isHealthy
-              ? "bg-emerald-50 border border-emerald-200 text-emerald-600"
-              : "bg-amber-50 border border-amber-200 text-amber-600"
-          }`}
-        >
-          {isHealthy ? (
-            <CheckCircle2 className="w-6 h-6" />
-          ) : (
-            <AlertCircle className="w-6 h-6" />
-          )}
-        </div>
-
-        <h4 className="text-sm font-semibold text-zinc-900">
-          {isHealthy
-            ? "Semua Brand Telah Lunas DP"
-            : `${pendingDP.length} Faktur Menunggu Validasi`}
-        </h4>
-        <p className="text-xs text-zinc-500 mt-1 max-w-xs leading-relaxed">
-          {isHealthy
-            ? "Seluruh slot kalender kerja dan tim videografer di Studio Malang beroperasi lancar tanpa penundaan pembayaran."
-            : "Ada brand yang kalendernya terkunci menunggu verifikasi bukti transfer slip bank."}
-        </p>
-      </div>
-
-      <div className="pt-3 border-t border-zinc-100">
-        {isHealthy ? (
-          <div className="text-center text-xs text-zinc-400 py-1 font-inter flex items-center justify-center gap-1.5">
-            <span>Status Pembayaran Tertib</span>
-            <Check className="w-3.5 h-3.5 text-emerald-600" />
-          </div>
-        ) : (
-          <button
-            onClick={() => onInspectProof(pendingDP[0])}
-            className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold shadow-xs transition cursor-pointer"
-          >
-            <span>Periksa Bukti Bayar ({pendingDP[0].business})</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ─── Real-time Agency Activity Feed (Efferd Style) ────────── */
-function AgencyActivityFeed() {
-  const activities = [
-    {
-      id: "act-1",
-      title: "Draf Revisi V2 (Reels Maven Coffee) diunggah",
-      time: "25 menit lalu",
-      actor: "Dimas Pratama",
-      role: "Creative Lead",
-      icon: Film,
-      bg: "bg-zinc-100 text-zinc-900",
-    },
-    {
-      id: "act-2",
-      title: "dr. Helena (Lumen Clinic) menyetujui Konten #03",
-      time: "2 jam lalu",
-      actor: "1-Click Approval",
-      role: "Client Portal",
-      icon: CheckCircle2,
-      bg: "bg-emerald-50 text-emerald-700",
-    },
-    {
-      id: "act-3",
-      title: "Bukti bayar DP Termin 1 (Arche Apparel) terverifikasi",
-      time: "Hari ini, 09:30",
-      actor: "Finance Desk",
-      role: "Billing",
-      icon: CreditCard,
-      bg: "bg-zinc-100 text-zinc-900",
-    },
-    {
-      id: "act-4",
-      title: "Jadwal syuting studio fisik selesai (Farhan Videografer)",
-      time: "Kemarin, 16:45",
-      actor: "Studio Malang",
-      role: "Production",
-      icon: Rocket,
-      bg: "bg-zinc-100 text-zinc-900",
-    },
-  ];
-
-  return (
-    <div className="bg-white rounded-2xl border border-zinc-200/90 shadow-[0_2px_12px_rgba(0,0,0,0.03)] overflow-hidden flex flex-col justify-between">
-      <div className="p-5 border-b border-zinc-100 flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-semibold text-zinc-950">
-            Aktivitas Operasional Agensi (Live Feed)
-          </h3>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Log interaksi terkini antara studio produksi dan klien
-          </p>
-        </div>
-        <span className="text-xs font-inter text-zinc-400">Real-time</span>
-      </div>
-
-      <div className="divide-y divide-zinc-100">
-        {activities.map((item) => {
-          const Icon = item.icon;
-          return (
-            <div
-              key={item.id}
-              className="p-4 flex items-start gap-3 hover:bg-zinc-50/60 transition-colors"
-            >
-              <div
-                className={`w-8 h-8 rounded-xl ${item.bg} flex items-center justify-center shrink-0 mt-0.5 border border-zinc-200/50`}
-              >
-                <Icon className="w-4 h-4" />
-              </div>
-              <div className="min-w-0 flex-1 space-y-0.5">
-                <p className="text-xs font-medium text-zinc-900 leading-snug">
-                  {item.title}
-                </p>
-                <div className="flex items-center gap-2 text-[11px] text-zinc-400">
-                  <span className="font-semibold text-zinc-600">{item.actor}</span>
-                  <span>•</span>
-                  <span>{item.time}</span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="p-3 border-t border-zinc-100 text-center">
-        <button className="text-xs text-zinc-500 hover:text-zinc-950 font-medium transition flex items-center justify-center gap-1 w-full">
-          <span>Lihat Semua Riwayat Log</span>
-          <ArrowRight className="w-3 h-3" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Main DashboardTwoExecutive Component ─────────────────── */
 export function DashboardTwoExecutive({
   clients,
   contents,
   stalledReviews,
+  videoTasks = [],
+  agencyEvents = [],
+  notifications = [],
   onPingClient,
-  onOpenAddClient,
-  onOpenAddContent,
   onInspectProof,
   onSelectClient,
+  onNavigateTab,
 }: DashboardTwoExecutiveProps) {
-  // Aggregate KPIs
-  const totalMRR = clients.reduce(
-    (acc, c) => acc + (parseInt(c.totalValue.replace(/\D/g, ""), 10) || 0),
+  const [volumePeriod, setVolumePeriod] = useState<"6 Bulan Terakhir" | "Kuartal Ini">("6 Bulan Terakhir");
+  const [volumeDropdownOpen, setVolumeDropdownOpen] = useState(false);
+  const [activeVolumeIdx, setActiveVolumeIdx] = useState(5);
+  const [hoveredContractIdx, setHoveredContractIdx] = useState<number | null>(null);
+  const [pingedIds, setPingedIds] = useState<Record<number, boolean>>({});
+  const [selectedDropId, setSelectedDropId] = useState<string>("0");
+  const [miniCalDate, setMiniCalDate] = useState(() => new Date());
+
+  // Metrics derived 100% from real MySQL clients & contents
+  const agencyMetrics = useMemo(() => {
+    const mrr = clients.reduce((s, c) => s + parseIDR(c.totalValue), 0);
+    const pendingDP = clients
+      .filter((c) => !c.isUnlocked)
+      .reduce((s, c) => s + parseIDR(c.dpAmount), 0);
+    const activeCount = clients.filter((c) => c.isUnlocked).length;
+    const pendingCount = clients.filter((c) => !c.isUnlocked).length;
+    const totalReelsUsed = clients.reduce((s, c) => s + (c.reelsUsed || 0), 0);
+    const totalPostsUsed = clients.reduce((s, c) => s + (c.postsUsed || 0), 0);
+    const totalOutput = totalReelsUsed + totalPostsUsed;
+    const totalMonthlyQuota = clients.reduce(
+      (s, c) => s + (c.reelsMax || 0) + (c.postsMax || 0),
+      0
+    );
+
+    return {
+      mrr,
+      pendingDP,
+      activeCount,
+      pendingCount,
+      totalReelsUsed,
+      totalPostsUsed,
+      totalOutput,
+      totalMonthlyQuota,
+    };
+  }, [clients]);
+
+  // Production Volume SVG chart anchored to real contents totals for the latest point
+  const volumeChartData = useMemo(() => {
+    const realReels = Math.max(
+      contents.filter(
+        (c) =>
+          c.type.toLowerCase().includes("reel") ||
+          c.type.toLowerCase().includes("video") ||
+          c.type.toLowerCase().includes("tiktok")
+      ).length,
+      agencyMetrics.totalReelsUsed
+    );
+    const realCarousel = Math.max(
+      contents.filter(
+        (c) =>
+          !c.type.toLowerCase().includes("reel") &&
+          !c.type.toLowerCase().includes("video")
+      ).length,
+      agencyMetrics.totalPostsUsed
+    );
+
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+    const now = new Date();
+    const count = volumePeriod === "Kuartal Ini" ? 3 : 6;
+    const ratios = count === 3 ? [0.76, 0.88, 1] : [0.52, 0.62, 0.58, 0.78, 0.88, 1];
+
+    return ratios.map((r, idx) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (count - 1 - idx), 1);
+      const label = monthNames[d.getMonth()];
+      const isLast = idx === ratios.length - 1;
+      const reels = isLast ? Math.max(realReels, 1) : Math.max(Math.round(realReels * r), 1);
+      const carousel = isLast ? Math.max(realCarousel, 1) : Math.max(Math.round(realCarousel * r), 1);
+      return {
+        label,
+        reels,
+        carousel,
+        date: `${label} ${d.getFullYear()}`,
+      };
+    });
+  }, [contents, agencyMetrics, volumePeriod]);
+
+  const safeVolIdx = Math.min(activeVolumeIdx, volumeChartData.length - 1);
+  const activeVolPt = volumeChartData[safeVolIdx];
+
+  const vW = 420;
+  const vH = 190;
+  const vPadL = 32;
+  const vPadR = 16;
+  const vPadT = 30;
+  const vPadB = 26;
+  const vPlotW = vW - vPadL - vPadR;
+  const vPlotH = vH - vPadT - vPadB;
+  const vMaxY = Math.max(
+    ...volumeChartData.map((d) => Math.max(d.reels, d.carousel)),
+    10
+  ) * 1.2;
+
+  const reelsCoords = volumeChartData.map((pt, i) => ({
+    ...pt,
+    x: vPadL + (volumeChartData.length > 1 ? (i / (volumeChartData.length - 1)) * vPlotW : vPlotW / 2),
+    y: vPadT + vPlotH - (pt.reels / vMaxY) * vPlotH,
+  }));
+  const carouselCoords = volumeChartData.map((pt, i) => ({
+    ...pt,
+    x: vPadL + (volumeChartData.length > 1 ? (i / (volumeChartData.length - 1)) * vPlotW : vPlotW / 2),
+    y: vPadT + vPlotH - (pt.carousel / vMaxY) * vPlotH,
+  }));
+
+  const reelsLine = buildSmoothSvgPath(reelsCoords);
+  const reelsArea = reelsCoords.length
+    ? `${reelsLine} L ${reelsCoords[reelsCoords.length - 1].x} ${vPadT + vPlotH} L ${reelsCoords[0].x} ${vPadT + vPlotH} Z`
+    : "";
+  const carouselLine = buildSmoothSvgPath(carouselCoords);
+
+  const contractValues = clients.map((c) => parseIDR(c.totalValue));
+  const maxContract = Math.max(...contractValues, 10000000);
+
+  const reelsPct = agencyMetrics.totalMonthlyQuota
+    ? Math.round((agencyMetrics.totalReelsUsed / agencyMetrics.totalMonthlyQuota) * 100)
+    : 0;
+  const postsPct = agencyMetrics.totalMonthlyQuota
+    ? Math.round((agencyMetrics.totalPostsUsed / agencyMetrics.totalMonthlyQuota) * 100)
+    : 0;
+  const remainPct = Math.max(0, 100 - reelsPct - postsPct);
+
+  const [selectedAgendaDay, setSelectedAgendaDay] = useState<number | null>(null);
+  const miniMonthKey = `${miniCalDate.getFullYear()}-${String(miniCalDate.getMonth() + 1).padStart(2, "0")}`;
+
+  // Gabungkan Agenda Agensi + Jadwal Tayang Konten di bulan kalender aktif
+  const monthAgendaItems = useMemo(() => {
+    const fromAgency = agencyEvents
+      .filter((ev) => ev.monthKey === miniMonthKey)
+      .map((ev) => ({
+        id: `ev-${ev.id}`,
+        title: ev.shortTitle || ev.title,
+        brand: ev.brand,
+        tag: ev.category,
+        dateLabel: `${ev.startDay}${ev.endDay > ev.startDay ? `-${ev.endDay}` : ""} ${ev.monthKey} • ${ev.time}`,
+        startDay: ev.startDay,
+        endDay: ev.endDay,
+      }));
+
+    const fromContents = contents
+      .filter((c) => (c.date ? c.date.slice(0, 7) === miniMonthKey : false))
+      .map((c) => {
+        const cl = clients.find((clItem) => clItem.id === c.clientId);
+        return {
+          id: `cnt-${c.id}`,
+          title: c.title,
+          brand: cl?.business || "Brand",
+          tag: c.stage === "revision" ? "Deadline Revisi" : "Tayang Konten",
+          dateLabel: `${c.day || `Tgl ${c.dayNumber}`} • ${c.type}`,
+          startDay: c.dayNumber || 1,
+          endDay: c.dayNumber || 1,
+        };
+      });
+
+    return [...fromAgency, ...fromContents].sort((a, b) => a.startDay - b.startDay);
+  }, [agencyEvents, contents, clients, miniMonthKey]);
+
+  const upcomingDrops = useMemo(() => {
+    if (selectedAgendaDay !== null) {
+      return monthAgendaItems.filter(
+        (item) => selectedAgendaDay >= item.startDay && selectedAgendaDay <= item.endDay
+      );
+    }
+    if (monthAgendaItems.length > 0) {
+      return monthAgendaItems.slice(0, 3);
+    }
+    // Fallback jika bulan aktif kosong: tampilkan 3 agenda agensi / konten terdekat
+    if (agencyEvents.length > 0) {
+      return agencyEvents.slice(0, 3).map((ev, i) => ({
+        id: `ev-fb-${i}`,
+        title: ev.shortTitle || ev.title,
+        brand: ev.brand,
+        tag: ev.category,
+        dateLabel: `${ev.startDay} ${ev.monthKey} • ${ev.time}`,
+        startDay: ev.startDay,
+        endDay: ev.endDay,
+      }));
+    }
+    return contents.slice(0, 3).map((c, i) => {
+      const cl = clients.find((clItem) => clItem.id === c.clientId);
+      return {
+        id: `cnt-fb-${i}`,
+        title: c.title,
+        brand: cl?.business || "Brand",
+        tag: c.type,
+        dateLabel: c.day || "Bulan Ini",
+        startDay: c.dayNumber || 10,
+        endDay: c.dayNumber || 10,
+      };
+    });
+  }, [selectedAgendaDay, monthAgendaItems, agencyEvents, contents, clients]);
+
+  const selectedDrop =
+    upcomingDrops.find((d) => d.id === selectedDropId) || upcomingDrops[0];
+
+  // Mini Calendar Cells
+  const monthNamesFull = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+  ];
+  const miniCalLabel = `${monthNamesFull[miniCalDate.getMonth()]} ${miniCalDate.getFullYear()}`;
+  const daysInCalMonth = new Date(
+    miniCalDate.getFullYear(),
+    miniCalDate.getMonth() + 1,
     0
-  );
-  const totalReelsUsed = clients.reduce((acc, c) => acc + (c.reelsUsed || 0), 0);
-  const totalReelsTarget = clients.reduce((acc, c) => acc + (c.reelsMax || 0), 0);
+  ).getDate();
+  const firstDayOfWeek = new Date(
+    miniCalDate.getFullYear(),
+    miniCalDate.getMonth(),
+    1
+  ).getDay();
+  const miniCalCells = [
+    ...Array.from({ length: firstDayOfWeek }, () => ({ day: null as number | null, isCurr: false })),
+    ...Array.from({ length: daysInCalMonth }, (_, i) => ({ day: i + 1, isCurr: true })),
+  ];
+
+  // Studio Activities from real notifications or latest tasks/contents
+  const recentActivities = useMemo(() => {
+    if (notifications.length > 0) {
+      return notifications.slice(0, 4).map((n) => ({
+        id: n.id,
+        text: n.title,
+        time: n.time,
+        icon: n.category.includes("Finansial")
+          ? CreditCard
+          : n.category.includes("Review")
+          ? AlertTriangle
+          : CheckCircle2,
+      }));
+    }
+    return [
+      {
+        id: "act-1",
+        text: `${agencyMetrics.activeCount} brand aktif dalam retainer produksi bulan ini`,
+        time: "Terbaru",
+        icon: Camera,
+      },
+      {
+        id: "act-2",
+        text: `${stalledReviews.length} konten menunggu persetujuan klien`,
+        time: "Aktif",
+        icon: Clock,
+      },
+    ];
+  }, [notifications, agencyMetrics.activeCount, stalledReviews.length]);
+
+  const getDpBadgeStyle = (isUnlocked: boolean) =>
+    isUnlocked
+      ? "bg-[#EFF7FF] text-[#3B9BF8]"
+      : "bg-amber-50 text-amber-700";
+
+  const yAxisTicks = [0, 0.25, 0.5, 0.75, 1].map((r) => Math.round(vMaxY * r));
 
   return (
-    <div className="space-y-6">
-      {/* ── 1. Top Action Header ───────────────────────────── */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 pb-3 border-b border-zinc-200/80">
-        <div>
-          <span className="text-[10px] font-mono uppercase tracking-wider text-[#01A0CA] font-bold block mb-0.5">
-            PUSAT OPERASIONAL • CERMIN KREATIF STUDIO
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950">
-            Pusat Kendali Operasional
-          </h1>
-          <p className="text-xs text-zinc-500 font-normal mt-1">
-            Pantauan nilai kontrak bulanan, status produksi studio, dan progres persetujuan konten klien.
-          </p>
+    <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+      {/* LEFT 9 COLUMNS */}
+      <div className="xl:col-span-9 space-y-5">
+        {/* 1. 4 KPI Utama */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          {[
+            {
+              label: "Brand Retainer Aktif",
+              value: `${agencyMetrics.activeCount} / ${clients.length}`,
+              delta: `${agencyMetrics.pendingCount} Pending DP`,
+              icon: Building2,
+            },
+            {
+              label: "Monthly Retainer (MRR)",
+              value: formatShortIDR(agencyMetrics.mrr),
+              delta: "Total Kontrak",
+              icon: Wallet,
+            },
+            {
+              label: "Output Konten Bulan Ini",
+              value: `${agencyMetrics.totalOutput} Aset`,
+              delta: `${agencyMetrics.totalReelsUsed}R • ${agencyMetrics.totalPostsUsed}F`,
+              icon: Film,
+            },
+            {
+              label: "Rata-rata SLA Review",
+              value: `${stalledReviews.length} Antrean`,
+              delta: "Target <24j",
+              icon: Clock,
+            },
+          ].map((kpi) => {
+            const Icon = kpi.icon;
+            return (
+              <div
+                key={kpi.label}
+                className="bg-[#EFF7FF] rounded-2xl p-4 border border-[#E1F0FF] flex flex-col justify-between gap-2.5"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-white text-[#3B9BF8] flex items-center justify-center shadow-sm shrink-0">
+                    <Icon className="w-[18px] h-[18px]" />
+                  </div>
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-lg bg-white text-[#3B9BF8] tabular-nums">
+                    {kpi.delta}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-[11px] font-medium text-slate-500 truncate">
+                    {kpi.label}
+                  </p>
+                  <p className="text-[19px] font-bold text-slate-900 leading-tight mt-0.5 tabular-nums">
+                    {kpi.value}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onOpenAddContent}
-            className="px-3.5 py-2 rounded-xl bg-white border border-[#01A0CA]/30 hover:border-[#01A0CA]/60 hover:bg-[#01A0CA]/5 text-zinc-900 hover:text-[#01A0CA] text-xs font-semibold flex items-center gap-1.5 shadow-2xs transition cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5 text-[#01A0CA]" />
-            <span>Buat Draf Konten</span>
-          </button>
-          <button
-            onClick={onOpenAddClient}
-            className="px-3.5 py-2 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition cursor-pointer"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Daftarkan Klien</span>
-          </button>
-        </div>
-      </div>
+        {/* 2. Dual Charts Dinamis */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          {/* Bar Chart Nilai Kontrak per Brand */}
+          <div className="lg:col-span-6 bg-white rounded-2xl border border-slate-100 p-5 shadow-sm flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h2 className="text-[14px] font-semibold text-slate-800">
+                  Nilai Kontrak per Brand
+                </h2>
+                <div className="flex items-center gap-3 mt-1 text-[10.5px] text-slate-400">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-sm bg-[#3B9BF8]" />
+                    Lunas DP
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-sm bg-[#CBD5E1]" />
+                    Menunggu DP
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => onNavigateTab("finance")}
+                className="text-[11px] font-semibold text-[#3B9BF8] hover:underline cursor-pointer"
+              >
+                Detail →
+              </button>
+            </div>
 
-      {/* ── 2. Top 4 Dense KPI Cards (Refined & Insightful Studio Metrics) ───── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* KPI 1: Active Retainers */}
-        <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs hover:border-[#01A0CA]/40 transition-all flex flex-col justify-between group">
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
-                Brand Retainer Aktif
-              </span>
-              <div className="w-7 h-7 rounded-lg bg-[#01A0CA]/10 text-[#01A0CA] flex items-center justify-center">
-                <Building2 className="w-4 h-4" />
+            {clients.length === 0 ? (
+              <div className="h-44 flex items-center justify-center text-xs text-slate-400">
+                Belum ada data kontrak klien terdaftar.
+              </div>
+            ) : (
+              <div className="grid grid-cols-5 gap-2.5 items-end h-44 pt-6">
+                {clients.slice(0, 5).map((cl, idx) => {
+                  const val = parseIDR(cl.totalValue);
+                  const pct = Math.max(18, Math.round((val / maxContract) * 100));
+                  const isHovered = hoveredContractIdx === idx;
+                  return (
+                    <div
+                      key={cl.id}
+                      onMouseEnter={() => setHoveredContractIdx(idx)}
+                      onMouseLeave={() => setHoveredContractIdx(null)}
+                      onClick={() => {
+                        onSelectClient(cl.id);
+                        onNavigateTab("content_engine");
+                      }}
+                      className="flex flex-col items-center h-full justify-end cursor-pointer group"
+                    >
+                      <span
+                        className={`text-[9.5px] font-bold mb-1 tabular-nums transition-opacity ${
+                          isHovered
+                            ? "text-[#3B9BF8] opacity-100"
+                            : "text-slate-500 opacity-80"
+                        }`}
+                      >
+                        {(val / 1000000).toFixed(1)}jt
+                      </span>
+                      <div className="w-full max-w-[34px] flex-1 flex items-end">
+                        <div
+                          className={`w-full rounded-t-xl transition-all ${
+                            cl.isUnlocked
+                              ? "bg-[#3B9BF8] group-hover:bg-[#2589F5]"
+                              : "bg-[#D9DEE6] group-hover:bg-amber-300"
+                          }`}
+                          style={{ height: `${pct}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-semibold text-slate-600 mt-2 truncate max-w-full">
+                        {cl.business.split(" ")[0]}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Area/Line Chart Volume Produksi Reels vs Carousel */}
+          <div className="lg:col-span-6 bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <h2 className="text-[14px] font-semibold text-slate-800">
+                  Volume Produksi Konten
+                </h2>
+                <div className="flex items-center gap-3 mt-1 text-[10.5px] text-slate-400">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="w-3 h-0.5 bg-[#3B9BF8] rounded-full" />
+                    Reels 9:16
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="w-3 h-0.5 border-t-2 border-dashed border-slate-400" />
+                    Carousel/Feed
+                  </span>
+                </div>
+              </div>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setVolumeDropdownOpen((o) => !o)}
+                  className="inline-flex items-center gap-1 bg-[#3B9BF8] hover:bg-[#2589F5] text-white text-[11px] font-medium px-2.5 py-1.5 rounded-lg cursor-pointer"
+                >
+                  {volumePeriod}
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+                {volumeDropdownOpen && (
+                  <div className="absolute right-0 mt-1 w-36 bg-white border border-slate-100 rounded-xl shadow-lg py-1 z-20">
+                    {(["6 Bulan Terakhir", "Kuartal Ini"] as const).map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => {
+                          setVolumePeriod(opt);
+                          setActiveVolumeIdx(opt === "Kuartal Ini" ? 2 : 5);
+                          setVolumeDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-1.5 text-xs hover:bg-[#F0F7FF] cursor-pointer ${
+                          volumePeriod === opt
+                            ? "text-[#3B9BF8] font-semibold"
+                            : "text-slate-600"
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
-            <div className="flex items-baseline gap-1.5 whitespace-nowrap pt-0.5">
-              <span className="text-2xl sm:text-3xl font-bold font-inter text-zinc-950 tracking-tight tabular-nums">
-                {clients.length}
-              </span>
-              <span className="text-sm font-medium text-zinc-500">Brand</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-xs text-zinc-600 pt-0.5">
-              <span className="text-emerald-700 font-semibold font-mono text-xs">+1 Brand</span>
-              <span className="text-zinc-400">vs bulan lalu</span>
-            </div>
-          </div>
-          <div className="pt-3 mt-3 border-t border-zinc-100 flex items-center justify-between text-[11px]">
-            <span className="text-zinc-500 truncate max-w-[130px]">Maven, Lumen, Arche</span>
-            <span className="text-emerald-700 font-semibold font-mono bg-emerald-50 px-1.5 py-0.2 rounded">100% Retensi</span>
-          </div>
-        </div>
 
-        {/* KPI 2: MRR Revenue */}
-        <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs hover:border-emerald-300 transition-all flex flex-col justify-between group">
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
-                Monthly Retainer (MRR)
-              </span>
-              <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                <CreditCard className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-1.5 whitespace-nowrap pt-0.5">
-              <span className="text-2xl sm:text-3xl font-bold font-inter text-zinc-950 tracking-tight tabular-nums">
-                Rp {(totalMRR / 1000000).toFixed(1)}
-              </span>
-              <span className="text-sm font-medium text-zinc-500">Juta</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-xs text-zinc-600 pt-0.5">
-              <span className="text-emerald-700 font-semibold font-mono text-xs">+25.7%</span>
-              <span className="text-zinc-400">di atas target (Rp 35 Jt)</span>
-            </div>
-          </div>
-          <div className="pt-3 mt-3 border-t border-zinc-100 flex items-center justify-between text-[11px]">
-            <span className="text-zinc-500">Termin 1 (DP 50%)</span>
-            <span className="text-[#01A0CA] font-semibold font-mono bg-sky-50 px-1.5 py-0.2 rounded">100% Terkumpul</span>
-          </div>
-        </div>
-
-        {/* KPI 3: Video Production Output */}
-        <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs hover:border-[#01A0CA]/40 transition-all flex flex-col justify-between group">
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
-                Kapasitas Produksi Video
-              </span>
-              <div className="w-7 h-7 rounded-lg bg-sky-50 text-[#01A0CA] flex items-center justify-center">
-                <Film className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-1.5 whitespace-nowrap pt-0.5">
-              <span className="text-2xl sm:text-3xl font-bold font-inter text-zinc-950 tracking-tight tabular-nums">
-                {totalReelsUsed}
-              </span>
-              <span className="text-zinc-300 font-light text-xl">/</span>
-              <span className="text-xl sm:text-2xl font-semibold font-inter text-zinc-400 tabular-nums">
-                {totalReelsTarget}
-              </span>
-              <span className="text-sm font-medium text-zinc-500">Reels</span>
-            </div>
-            {/* Visual subtle progress bar */}
-            <div className="pt-1.5 space-y-1">
-              <div className="w-full bg-zinc-100 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-gradient-to-r from-[#01A0CA] to-sky-400 h-2 rounded-full transition-all duration-500 shadow-2xs"
-                  style={{
-                    width: `${Math.min(
-                      100,
-                      Math.round((totalReelsUsed / (totalReelsTarget || 1)) * 100)
-                    )}%`,
-                  }}
-                />
-              </div>
-              <div className="flex items-center justify-between text-[11px] text-zinc-500">
-                <span className="font-medium text-[#01A0CA]">{Math.round((totalReelsUsed / (totalReelsTarget || 1)) * 100)}% kuota terpakai</span>
-                <span className="text-zinc-900 font-mono font-medium">
-                  {totalReelsTarget - totalReelsUsed} sisa slot
-                </span>
-              </div>
-            </div>
-          </div>
-          <div className="pt-3 mt-3 border-t border-zinc-100 flex items-center justify-between text-[11px]">
-            <span className="text-zinc-500">Jadwal Syuting Studio</span>
-            <span className="text-zinc-900 font-semibold font-mono">Sesuai Siklus</span>
-          </div>
-        </div>
-
-        {/* KPI 4: Approval Speed SLA */}
-        <div className="p-5 bg-white border border-zinc-200/80 rounded-2xl shadow-2xs hover:border-indigo-300 transition-all flex flex-col justify-between group">
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-medium">
-                Kecepatan Review Klien
-              </span>
-              <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                <Clock className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="flex items-baseline gap-1.5 whitespace-nowrap pt-0.5">
-              <span className="text-2xl sm:text-3xl font-bold font-inter text-zinc-950 tracking-tight tabular-nums">
-                18.2
-              </span>
-              <span className="text-sm font-medium text-zinc-500">Jam / draf</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-xs text-zinc-600 pt-0.5">
-              <span className="text-emerald-700 font-semibold font-mono text-xs">5.8 Jam</span>
-              <span className="text-zinc-400">lebih cepat dari SLA</span>
-            </div>
-          </div>
-          <div className="pt-3 mt-3 border-t border-zinc-100 flex items-center justify-between text-[11px]">
-            <span className="text-zinc-500">Batas SLA: &lt; 24 Jam</span>
-            <span className="text-emerald-700 font-semibold font-mono bg-emerald-50 px-1.5 py-0.2 rounded">94% Tepat Waktu</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ── 3. Dual Charts (Revenue Bar & Format Delivery) ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <RevenueBarChart totalMRR={totalMRR} />
-        <ProductionVolumeChart contents={contents} />
-      </div>
-
-      {/* ── 4. Invoices Table & Billing Health ──────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2">
-          <RecentInvoicesSection
-            clients={clients}
-            onInspectProof={onInspectProof}
-          />
-        </div>
-        <div>
-          <BillingHealthCard
-            clients={clients}
-            onInspectProof={onInspectProof}
-          />
-        </div>
-      </div>
-
-      {/* ── 5. Operational Radar & Live Activity Feed ──────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Radar Review Botol Leher */}
-        <div className="bg-white rounded-2xl border border-zinc-200/90 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col justify-between">
-          <div className="pb-3 border-b border-zinc-100 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-              <h3 className="text-sm font-semibold text-zinc-950">
-                Radar Botol Leher Review Klien (&gt;24 Jam)
-              </h3>
-            </div>
-            <span className="text-xs font-inter text-zinc-400">
-              {stalledReviews.length} Draf
-            </span>
-          </div>
-
-          {stalledReviews.length > 0 ? (
-            <div className="divide-y divide-zinc-100 my-2">
-              {stalledReviews.map((item) => {
-                const client =
-                  clients.find((c) => c.id === item.clientId) || clients[0];
+            <svg viewBox={`0 0 ${vW} ${vH}`} className="w-full h-auto select-none">
+              <defs>
+                <linearGradient id="cerminVolGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3B9BF8" stopOpacity="0.22" />
+                  <stop offset="100%" stopColor="#3B9BF8" stopOpacity="0.0" />
+                </linearGradient>
+              </defs>
+              {yAxisTicks.map((tick, tIdx) => {
+                const y = vPadT + vPlotH - (tick / vMaxY) * vPlotH;
                 return (
-                  <div
-                    key={item.id}
-                    className="py-3 flex items-center justify-between gap-3 text-xs"
+                  <g key={`${tick}-${tIdx}`}>
+                    <line
+                      x1={vPadL}
+                      y1={y}
+                      x2={vW - vPadR}
+                      y2={y}
+                      stroke="#F1F5F9"
+                      strokeWidth="1"
+                    />
+                    <text
+                      x={vPadL - 8}
+                      y={y + 3.5}
+                      textAnchor="end"
+                      fill="#94A3B8"
+                      fontSize="9.5"
+                    >
+                      {tick}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {reelsArea && <path d={reelsArea} fill="url(#cerminVolGrad)" />}
+              {carouselLine && (
+                <path
+                  d={carouselLine}
+                  fill="none"
+                  stroke="#94A3B8"
+                  strokeWidth="1.8"
+                  strokeDasharray="4 4"
+                />
+              )}
+              {reelsLine && (
+                <path
+                  d={reelsLine}
+                  fill="none"
+                  stroke="#3B9BF8"
+                  strokeWidth="2.2"
+                />
+              )}
+
+              {reelsCoords[safeVolIdx] && activeVolPt && (
+                <g>
+                  <line
+                    x1={reelsCoords[safeVolIdx].x}
+                    y1={reelsCoords[safeVolIdx].y}
+                    x2={reelsCoords[safeVolIdx].x}
+                    y2={vPadT + vPlotH}
+                    stroke="#3B9BF8"
+                    strokeDasharray="3 3"
+                    strokeWidth="1.2"
+                  />
+                  <circle
+                    cx={reelsCoords[safeVolIdx].x}
+                    cy={reelsCoords[safeVolIdx].y}
+                    r="4.5"
+                    fill="#3B9BF8"
+                    stroke="#FFFFFF"
+                    strokeWidth="2"
+                  />
+                  <g
+                    transform={`translate(${Math.min(
+                      Math.max(reelsCoords[safeVolIdx].x - 42, vPadL),
+                      vW - vPadR - 84
+                    )}, ${Math.max(reelsCoords[safeVolIdx].y - 38, 2)})`}
                   >
-                    <div className="min-w-0 space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-zinc-900">
-                          {client?.business || "Client"}
-                        </span>
-                        <span className="text-[10px] font-inter px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200/60">
-                          {item.day}
+                    <rect
+                      width="84"
+                      height="30"
+                      rx="7"
+                      fill="#EFF7FF"
+                      stroke="#DCEEFF"
+                    />
+                    <text
+                      x="42"
+                      y="13"
+                      textAnchor="middle"
+                      fill="#0F172A"
+                      fontSize="9.5"
+                      fontWeight="700"
+                    >
+                      {activeVolPt.reels}R / {activeVolPt.carousel}F
+                    </text>
+                    <text
+                      x="42"
+                      y="24"
+                      textAnchor="middle"
+                      fill="#64748B"
+                      fontSize="8.5"
+                    >
+                      {activeVolPt.date}
+                    </text>
+                  </g>
+                </g>
+              )}
+
+              {reelsCoords.map((pt, idx) => (
+                <g
+                  key={pt.label}
+                  className="cursor-pointer"
+                  onMouseEnter={() => setActiveVolumeIdx(idx)}
+                  onClick={() => setActiveVolumeIdx(idx)}
+                >
+                  <rect
+                    x={pt.x - 18}
+                    y={vPadT}
+                    width="36"
+                    height={vPlotH + vPadB}
+                    fill="transparent"
+                  />
+                  <text
+                    x={pt.x}
+                    y={vH - 6}
+                    textAnchor="middle"
+                    fill={idx === safeVolIdx ? "#0F172A" : "#94A3B8"}
+                    fontWeight={idx === safeVolIdx ? "600" : "400"}
+                    fontSize="9.5"
+                  >
+                    {pt.label}
+                  </text>
+                </g>
+              ))}
+            </svg>
+          </div>
+        </div>
+
+        {/* 3. Alokasi Kuota + Brand Pilihan (left) & Radar Bottleneck >24 Jam (right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+          <div className="lg:col-span-8 space-y-5">
+            {/* Bar Alokasi Kuota */}
+            <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-[#EFF7FF] text-[#3B9BF8] flex items-center justify-center">
+                  <Layers className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-[11px] text-slate-400 font-medium">
+                    Alokasi Kuota
+                  </p>
+                  <p className="text-[20px] font-bold text-slate-900 leading-tight tabular-nums">
+                    {agencyMetrics.totalMonthlyQuota} Slot
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex-1 space-y-2">
+                <div className="w-full h-3 rounded-full overflow-hidden flex bg-slate-100">
+                  <div
+                    className="bg-[#3B9BF8] h-full"
+                    style={{ width: `${reelsPct}%` }}
+                  />
+                  <div
+                    className="bg-[#93C5FD] h-full"
+                    style={{ width: `${postsPct}%` }}
+                  />
+                  <div
+                    className="bg-[#DCEEFF] h-full"
+                    style={{ width: `${remainPct}%` }}
+                  />
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-sm bg-[#3B9BF8]" />
+                    Reels Terpakai{" "}
+                    <strong className="text-slate-800">
+                      {agencyMetrics.totalReelsUsed}
+                    </strong>
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-sm bg-[#93C5FD]" />
+                    Feed Terpakai{" "}
+                    <strong className="text-slate-800">
+                      {agencyMetrics.totalPostsUsed}
+                    </strong>
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-sm bg-[#DCEEFF]" />
+                    Sisa Kuota{" "}
+                    <strong className="text-slate-800">
+                      {Math.max(
+                        0,
+                        agencyMetrics.totalMonthlyQuota - agencyMetrics.totalOutput
+                      )}
+                    </strong>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Brand Retainer Pilihan */}
+            <div className="bg-[#EFF7FF]/60 rounded-2xl border border-[#E5F1FF] p-4 space-y-3.5">
+              <div className="flex items-center justify-between">
+                <h2 className="text-[14px] font-semibold text-slate-800">
+                  Brand Retainer Pilihan
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => onNavigateTab("clients")}
+                  className="bg-white hover:bg-[#EFF7FF] border border-slate-100 text-slate-700 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+                >
+                  Lihat Semua
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                {clients.slice(0, 3).map((cl, idx) => (
+                  <div
+                    key={cl.id}
+                    className="bg-white rounded-2xl p-2.5 border border-slate-100 shadow-sm flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="relative h-28 rounded-xl overflow-hidden bg-slate-100">
+                        <img
+                          src={cl.coverUrl || FALLBACK_COVERS[idx % FALLBACK_COVERS.length]}
+                          alt={cl.business}
+                          className="w-full h-full object-cover"
+                        />
+                        <span
+                          className={`absolute top-2 left-2 text-[9.5px] font-semibold px-2 py-0.5 rounded-md shadow-sm ${
+                            cl.isUnlocked
+                              ? "bg-white/95 text-[#3B9BF8]"
+                              : "bg-amber-100/95 text-amber-700"
+                          }`}
+                        >
+                          {cl.isUnlocked ? "Resmi" : "Menunggu DP"}
                         </span>
                       </div>
-                      <p className="text-zinc-500 truncate text-[11px]">
-                        {item.title}
+                      <h3 className="text-[12.5px] font-bold text-slate-900 mt-2 truncate">
+                        {cl.business}
+                      </h3>
+                      <p className="text-[10.5px] text-slate-400 truncate">
+                        {cl.package}
                       </p>
                     </div>
 
-                    <button
-                      onClick={() => onPingClient(client, item)}
-                      className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] shrink-0 transition flex items-center gap-1 shadow-2xs cursor-pointer"
-                    >
-                      <span>Ping WA</span>
-                      <ArrowUpRight className="w-3 h-3" />
-                    </button>
+                    <div className="flex items-center justify-between gap-2 mt-2.5 pt-2 border-t border-slate-50">
+                      <div>
+                        <p className="text-[12px] font-bold text-[#3B9BF8] leading-none tabular-nums">
+                          {formatShortIDR(parseIDR(cl.totalValue))}
+                        </p>
+                        <p className="text-[9.5px] text-slate-400 mt-0.5">
+                          per bulan
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onSelectClient(cl.id);
+                          onNavigateTab("content_engine");
+                        }}
+                        className="bg-[#3B9BF8] hover:bg-[#2589F5] text-white text-[10.5px] font-semibold px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Kanban
+                      </button>
+                    </div>
                   </div>
-                );
-              })}
+                ))}
+              </div>
             </div>
-          ) : (
-            <div className="py-8 text-center text-xs text-zinc-400">
-              Tidak ada konten yang tertahan review. Semua jadwal aman.
-            </div>
-          )}
+          </div>
 
-          <div className="pt-3 border-t border-zinc-100 text-xs text-zinc-400 flex items-center justify-between">
-            <span>Sistem auto-alert reminder via WhatsApp PIC</span>
-            <span className="font-inter text-emerald-700">Online</span>
+          {/* Radar Bottleneck Review (>24 Jam) */}
+          <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-100 p-4 shadow-sm flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h2 className="text-[13.5px] font-semibold text-slate-800">
+                  Radar Bottleneck (&gt;24j)
+                </h2>
+                <p className="text-[10.5px] text-slate-400">
+                  Menunggu approval klien
+                </p>
+              </div>
+              <span className="bg-rose-50 text-rose-600 text-[10px] font-bold px-2 py-0.5 rounded-md tabular-nums">
+                {stalledReviews.length} Draf
+              </span>
+            </div>
+
+            <div className="space-y-2.5 flex-1">
+              {stalledReviews.length === 0 ? (
+                <div className="h-full min-h-[140px] flex flex-col items-center justify-center text-center text-xs text-slate-400 px-3">
+                  <CheckCircle2 className="w-7 h-7 text-emerald-500 mb-1.5" />
+                  Semua draf telah direview klien tepat waktu.
+                </div>
+              ) : (
+                stalledReviews.slice(0, 5).map((item) => {
+                  const client = clients.find((c) => c.id === item.clientId);
+                  if (!client) return null;
+                  const isPinged = !!pingedIds[item.id];
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-[#F5FAFF] transition-colors border border-transparent hover:border-sky-100"
+                    >
+                      <div className="w-9 h-9 rounded-full bg-[#EFF7FF] text-[#3B9BF8] font-bold text-[11px] flex items-center justify-center shrink-0">
+                        {client.business.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-1">
+                          <p className="text-[11.5px] font-bold text-slate-800 truncate">
+                            {client.business}
+                          </p>
+                          <span className="text-[9.5px] font-semibold text-rose-500 shrink-0 tabular-nums">
+                            {item.day}
+                          </span>
+                        </div>
+                        <p className="text-[10.5px] text-slate-400 truncate mt-0.5">
+                          {item.title}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPingedIds((p) => ({ ...p, [item.id]: true }));
+                          onPingClient(client, item);
+                        }}
+                        className={`shrink-0 px-2 py-1.5 rounded-lg text-[10px] font-semibold inline-flex items-center gap-1 transition-colors cursor-pointer ${
+                          isPinged
+                            ? "bg-emerald-50 text-emerald-600"
+                            : "bg-[#EFF7FF] hover:bg-[#3B9BF8] text-[#3B9BF8] hover:text-white"
+                        }`}
+                      >
+                        <MessageCircle className="w-3 h-3" />
+                        {isPinged ? "Terkirim" : "Ping WA"}
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Real-time Activity Feed */}
-        <AgencyActivityFeed />
+        {/* 4. Faktur Terbaru & Billing Health */}
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-[14.5px] font-semibold text-slate-800">
+                Faktur Terbaru &amp; Billing Health
+              </h2>
+              <p className="text-[11px] text-slate-400">
+                Pending Verifikasi DP 50%:{" "}
+                <strong className="text-amber-600">
+                  {formatIDR(agencyMetrics.pendingDP)}
+                </strong>
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigateTab("finance")}
+              className="bg-[#3B9BF8] hover:bg-[#2589F5] text-white text-xs font-medium px-3.5 py-1.5 rounded-xl transition-colors self-start sm:self-auto cursor-pointer"
+            >
+              Kelola Finansial
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[600px]">
+              <thead>
+                <tr className="bg-[#EFF7FF] text-slate-500 text-[11px] font-semibold">
+                  <th className="py-2.5 px-3.5 rounded-l-xl">Brand Klien</th>
+                  <th className="py-2.5 px-3.5">No. Faktur</th>
+                  <th className="py-2.5 px-3.5">DP 50%</th>
+                  <th className="py-2.5 px-3.5">Status</th>
+                  <th className="py-2.5 px-3.5 rounded-r-xl text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50 text-xs">
+                {clients.map((cl) => (
+                  <tr
+                    key={cl.id}
+                    className="hover:bg-[#F8FBFF] transition-colors"
+                  >
+                    <td className="py-3 px-3.5 font-semibold text-slate-800">
+                      {cl.business}
+                    </td>
+                    <td className="py-3 px-3.5 text-slate-500 tabular-nums">
+                      {cl.invoiceNumber}
+                    </td>
+                    <td className="py-3 px-3.5 font-semibold text-slate-800 tabular-nums">
+                      {cl.dpAmount}
+                    </td>
+                    <td className="py-3 px-3.5">
+                      <span
+                        className={`inline-block text-[10.5px] font-semibold px-2.5 py-1 rounded-lg ${getDpBadgeStyle(
+                          cl.isUnlocked
+                        )}`}
+                      >
+                        {cl.isUnlocked ? "Lunas DP" : "Menunggu Verifikasi"}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3.5 text-right">
+                      <button
+                        type="button"
+                        onClick={() => onInspectProof(cl)}
+                        className="text-[11px] font-semibold text-[#3B9BF8] hover:underline cursor-pointer"
+                      >
+                        Periksa Bukti
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT 3 COLUMNS: MINI CALENDAR, AGENDA TERDEKAT, AKTIVITAS */}
+      <div className="xl:col-span-3 space-y-5">
+        <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-1 text-[13.5px] font-bold text-slate-800">
+              {miniCalLabel}
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedAgendaDay(null);
+                  setMiniCalDate(
+                    (d) => new Date(d.getFullYear(), d.getMonth() - 1, 1)
+                  );
+                }}
+                className="w-6 h-6 rounded-lg bg-[#F4F6F9] hover:bg-[#EAF4FF] text-slate-500 flex items-center justify-center cursor-pointer"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedAgendaDay(null);
+                  setMiniCalDate(
+                    (d) => new Date(d.getFullYear(), d.getMonth() + 1, 1)
+                  );
+                }}
+                className="w-6 h-6 rounded-lg bg-[#F4F6F9] hover:bg-[#EAF4FF] text-slate-500 flex items-center justify-center cursor-pointer"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-medium text-slate-400">
+            {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"].map((d) => (
+              <div key={d} className="py-0.5">
+                {d}
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-7 gap-y-1 text-center text-[11px]">
+            {miniCalCells.map((cell, i) => {
+              if (!cell.isCurr || !cell.day) {
+                return <div key={i} className="h-7" />;
+              }
+              const dayNum = cell.day;
+              const hasAgenda = monthAgendaItems.some(
+                (item) => dayNum >= item.startDay && dayNum <= item.endDay
+              );
+              const isSelectedDay = selectedAgendaDay === dayNum;
+              const isDropHighlighted =
+                selectedAgendaDay === null &&
+                selectedDrop &&
+                monthAgendaItems.some((m) => m.id === selectedDrop.id) &&
+                dayNum >= selectedDrop.startDay &&
+                dayNum <= selectedDrop.endDay;
+
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() =>
+                    setSelectedAgendaDay((prev) => (prev === dayNum ? null : dayNum))
+                  }
+                  className={`relative h-7 flex items-center justify-center rounded-lg tabular-nums transition-colors cursor-pointer ${
+                    isSelectedDay || isDropHighlighted
+                      ? "bg-[#3B9BF8] text-white font-bold shadow-sm"
+                      : hasAgenda
+                      ? "bg-[#EFF7FF] text-[#2563EB] font-semibold hover:bg-[#DCEEFF]"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  {dayNum}
+                  {hasAgenda && !isSelectedDay && !isDropHighlighted && (
+                    <span className="absolute bottom-0.5 w-1 h-1 rounded-full bg-[#3B9BF8]" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="pt-2 border-t border-slate-100 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-[13.5px] font-semibold text-slate-800 truncate">
+                {selectedAgendaDay !== null
+                  ? `Agenda Tgl ${selectedAgendaDay}`
+                  : "Agenda & Jadwal Terdekat"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => onNavigateTab("agency_calendar")}
+                title="Buka Kalender Agensi"
+                className="w-6 h-6 rounded-lg bg-[#3B9BF8] hover:bg-[#2589F5] text-white flex items-center justify-center shrink-0 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {upcomingDrops.length === 0 ? (
+                <p className="text-[11px] text-slate-400 text-center py-3">
+                  {selectedAgendaDay !== null
+                    ? `Tidak ada agenda di tanggal ${selectedAgendaDay}.`
+                    : "Belum ada agenda terjadwal."}
+                </p>
+              ) : (
+                upcomingDrops.slice(0, 3).map((drop) => {
+                  const isSelected = selectedDrop?.id === drop.id;
+                  return (
+                    <button
+                      key={drop.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedDropId(drop.id);
+                        onNavigateTab("agency_calendar");
+                      }}
+                      className={`w-full flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                        isSelected
+                          ? "border-[#3B9BF8] bg-[#F5FAFF]"
+                          : "border-slate-100 hover:border-sky-100"
+                      }`}
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-[#EFF7FF] text-[#3B9BF8] flex flex-col items-center justify-center shrink-0 font-bold tabular-nums">
+                        <span className="text-[13px] leading-none">{drop.startDay}</span>
+                        <span className="text-[8.5px] uppercase tracking-wider mt-0.5 text-slate-500">
+                          {monthNamesFull[miniCalDate.getMonth()].slice(0, 3)}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <span className="inline-block text-[9px] font-semibold text-[#3B9BF8] bg-[#EFF7FF] px-1.5 py-0.5 rounded-md">
+                          {drop.tag}
+                        </span>
+                        <p className="text-[11.5px] font-bold text-slate-800 truncate mt-0.5">
+                          {drop.title || drop.brand}
+                        </p>
+                        <span className="text-[9.5px] text-slate-400 block truncate mt-0.5">
+                          {drop.brand} • {drop.dateLabel}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Aktivitas Terbaru */}
+        <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-[13.5px] font-semibold text-slate-800">
+              Aktivitas Terbaru
+            </h3>
+            <MoreHorizontal className="w-4 h-4 text-slate-400" />
+          </div>
+          <div className="space-y-3">
+            {recentActivities.map((act) => {
+              const Icon = act.icon;
+              return (
+                <div key={act.id} className="flex items-start gap-2.5">
+                  <div className="w-7 h-7 rounded-full bg-[#3B9BF8] text-white flex items-center justify-center shrink-0 mt-0.5">
+                    <Icon className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] text-slate-600 leading-snug line-clamp-2">
+                      {act.text}
+                    </p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      {act.time}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );

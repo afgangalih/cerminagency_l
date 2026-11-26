@@ -15,6 +15,7 @@ class Content extends Model
         'client_id',
         'title',
         'format_type',
+        'pillar',
         'platforms',
         'stage',
         'status',

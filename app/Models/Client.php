@@ -31,9 +31,14 @@ class Client extends Model
         'transfer_proof_url',
         'invoice_number',
         'brief_notes',
+        'target_audience',
+        'transfer_bank',
         'is_unlocked',
         'pic_assigned',
         'drive_vault_url',
+        'cover_url',
+        'content_pillars',
+        'kpi_targets',
     ];
 
     protected $casts = [
@@ -42,6 +47,8 @@ class Client extends Model
         'reels_max' => 'integer',
         'posts_used' => 'integer',
         'posts_max' => 'integer',
+        'content_pillars' => 'array',
+        'kpi_targets' => 'array',
     ];
 
     public function user(): BelongsTo
