@@ -8,7 +8,6 @@ import {
   Copy, Check, ExternalLink, Play, Pause, Layers, Film, 
   Image as ImageIcon, Music, Tag, RotateCcw, MessageSquare
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 
 interface ReviewModalProps {
   item: ContentItem;
@@ -132,13 +131,18 @@ export function ReviewModal({
     }
   };
 
+  // Close modal on Escape key
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
   const handleApprove = () => {
-    confetti({
-      particleCount: 90,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
     approveContent(item.id);
+    onClose();
   };
 
   const handleRevisionSubmit = (e: React.FormEvent) => {
@@ -149,6 +153,7 @@ export function ReviewModal({
     if (result.success) {
       setShowRevisionInput(false);
       setRevisionText('');
+      onClose();
     } else {
       setErrorMsg(result.message);
     }
@@ -158,7 +163,12 @@ export function ReviewModal({
   const isSlaMaxReached = item.revisionCount >= 2;
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 !mt-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+    >
       <div className="bg-white border border-slate-100 w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 my-6">
         
         {/* Header */}
@@ -396,6 +406,34 @@ export function ReviewModal({
                     ))}
                   </div>
                 )}
+
+                {/* Phase-Aware Links: Draft Preview vs Live Post */}
+                {(item.driveRawUrl || (item.stage === 'published' && item.publishedUrl)) && (
+                  <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-slate-100">
+                    {item.driveRawUrl && (
+                      <a
+                        href={item.driveRawUrl.startsWith('http') ? item.driveRawUrl : `https://${item.driveRawUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#EFF7FF] hover:bg-[#3B9BF8] text-[#3B9BF8] hover:text-white text-[11px] font-semibold transition"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        <span>Buka Link Draf Desain</span>
+                      </a>
+                    )}
+                    {item.stage === 'published' && item.publishedUrl && (
+                      <a
+                        href={item.publishedUrl.startsWith('http') ? item.publishedUrl : `https://${item.publishedUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white text-[11px] font-semibold transition"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        <span>Buka Postingan Live</span>
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Audit Trail Feedback History */}
@@ -491,12 +529,50 @@ export function ReviewModal({
                       </span>
                     )}
 
+                    {item.stage === 'published' && (
+                      <span className="py-2.5 px-4 rounded-xl bg-[#EFF7FF] text-[#3B9BF8] font-semibold text-xs flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Sudah Tayang (Live)
+                      </span>
+                    )}
+
                     <button
                       type="button"
                       onClick={onClose}
                       className="py-2.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 font-medium text-xs transition cursor-pointer"
                     >
                       Tutup
+                    </button>
+                  </div>
+                </div>
+              ) : item.stage === 'published' ? (
+                <div className="p-4 bg-[#EFF7FF] border border-[#DCEEFF] rounded-xl space-y-3">
+                  <div className="flex items-center gap-2 text-xs text-slate-900 font-bold">
+                    <CheckCircle2 className="w-4 h-4 text-[#3B9BF8] shrink-0" />
+                    <span>Sudah Tayang (Live){item.publishedAt ? ` • ${item.publishedAt}` : ''}</span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Konten ini telah dipublikasikan ke media sosial brand Anda.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2.5 pt-1">
+                    {item.publishedUrl && (
+                      <a
+                        href={item.publishedUrl.startsWith('http') ? item.publishedUrl : `https://${item.publishedUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 py-2 px-3.5 rounded-xl bg-[#3B9BF8] hover:bg-[#2589F5] text-white font-semibold text-xs flex items-center justify-center gap-2 transition shadow-sm"
+                      >
+                        <span>Lihat Postingan Live</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleCopyCaption}
+                      className="flex-1 py-2 px-3.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs flex items-center justify-center gap-2 transition cursor-pointer"
+                    >
+                      {copied ? <Check className="w-3.5 h-3.5 text-[#3B9BF8]" /> : <Copy className="w-3.5 h-3.5 text-[#3B9BF8]" />}
+                      <span>{copied ? 'Takarir Tersalin!' : 'Salin Takarir & Tagar'}</span>
                     </button>
                   </div>
                 </div>
@@ -606,7 +682,7 @@ export function ReviewModal({
                     placeholder="Tuliskan catatan revisi spesifik untuk editor tim Cermin..."
                     value={revisionText}
                     onChange={(e) => setRevisionText(e.target.value)}
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-lg p-2.5 text-xs text-zinc-900 focus:outline-none focus:border-zinc-500 focus:bg-white transition"
+                    className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl p-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#3B9BF8] focus:ring-2 focus:ring-[#3B9BF8]/25 focus:bg-white transition"
                   />
 
                   <div className="flex gap-2 justify-end">
@@ -649,8 +725,9 @@ export function ReviewModal({
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                     <button
+                      type="button"
                       onClick={handleApprove}
-                      className="flex-1 py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                      className="flex-1 py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                       <span>Setujui Versi Ini</span>

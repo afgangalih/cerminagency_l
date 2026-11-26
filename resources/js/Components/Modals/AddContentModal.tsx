@@ -24,6 +24,7 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
   const [stage, setStage] = useState<ContentStage>('production');
   const [caption, setCaption] = useState('');
   const [mediaUrl, setMediaUrl] = useState('https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=800&auto=format&fit=crop&q=80');
+  const [driveRawUrl, setDriveRawUrl] = useState('');
 
   const togglePlatform = (p: PlatformType) => {
     if (platforms.includes(p)) {
@@ -55,7 +56,8 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
       ballInCourt: stage === 'review' ? 'client' : 'agency',
       version: 'V1',
       caption: caption.trim() || 'Draf naskah & konsep visual dibuat oleh tim kreatif Cermin.',
-      mediaUrl: mediaUrl.trim() || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80'
+      mediaUrl: mediaUrl.trim() || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
+      driveRawUrl: driveRawUrl.trim(),
     });
 
     triggerNotification(`Konten "${title}" berhasil dijadwalkan!`);
@@ -63,22 +65,22 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-zinc-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white border border-zinc-200 w-full max-w-xl rounded-2xl shadow-2xl p-6 sm:p-7 relative animate-in fade-in zoom-in-95 max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 !mt-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-white border border-slate-100 w-full max-w-xl rounded-2xl shadow-2xl p-6 sm:p-7 relative animate-in fade-in zoom-in-95 max-h-[92vh] overflow-y-auto">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition"
+          className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
-        <div className="flex items-center gap-2.5 mb-5">
-          <div className="w-9 h-9 rounded-xl bg-[#01A0CA]/10 text-[#01A0CA] border border-[#01A0CA]/20 flex items-center justify-center">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-9 h-9 rounded-xl bg-[#EFF7FF] text-[#3B9BF8] flex items-center justify-center">
             <Plus className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-zinc-900">Jadwalkan Konten Baru</h3>
-            <p className="text-xs text-zinc-500 font-light">Input konsep, naskah, format platform, dan tanggal penayangan kalender.</p>
+            <h3 className="text-base font-bold text-slate-900">Jadwalkan Konten Baru</h3>
+            <p className="text-xs text-slate-500">Input konsep, naskah, format platform, dan tanggal penayangan kalender.</p>
           </div>
         </div>
 
@@ -125,27 +127,29 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
 
           <div>
             <label className="block text-xs font-medium text-zinc-700 mb-1">Pilar Konten Klien</label>
-            {activeClientPillars.length > 0 ? (
-              <select
-                value={pillar}
-                onChange={(e) => setPillar(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-[#3B9BF8] focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
-              >
-                <option value="">Umum / Tanpa Pilar</option>
-                {activeClientPillars.map((p, idx) => (
-                  <option key={idx} value={p.title}>
-                    {p.title} ({p.ratio})
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <input
-                type="text"
-                value={pillar}
-                onChange={(e) => setPillar(e.target.value)}
-                placeholder="Opsional (atur daftar pilar di Klien & Kuota -> Detail & KPI)"
-                className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-[#3B9BF8] focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
-              />
+            <select
+              value={pillar}
+              onChange={(e) => setPillar(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-[#3B9BF8] focus:ring-2 focus:ring-[#3B9BF8]/25 transition cursor-pointer"
+            >
+              <option value="">Umum / Tanpa Pilar</option>
+              {(activeClientPillars.length > 0
+                ? activeClientPillars
+                : [
+                    { title: 'Edukasi & Tips Produk', ratio: '40%' },
+                    { title: 'Lifestyle & Kepercayaan', ratio: '35%' },
+                    { title: 'Promo & Penawaran', ratio: '25%' },
+                  ]
+              ).map((p, idx) => (
+                <option key={idx} value={p.title}>
+                  {p.title} ({p.ratio})
+                </option>
+              ))}
+            </select>
+            {activeClientPillars.length === 0 && (
+              <p className="text-[10.5px] text-slate-400 mt-1">
+                Menggunakan pilar default. Atur pilar khusus brand ini di <strong>Klien &amp; Kuota → Semua → Detail &amp; KPI</strong>.
+              </p>
             )}
           </div>
 
@@ -177,6 +181,7 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
                 <option value="review">3. Menunggu Review Klien</option>
                 <option value="revision">4. Perlu Revisi Editor</option>
                 <option value="scheduled">5. Siap Tayang (Disetujui)</option>
+                <option value="published">6. Sudah Tayang (Live)</option>
               </select>
             </div>
           </div>
@@ -187,10 +192,10 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
               <button
                 type="button"
                 onClick={() => togglePlatform('instagram')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
                   platforms.includes('instagram')
-                    ? 'bg-[#01A0CA] border-[#01A0CA] text-white shadow-2xs'
-                    : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:border-[#01A0CA]/40'
+                    ? 'bg-[#3B9BF8] text-white shadow-sm'
+                    : 'bg-[#F4F6F9] text-slate-600 hover:bg-[#EFF7FF] hover:text-[#3B9BF8]'
                 }`}
               >
                 Instagram
@@ -198,10 +203,10 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
               <button
                 type="button"
                 onClick={() => togglePlatform('tiktok')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
                   platforms.includes('tiktok')
-                    ? 'bg-[#01A0CA] border-[#01A0CA] text-white shadow-2xs'
-                    : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:border-[#01A0CA]/40'
+                    ? 'bg-[#3B9BF8] text-white shadow-sm'
+                    : 'bg-[#F4F6F9] text-slate-600 hover:bg-[#EFF7FF] hover:text-[#3B9BF8]'
                 }`}
               >
                 TikTok
@@ -209,10 +214,10 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
               <button
                 type="button"
                 onClick={() => togglePlatform('youtube_shorts')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
                   platforms.includes('youtube_shorts')
-                    ? 'bg-[#01A0CA] border-[#01A0CA] text-white shadow-2xs'
-                    : 'bg-zinc-50 border-zinc-200 text-zinc-600 hover:border-[#01A0CA]/40'
+                    ? 'bg-[#3B9BF8] text-white shadow-sm'
+                    : 'bg-[#F4F6F9] text-slate-600 hover:bg-[#EFF7FF] hover:text-[#3B9BF8]'
                 }`}
               >
                 YouTube Shorts
@@ -220,15 +225,27 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-zinc-700 mb-1">URL Media / Thumbnail Visual</label>
-            <input
-              type="url"
-              value={mediaUrl}
-              onChange={(e) => setMediaUrl(e.target.value)}
-              placeholder="https://images.unsplash.com/..."
-              className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-[#3B9BF8] focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-zinc-700 mb-1">URL Media / Thumbnail Visual</label>
+              <input
+                type="url"
+                value={mediaUrl}
+                onChange={(e) => setMediaUrl(e.target.value)}
+                placeholder="https://images.unsplash.com/..."
+                className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-[#3B9BF8] focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-zinc-700 mb-1">Link Draf Desain (Drive / Figma / Canva)</label>
+              <input
+                type="url"
+                value={driveRawUrl}
+                onChange={(e) => setDriveRawUrl(e.target.value)}
+                placeholder="https://drive.google.com/... (opsional)"
+                className="w-full px-3 py-2 rounded-xl border border-zinc-200 bg-zinc-50/50 text-xs text-zinc-900 focus:bg-white focus:outline-none focus:border-[#3B9BF8] focus:ring-2 focus:ring-[#3B9BF8]/25 transition"
+              />
+            </div>
           </div>
 
           <div>
@@ -252,7 +269,7 @@ export function AddContentModal({ onClose }: AddContentModalProps) {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-[#01A0CA] hover:bg-[#008db3] text-white text-xs font-semibold transition shadow-sm cursor-pointer"
+              className="px-5 py-2 rounded-xl bg-[#3B9BF8] hover:bg-[#2589F5] text-white text-xs font-semibold transition shadow-sm cursor-pointer"
             >
               Simpan Konten
             </button>

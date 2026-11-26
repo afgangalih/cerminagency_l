@@ -255,9 +255,10 @@ class AdminDashboardController extends Controller
             'pillar' => 'nullable|string|max:120',
             'platforms' => 'nullable|array',
             'date' => 'required|string',
-            'stage' => 'required|in:script,production,review,revision,scheduled',
+            'stage' => 'required|in:script,production,review,revision,scheduled,published',
             'caption' => 'nullable|string',
             'mediaUrl' => 'nullable|string',
+            'driveRawUrl' => 'nullable|string|max:500',
         ]);
 
         $client = Client::where('client_code', $validated['clientId'])->orWhere('id', $validated['clientId'])->first();
@@ -298,6 +299,7 @@ class AdminDashboardController extends Controller
             'date_label' => $dayLabel,
             'caption' => $validated['caption'] ?? 'Draf naskah dibuat oleh tim kreatif Cermin.',
             'media_url' => $validated['mediaUrl'] ?? 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
+            'drive_raw_url' => $validated['driveRawUrl'] ?? null,
             'revision_count' => 0,
             'max_revisions' => 2,
             'created_by' => $request->user()->id,
@@ -327,7 +329,8 @@ class AdminDashboardController extends Controller
         $content = Content::where('id', $identifier)->firstOrFail();
 
         $validated = $request->validate([
-            'stage' => 'required|in:script,production,review,revision,scheduled',
+            'stage' => 'required|in:script,production,review,revision,scheduled,published',
+            'publishedUrl' => 'nullable|string|max:500',
         ]);
 
         $stageStatusMap = [
@@ -336,15 +339,25 @@ class AdminDashboardController extends Controller
             'review' => ['status' => 'Menunggu Review', 'ball' => 'client'],
             'revision' => ['status' => 'Perlu Revisi', 'ball' => 'agency'],
             'scheduled' => ['status' => 'Disetujui', 'ball' => 'agency'],
+            'published' => ['status' => 'Sudah Tayang', 'ball' => 'agency'],
         ];
 
         $mapping = $stageStatusMap[$validated['stage']] ?? ['status' => 'Draf Naskah', 'ball' => 'agency'];
 
-        $content->update([
+        $updateData = [
             'stage' => $validated['stage'],
             'status' => $mapping['status'],
             'ball_in_court' => $mapping['ball'],
-        ]);
+        ];
+
+        if ($validated['stage'] === 'published') {
+            if (!empty($validated['publishedUrl'])) {
+                $updateData['published_url'] = $validated['publishedUrl'];
+            }
+            $updateData['published_at'] = $content->published_at ?? now();
+        }
+
+        $content->update($updateData);
 
         return back()->with('success', "Tahapan konten '{$content->title}' berhasil dipindahkan ke: {$mapping['status']}.");
     }
